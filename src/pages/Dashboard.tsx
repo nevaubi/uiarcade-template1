@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -85,8 +84,6 @@ const Dashboard = () => {
 
   const sidebarItems = [
     { icon: LayoutDashboard, label: 'Dashboard', active: true },
-    { icon: CreditCard, label: 'Billing' },
-    { icon: Settings, label: 'Settings' },
   ];
 
   const getSubscriptionStatus = () => {
@@ -325,7 +322,7 @@ const Dashboard = () => {
                           Loading...
                         </>
                       ) : (
-                        subscribed ? 'Manage Billing' : 'Choose Plan'
+                        subscribed ? 'Manage Billing' : 'Subscribe'
                       )}
                     </Button>
                     {subscribed && (
@@ -348,7 +345,7 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button 
                   variant="outline" 
                   className="h-12" 
@@ -365,10 +362,6 @@ const Dashboard = () => {
                 <Button variant="outline" className="h-12">
                   <Settings className="h-4 w-4 mr-2" />
                   Account Settings
-                </Button>
-                <Button variant="outline" className="h-12">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  View Usage
                 </Button>
               </div>
             </CardContent>
