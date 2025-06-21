@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -16,9 +17,7 @@ import {
   Menu, 
   X, 
   Calendar,
-  Activity,
   TrendingUp,
-  Clock,
   RefreshCw
 } from 'lucide-react';
 
@@ -119,40 +118,11 @@ const Dashboard = () => {
       description: subscribed ? 'Billing date' : 'No billing scheduled',
       icon: Calendar,
       color: 'text-blue-600'
-    },
-    {
-      title: 'Usage This Month',
-      value: '2.4k',
-      description: 'API calls made',
-      icon: Activity,
-      color: 'text-purple-600'
-    },
-    {
-      title: 'Account Age',
-      value: '3 months',
-      description: 'Member since Oct 2024',
-      icon: Clock,
-      color: 'text-orange-600'
     }
-  ];
-
-  const recentActivity = [
-    { action: subscribed ? 'Subscription active' : 'No subscription', date: new Date().toLocaleDateString(), status: subscribed ? 'success' : 'info' },
-    { action: 'Profile updated', date: 'Dec 8, 2024', status: 'info' },
-    { action: 'Account created', date: 'Dec 5, 2024', status: 'success' },
   ];
 
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase();
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return 'bg-green-100 text-green-800';
-      case 'warning': return 'bg-yellow-100 text-yellow-800';
-      case 'info': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
   };
 
   return (
@@ -286,7 +256,7 @@ const Dashboard = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {stats.map((stat, index) => (
               <Card key={index}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -304,9 +274,9 @@ const Dashboard = () => {
           </div>
 
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Subscription Status */}
-            <Card className="lg:col-span-2">
+            <Card>
               <CardHeader>
                 <CardTitle>Subscription Status</CardTitle>
                 <CardDescription>
@@ -351,39 +321,6 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>
-                  Your latest account activities
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="flex-shrink-0">
-                        <div className={`w-2 h-2 rounded-full mt-2 ${
-                          activity.status === 'success' ? 'bg-green-500' :
-                          activity.status === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-                        }`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">
-                          {activity.action}
-                        </p>
-                        <p className="text-xs text-gray-500">{activity.date}</p>
-                      </div>
-                      <Badge variant="outline" className={getStatusColor(activity.status)}>
-                        {activity.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Additional Quick Actions */}
@@ -405,7 +342,7 @@ const Dashboard = () => {
                   Account Settings
                 </Button>
                 <Button variant="outline" className="h-12">
-                  <Activity className="h-4 w-4 mr-2" />
+                  <TrendingUp className="h-4 w-4 mr-2" />
                   View Usage
                 </Button>
               </div>
