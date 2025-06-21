@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -10,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 const PricingSection = () => {
   const [isAnnual, setIsAnnual] = useState(false);
-  const { createCheckout, subscribed, subscription_tier, checkoutLoading } = useSubscription();
+  const { createCheckout, subscribed, subscription_tier } = useSubscription();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -55,23 +56,12 @@ const PricingSection = () => {
     }
 
     try {
-      console.log('PricingSection: Starting subscription for plan:', plan.name);
       const priceId = isAnnual ? plan.annualPriceId : plan.monthlyPriceId;
-      console.log('PricingSection: Using price ID:', priceId);
-      
       await createCheckout(priceId);
-    } catch (error: any) {
-      console.error('PricingSection: Checkout error:', error);
-      
-      // More detailed error message for mobile users
-      const errorMessage = error.message || 'Failed to create checkout session. Please try again.';
-      const isMobileError = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
-      
+    } catch (error) {
       toast({
-        title: "Payment Error",
-        description: isMobileError 
-          ? `${errorMessage} If you're on mobile, please ensure you have a stable internet connection and try again.`
-          : errorMessage,
+        title: "Error",
+        description: "Failed to create checkout session. Please try again.",
         variant: "destructive",
       });
     }
@@ -174,16 +164,9 @@ const PricingSection = () => {
                         : 'bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
                     }`}
                     onClick={() => handleSubscribe(plan)}
-                    disabled={isCurrentPlan(plan.name) || checkoutLoading}
+                    disabled={isCurrentPlan(plan.name)}
                   >
-                    {checkoutLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      isCurrentPlan(plan.name) ? 'Current Plan' : 'Get Started'
-                    )}
+                    {isCurrentPlan(plan.name) ? 'Current Plan' : 'Get Started'}
                   </Button>
                 </div>
               </CardContent>

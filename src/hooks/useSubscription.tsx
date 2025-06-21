@@ -1,8 +1,8 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { subscriptionCache, debounce, withExponentialBackoff } from '@/utils/subscriptionCache';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -12,7 +12,6 @@ interface SubscriptionData {
 
 export const useSubscription = () => {
   const { user, session } = useAuth();
-  const isMobile = useIsMobile();
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({
     subscribed: false,
     subscription_tier: null,
@@ -20,8 +19,6 @@ export const useSubscription = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [portalLoading, setPortalLoading] = useState(false);
   
   // Track the last user ID to detect meaningful changes
   const lastUserIdRef = useRef<string | null>(null);
@@ -137,150 +134,42 @@ export const useSubscription = () => {
   }, [debouncedCheckSubscription]);
 
   const createCheckout = async (priceId: string) => {
-    if (!session) {
-      console.error('Mobile checkout error: No session available');
-      throw new Error('User not authenticated');
-    }
-    if (checkoutLoading) {
-      console.log('Mobile checkout: Already processing, ignoring duplicate request');
-      return;
-    }
+    if (!session) throw new Error('User not authenticated');
 
-    console.log('Mobile checkout: Starting checkout process', { 
-      isMobile, 
-      priceId, 
-      userAgent: navigator.userAgent,
-      sessionExists: !!session 
+    console.log('Creating checkout session for price:', priceId);
+    const { data, error } = await supabase.functions.invoke('create-checkout', {
+      body: { priceId },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
     });
 
-    setCheckoutLoading(true);
-    
-    try {
-      console.log('Mobile checkout: Creating checkout session for price:', priceId);
-      
-      // Add more detailed error logging for mobile
-      const invokeResult = await supabase.functions.invoke('create-checkout', {
-        body: { priceId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-          'User-Agent': navigator.userAgent, // Include user agent for debugging
-        },
-      });
-
-      console.log('Mobile checkout: Edge function response:', invokeResult);
-
-      if (invokeResult.error) {
-        console.error('Mobile checkout: Edge function error:', invokeResult.error);
-        throw new Error(`Checkout creation failed: ${invokeResult.error.message || 'Unknown error'}`);
-      }
-
-      const data = invokeResult.data;
-      if (!data || !data.url) {
-        console.error('Mobile checkout: No URL returned from edge function', data);
-        throw new Error('No checkout URL received from server');
-      }
-
-      console.log('Mobile checkout: Received checkout URL:', data.url);
-
-      // Mobile-friendly navigation with additional logging
-      if (isMobile) {
-        console.log('Mobile checkout: Redirecting in same tab (mobile detected)');
-        // On mobile, redirect in same tab to avoid pop-up blocking
-        window.location.href = data.url;
-      } else {
-        console.log('Mobile checkout: Opening in new tab (desktop detected)');
-        // On desktop, open in new tab
-        const newWindow = window.open(data.url, '_blank');
-        if (!newWindow) {
-          console.warn('Desktop checkout: Pop-up blocked, falling back to same-tab redirect');
-          window.location.href = data.url;
-        }
-      }
-    } catch (error: any) {
-      console.error('Mobile checkout: Full error details:', {
-        message: error.message,
-        stack: error.stack,
-        error: error,
-        isMobile,
-        sessionExists: !!session,
-        userAgent: navigator.userAgent
-      });
+    if (error) {
+      console.error('Error creating checkout:', error);
       throw error;
-    } finally {
-      setCheckoutLoading(false);
     }
+
+    // Open Stripe checkout in a new tab
+    window.open(data.url, '_blank');
   };
 
   const openCustomerPortal = async () => {
-    if (!session) {
-      console.error('Mobile portal error: No session available');
-      throw new Error('User not authenticated');
-    }
-    if (portalLoading) {
-      console.log('Mobile portal: Already processing, ignoring duplicate request');
-      return;
-    }
+    if (!session) throw new Error('User not authenticated');
 
-    console.log('Mobile portal: Starting portal process', { 
-      isMobile, 
-      userAgent: navigator.userAgent,
-      sessionExists: !!session 
+    console.log('Opening customer portal...');
+    const { data, error } = await supabase.functions.invoke('customer-portal', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
     });
 
-    setPortalLoading(true);
-
-    try {
-      console.log('Mobile portal: Opening customer portal...');
-      
-      const invokeResult = await supabase.functions.invoke('customer-portal', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-          'User-Agent': navigator.userAgent,
-        },
-      });
-
-      console.log('Mobile portal: Edge function response:', invokeResult);
-
-      if (invokeResult.error) {
-        console.error('Mobile portal: Edge function error:', invokeResult.error);
-        throw new Error(`Portal creation failed: ${invokeResult.error.message || 'Unknown error'}`);
-      }
-
-      const data = invokeResult.data;
-      if (!data || !data.url) {
-        console.error('Mobile portal: No URL returned from edge function', data);
-        throw new Error('No portal URL received from server');
-      }
-
-      console.log('Mobile portal: Received portal URL:', data.url);
-
-      // Mobile-friendly navigation
-      if (isMobile) {
-        console.log('Mobile portal: Redirecting in same tab (mobile detected)');
-        window.location.href = data.url;
-      } else {
-        console.log('Mobile portal: Opening in new tab (desktop detected)');
-        const newWindow = window.open(data.url, '_blank');
-        if (!newWindow) {
-          console.warn('Desktop portal: Pop-up blocked, falling back to same-tab redirect');
-          window.location.href = data.url;
-        }
-      }
-    } catch (error: any) {
-      console.error('Mobile portal: Full error details:', {
-        message: error.message,
-        stack: error.stack,
-        error: error,
-        isMobile,
-        sessionExists: !!session,
-        userAgent: navigator.userAgent
-      });
+    if (error) {
+      console.error('Error opening customer portal:', error);
       throw error;
-    } finally {
-      setPortalLoading(false);
     }
+
+    // Open customer portal in a new tab
+    window.open(data.url, '_blank');
   };
 
   useEffect(() => {
@@ -314,8 +203,6 @@ export const useSubscription = () => {
     ...subscriptionData,
     loading,
     error,
-    checkoutLoading,
-    portalLoading,
     checkSubscription,
     createCheckout,
     openCustomerPortal,
