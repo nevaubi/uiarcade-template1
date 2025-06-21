@@ -119,7 +119,7 @@ const Index = () => {
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl 2xl:text-9xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float xl:text-7xl">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl 2xl:text-9xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float xl:text-7xl">
               Build Amazing
               <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent relative">
                 SaaS Products
@@ -148,7 +148,7 @@ const Index = () => {
             </div>
 
             {/* Enhanced Social Proof Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 xl:gap-12 max-w-2xl xl:max-w-4xl mx-auto">
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 max-w-2xl xl:max-w-4xl mx-auto">
               <div className="text-center group">
                 <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                   Tons
