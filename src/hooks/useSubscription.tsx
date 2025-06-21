@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { subscriptionCache, debounce, withExponentialBackoff } from '@/utils/subscriptionCache';
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -17,38 +18,120 @@ export const useSubscription = () => {
     subscription_end: null,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Track the last user ID to detect meaningful changes
+  const lastUserIdRef = useRef<string | null>(null);
 
-  const checkSubscription = async () => {
+  const checkSubscriptionInternal = async (forceRefresh: boolean = false): Promise<void> => {
     if (!user || !session) {
+      setSubscriptionData({
+        subscribed: false,
+        subscription_tier: null,
+        subscription_end: null,
+      });
       setLoading(false);
+      setError(null);
       return;
     }
 
     try {
-      console.log('Checking subscription status...');
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      setError(null);
+      
+      // Check cache first (unless forced refresh)
+      if (!forceRefresh) {
+        const cached = subscriptionCache.get(user.id);
+        if (cached) {
+          console.log('Using cached subscription data');
+          setSubscriptionData({
+            subscribed: cached.subscribed,
+            subscription_tier: cached.subscription_tier,
+            subscription_end: cached.subscription_end,
+          });
+          setLoading(false);
+          return;
+        }
 
-      if (error) {
-        console.error('Error checking subscription:', error);
-        return;
+        // Check if there's already a pending request for this user
+        const pendingRequest = subscriptionCache.getPendingRequest(user.id);
+        if (pendingRequest) {
+          console.log('Waiting for existing subscription request');
+          await pendingRequest;
+          // After the pending request completes, try to get from cache
+          const cachedAfterPending = subscriptionCache.get(user.id);
+          if (cachedAfterPending) {
+            setSubscriptionData({
+              subscribed: cachedAfterPending.subscribed,
+              subscription_tier: cachedAfterPending.subscription_tier,
+              subscription_end: cachedAfterPending.subscription_end,
+            });
+          }
+          setLoading(false);
+          return;
+        }
       }
 
+      console.log('Fetching fresh subscription data...');
+      
+      const requestPromise = withExponentialBackoff(async () => {
+        const { data, error } = await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error) {
+          console.error('Error checking subscription:', error);
+          throw error;
+        }
+
+        return data;
+      });
+
+      // Cache the request promise to prevent duplicates
+      subscriptionCache.setPendingRequest(user.id, requestPromise);
+
+      const data = await requestPromise;
+
       console.log('Subscription data received:', data);
-      setSubscriptionData({
+      
+      const newSubscriptionData = {
         subscribed: data.subscribed || false,
         subscription_tier: data.subscription_tier || null,
         subscription_end: data.subscription_end || null,
-      });
-    } catch (error) {
+      };
+
+      // Update cache
+      subscriptionCache.set(user.id, newSubscriptionData);
+      
+      setSubscriptionData(newSubscriptionData);
+    } catch (error: any) {
       console.error('Error in checkSubscription:', error);
+      
+      // Handle rate limiting more gracefully
+      if (error?.message?.includes('rate limit') || error?.message?.includes('429')) {
+        setError('Too many requests. Please wait a moment before refreshing.');
+      } else {
+        setError('Failed to check subscription status. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  // Debounced version of checkSubscription
+  const debouncedCheckSubscription = useCallback(
+    debounce((forceRefresh: boolean = false) => {
+      checkSubscriptionInternal(forceRefresh);
+    }, 500),
+    [user?.id, session?.access_token]
+  );
+
+  // Public method for manual refresh
+  const checkSubscription = useCallback((forceRefresh: boolean = false) => {
+    setLoading(true);
+    debouncedCheckSubscription(forceRefresh);
+  }, [debouncedCheckSubscription]);
 
   const createCheckout = async (priceId: string) => {
     if (!session) throw new Error('User not authenticated');
@@ -90,12 +173,36 @@ export const useSubscription = () => {
   };
 
   useEffect(() => {
-    checkSubscription();
-  }, [user, session]);
+    // Only trigger if the user ID actually changed (meaningful change)
+    const currentUserId = user?.id || null;
+    
+    if (currentUserId !== lastUserIdRef.current) {
+      console.log('User changed, checking subscription...', { 
+        old: lastUserIdRef.current, 
+        new: currentUserId 
+      });
+      lastUserIdRef.current = currentUserId;
+      
+      if (currentUserId) {
+        checkSubscriptionInternal();
+      } else {
+        // User logged out, clear cache and reset state
+        subscriptionCache.clear();
+        setSubscriptionData({
+          subscribed: false,
+          subscription_tier: null,
+          subscription_end: null,
+        });
+        setLoading(false);
+        setError(null);
+      }
+    }
+  }, [user?.id]);
 
   return {
     ...subscriptionData,
     loading,
+    error,
     checkSubscription,
     createCheckout,
     openCustomerPortal,

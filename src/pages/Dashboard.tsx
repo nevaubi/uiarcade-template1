@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -34,6 +33,7 @@ const Dashboard = () => {
     subscription_tier, 
     subscription_end, 
     loading: subscriptionLoading,
+    error: subscriptionError,
     checkSubscription,
     openCustomerPortal 
   } = useSubscription();
@@ -45,9 +45,9 @@ const Dashboard = () => {
         title: "Payment successful!",
         description: "Your subscription has been activated.",
       });
-      // Refresh subscription status after successful payment
+      // Refresh subscription status after successful payment with force refresh
       setTimeout(() => {
-        checkSubscription();
+        checkSubscription(true);
       }, 2000);
     }
     if (searchParams.get('canceled')) {
@@ -89,11 +89,13 @@ const Dashboard = () => {
 
   const getSubscriptionStatus = () => {
     if (subscriptionLoading) return 'Loading...';
+    if (subscriptionError) return 'Error loading';
     if (!subscribed) return 'No subscription';
     return `${subscription_tier} Plan`;
   };
 
   const getSubscriptionColor = () => {
+    if (subscriptionError) return 'text-red-600';
     if (!subscribed) return 'text-gray-600';
     return 'text-green-600';
   };
@@ -107,7 +109,7 @@ const Dashboard = () => {
     {
       title: 'Current Plan',
       value: getSubscriptionStatus(),
-      description: subscribed ? 'Active subscription' : 'No active plan',
+      description: subscribed ? 'Active subscription' : subscriptionError ? 'Failed to load subscription' : 'No active plan',
       icon: TrendingUp,
       color: getSubscriptionColor()
     },
@@ -250,16 +252,21 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
             </div>
             <div className="flex items-center space-x-4">
+              {subscriptionError && (
+                <div className="text-sm text-red-600 mr-2">
+                  {subscriptionError}
+                </div>
+              )}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={checkSubscription}
+                onClick={() => checkSubscription(true)}
                 disabled={subscriptionLoading}
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${subscriptionLoading ? 'animate-spin' : ''}`} />
                 Refresh Status
               </Button>
-              <Badge variant="outline" className={subscribed ? "text-green-600 border-green-600" : "text-gray-600 border-gray-600"}>
+              <Badge variant="outline" className={subscribed ? "text-green-600 border-green-600" : subscriptionError ? "text-red-600 border-red-600" : "text-gray-600 border-gray-600"}>
                 {getSubscriptionStatus()}
               </Badge>
             </div>
