@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { subscriptionCache, debounce, withExponentialBackoff } from '@/utils/subscriptionCache';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -12,6 +12,7 @@ interface SubscriptionData {
 
 export const useSubscription = () => {
   const { user, session } = useAuth();
+  const isMobile = useIsMobile();
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData>({
     subscribed: false,
     subscription_tier: null,
@@ -19,6 +20,8 @@ export const useSubscription = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   
   // Track the last user ID to detect meaningful changes
   const lastUserIdRef = useRef<string | null>(null);
@@ -135,41 +138,71 @@ export const useSubscription = () => {
 
   const createCheckout = async (priceId: string) => {
     if (!session) throw new Error('User not authenticated');
+    if (checkoutLoading) return; // Prevent multiple clicks
 
-    console.log('Creating checkout session for price:', priceId);
-    const { data, error } = await supabase.functions.invoke('create-checkout', {
-      body: { priceId },
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    });
+    setCheckoutLoading(true);
+    
+    try {
+      console.log('Creating checkout session for price:', priceId);
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-    if (error) {
-      console.error('Error creating checkout:', error);
-      throw error;
+      if (error) {
+        console.error('Error creating checkout:', error);
+        throw error;
+      }
+
+      // Mobile-friendly navigation
+      if (isMobile) {
+        // On mobile, redirect in same tab to avoid pop-up blocking
+        console.log('Mobile detected: redirecting in same tab');
+        window.location.href = data.url;
+      } else {
+        // On desktop, open in new tab
+        console.log('Desktop detected: opening in new tab');
+        window.open(data.url, '_blank');
+      }
+    } finally {
+      setCheckoutLoading(false);
     }
-
-    // Open Stripe checkout in a new tab
-    window.open(data.url, '_blank');
   };
 
   const openCustomerPortal = async () => {
     if (!session) throw new Error('User not authenticated');
+    if (portalLoading) return; // Prevent multiple clicks
 
-    console.log('Opening customer portal...');
-    const { data, error } = await supabase.functions.invoke('customer-portal', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
-    });
+    setPortalLoading(true);
 
-    if (error) {
-      console.error('Error opening customer portal:', error);
-      throw error;
+    try {
+      console.log('Opening customer portal...');
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error opening customer portal:', error);
+        throw error;
+      }
+
+      // Mobile-friendly navigation
+      if (isMobile) {
+        // On mobile, redirect in same tab to avoid pop-up blocking
+        console.log('Mobile detected: redirecting to portal in same tab');
+        window.location.href = data.url;
+      } else {
+        // On desktop, open in new tab
+        console.log('Desktop detected: opening portal in new tab');
+        window.open(data.url, '_blank');
+      }
+    } finally {
+      setPortalLoading(false);
     }
-
-    // Open customer portal in a new tab
-    window.open(data.url, '_blank');
   };
 
   useEffect(() => {
@@ -203,6 +236,8 @@ export const useSubscription = () => {
     ...subscriptionData,
     loading,
     error,
+    checkoutLoading,
+    portalLoading,
     checkSubscription,
     createCheckout,
     openCustomerPortal,

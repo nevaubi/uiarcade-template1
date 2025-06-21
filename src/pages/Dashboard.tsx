@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -18,7 +17,8 @@ import {
   X, 
   Calendar,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -33,6 +33,8 @@ const Dashboard = () => {
     subscription_end, 
     loading: subscriptionLoading,
     error: subscriptionError,
+    checkoutLoading,
+    portalLoading,
     checkSubscription,
     openCustomerPortal 
   } = useSubscription();
@@ -309,8 +311,18 @@ const Dashboard = () => {
                   <Separator />
                   
                   <div className="flex space-x-3 pt-4">
-                    <Button onClick={handleManageBilling}>
-                      {subscribed ? 'Manage Billing' : 'Choose Plan'}
+                    <Button 
+                      onClick={handleManageBilling}
+                      disabled={portalLoading}
+                    >
+                      {portalLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        subscribed ? 'Manage Billing' : 'Choose Plan'
+                      )}
                     </Button>
                     {subscribed && (
                       <Button variant="outline" onClick={() => navigate('/pricing')}>
@@ -333,8 +345,17 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-12" onClick={handleManageBilling}>
-                  <CreditCard className="h-4 w-4 mr-2" />
+                <Button 
+                  variant="outline" 
+                  className="h-12" 
+                  onClick={handleManageBilling}
+                  disabled={portalLoading}
+                >
+                  {portalLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <CreditCard className="h-4 w-4 mr-2" />
+                  )}
                   {subscribed ? 'Manage Billing' : 'Subscribe'}
                 </Button>
                 <Button variant="outline" className="h-12">
