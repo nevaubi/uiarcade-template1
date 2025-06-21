@@ -108,7 +108,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative">
+      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto text-center">
           <div className="scroll-animate opacity-0 transform translate-y-8">
             {/* Trust Badge */}
@@ -173,7 +173,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 relative">
+      <section id="features" className="pt-16 pb-24 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 scroll-animate opacity-0 transform translate-y-8">
             <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
