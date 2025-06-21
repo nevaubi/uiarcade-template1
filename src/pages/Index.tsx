@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
+
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -135,14 +136,14 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 xl:gap-8 justify-center items-center mb-16 xl:mb-20">
-              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg xl:text-xl px-10 xl:px-12 py-4 xl:py-5 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group pulse-glow" onClick={() => navigate('/auth?tab=signup')}>
+              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group pulse-glow" onClick={() => navigate('/auth?tab=signup')}>
                 {/* Button glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"></div>
                 <span className="relative z-10">Start Free Trial</span>
                 <ArrowRight className="ml-3 h-5 w-5 xl:h-6 xl:w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
               
-              <Button variant="outline" size="lg" className="text-lg xl:text-xl px-10 xl:px-12 py-4 xl:py-5 border-2 border-slate-300 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-300 backdrop-blur-sm glass-morph">
+              <Button variant="outline" size="lg" className="text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 border-2 border-slate-300 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-300 backdrop-blur-sm glass-morph">
                 Watch Demo
               </Button>
             </div>
@@ -282,4 +283,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
