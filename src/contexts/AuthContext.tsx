@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -36,6 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Redirect to dashboard on successful sign in
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Small delay to ensure state is updated
+          setTimeout(() => {
+            if (window.location.pathname === '/auth') {
+              window.location.href = '/dashboard';
+            }
+          }, 100);
+        }
       }
     );
 
@@ -50,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/dashboard`;
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -91,6 +102,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message,
         variant: "destructive",
       });
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "You have been signed in successfully.",
+      });
     }
 
     return { error };
@@ -103,6 +119,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Error signing out",
         description: error.message,
         variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
       });
     }
   };

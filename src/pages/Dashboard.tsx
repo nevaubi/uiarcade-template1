@@ -1,0 +1,330 @@
+
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { 
+  LayoutDashboard, 
+  CreditCard, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X, 
+  Calendar,
+  Activity,
+  TrendingUp,
+  Clock
+} from 'lucide-react';
+
+const Dashboard = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const sidebarItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', active: true },
+    { icon: CreditCard, label: 'Billing' },
+    { icon: Settings, label: 'Settings' },
+  ];
+
+  const stats = [
+    {
+      title: 'Current Plan',
+      value: 'Pro Plan',
+      description: 'Active subscription',
+      icon: TrendingUp,
+      color: 'text-green-600'
+    },
+    {
+      title: 'Next Billing',
+      value: 'Jan 15, 2025',
+      description: '20 days remaining',
+      icon: Calendar,
+      color: 'text-blue-600'
+    },
+    {
+      title: 'Usage This Month',
+      value: '2.4k',
+      description: 'API calls made',
+      icon: Activity,
+      color: 'text-purple-600'
+    },
+    {
+      title: 'Account Age',
+      value: '3 months',
+      description: 'Member since Oct 2024',
+      icon: Clock,
+      color: 'text-orange-600'
+    }
+  ];
+
+  const recentActivity = [
+    { action: 'Payment processed', date: 'Dec 15, 2024', status: 'success' },
+    { action: 'Plan upgraded to Pro', date: 'Dec 10, 2024', status: 'info' },
+    { action: 'Profile updated', date: 'Dec 8, 2024', status: 'info' },
+    { action: 'API key regenerated', date: 'Dec 5, 2024', status: 'warning' },
+  ];
+
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success': return 'bg-green-100 text-green-800';
+      case 'warning': return 'bg-yellow-100 text-yellow-800';
+      case 'info': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="flex items-center justify-between h-16 px-6 border-b">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Template1
+          </h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* User Profile Section */}
+        <div className="p-6 border-b">
+          <div className="flex items-center space-x-3">
+            <Avatar>
+              <AvatarFallback className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                {user?.email ? getInitials(user.email) : 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.email || 'User'}
+              </p>
+              <p className="text-xs text-gray-500">
+                Pro Member
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.label}
+              className={`
+                w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                ${item.active 
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }
+              `}
+            >
+              <item.icon className="h-5 w-5 mr-3" />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-5 w-5 mr-3" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-0">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="flex items-center justify-between h-16 px-6">
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden mr-4"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-6 w-6" />
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Badge variant="outline" className="text-green-600 border-green-600">
+                Pro Plan Active
+              </Badge>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <main className="p-6">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Welcome back, {user?.email?.split('@')[0] || 'User'}!
+            </h3>
+            <p className="text-gray-600">
+              Here's what's happening with your account today.
+            </p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {stats.map((stat, index) => (
+              <Card key={index}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Main Dashboard Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Subscription Status */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Subscription Status</CardTitle>
+                <CardDescription>
+                  Your current plan and billing information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Pro Plan</h4>
+                      <p className="text-sm text-gray-600">$29/month • Billed monthly</p>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Next billing date</p>
+                      <p className="font-semibold">January 15, 2025</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Payment method</p>
+                      <p className="font-semibold">•••• 4242</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3 pt-4">
+                    <Button size="sm">Manage Billing</Button>
+                    <Button variant="outline" size="sm">Update Payment</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>
+                  Your latest account activities
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className={`w-2 h-2 rounded-full mt-2 ${
+                          activity.status === 'success' ? 'bg-green-500' :
+                          activity.status === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+                        }`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {activity.action}
+                        </p>
+                        <p className="text-xs text-gray-500">{activity.date}</p>
+                      </div>
+                      <Badge variant="outline" className={getStatusColor(activity.status)}>
+                        {activity.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Additional Quick Actions */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>
+                Frequently used features and settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Button variant="outline" className="h-12">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Update Billing
+                </Button>
+                <Button variant="outline" className="h-12">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Account Settings
+                </Button>
+                <Button variant="outline" className="h-12">
+                  <Activity className="h-4 w-4 mr-2" />
+                  View Usage
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
