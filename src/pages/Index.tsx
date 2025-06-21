@@ -122,9 +122,7 @@ const Index = () => {
               The modern platform for teams who want to build, ship, and scale their SaaS applications faster than ever before.
             </p>
             
-            <p className="text-lg text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto">
-              Join thousands of developers who've already launched successful products with our battle-tested boilerplate.
-            </p>
+            <p className="text-lg text-slate-500 dark:text-slate-400 mb-12 max-w-2xl mx-auto">Join other devs who are saving days and weeks of unnecessary boilerplate creation and are shipping on DAY ONE.</p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-10 py-4 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group" onClick={() => navigate('/auth?tab=signup')}>
