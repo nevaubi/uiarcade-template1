@@ -55,12 +55,23 @@ const PricingSection = () => {
     }
 
     try {
+      console.log('PricingSection: Starting subscription for plan:', plan.name);
       const priceId = isAnnual ? plan.annualPriceId : plan.monthlyPriceId;
+      console.log('PricingSection: Using price ID:', priceId);
+      
       await createCheckout(priceId);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('PricingSection: Checkout error:', error);
+      
+      // More detailed error message for mobile users
+      const errorMessage = error.message || 'Failed to create checkout session. Please try again.';
+      const isMobileError = /mobile|android|iphone|ipad/i.test(navigator.userAgent);
+      
       toast({
-        title: "Error",
-        description: "Failed to create checkout session. Please try again.",
+        title: "Payment Error",
+        description: isMobileError 
+          ? `${errorMessage} If you're on mobile, please ensure you have a stable internet connection and try again.`
+          : errorMessage,
         variant: "destructive",
       });
     }
