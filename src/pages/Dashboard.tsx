@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
 import { 
   LayoutDashboard, 
   CreditCard, 
@@ -17,17 +19,66 @@ import {
   Calendar,
   Activity,
   TrendingUp,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { toast } = useToast();
+  const { 
+    subscribed, 
+    subscription_tier, 
+    subscription_end, 
+    loading: subscriptionLoading,
+    checkSubscription,
+    openCustomerPortal 
+  } = useSubscription();
+
+  useEffect(() => {
+    // Handle success/cancel from Stripe checkout
+    if (searchParams.get('success')) {
+      toast({
+        title: "Payment successful!",
+        description: "Your subscription has been activated.",
+      });
+      // Refresh subscription status after successful payment
+      setTimeout(() => {
+        checkSubscription();
+      }, 2000);
+    }
+    if (searchParams.get('canceled')) {
+      toast({
+        title: "Payment canceled",
+        description: "You can try again anytime.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, toast, checkSubscription]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleManageBilling = async () => {
+    if (!subscribed) {
+      navigate('/pricing');
+      return;
+    }
+
+    try {
+      await openCustomerPortal();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to open billing portal. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const sidebarItems = [
@@ -36,18 +87,34 @@ const Dashboard = () => {
     { icon: Settings, label: 'Settings' },
   ];
 
+  const getSubscriptionStatus = () => {
+    if (subscriptionLoading) return 'Loading...';
+    if (!subscribed) return 'No subscription';
+    return `${subscription_tier} Plan`;
+  };
+
+  const getSubscriptionColor = () => {
+    if (!subscribed) return 'text-gray-600';
+    return 'text-green-600';
+  };
+
+  const getBillingDate = () => {
+    if (!subscription_end) return 'N/A';
+    return new Date(subscription_end).toLocaleDateString();
+  };
+
   const stats = [
     {
       title: 'Current Plan',
-      value: 'Pro Plan',
-      description: 'Active subscription',
+      value: getSubscriptionStatus(),
+      description: subscribed ? 'Active subscription' : 'No active plan',
       icon: TrendingUp,
-      color: 'text-green-600'
+      color: getSubscriptionColor()
     },
     {
       title: 'Next Billing',
-      value: 'Jan 15, 2025',
-      description: '20 days remaining',
+      value: getBillingDate(),
+      description: subscribed ? 'Billing date' : 'No billing scheduled',
       icon: Calendar,
       color: 'text-blue-600'
     },
@@ -68,10 +135,9 @@ const Dashboard = () => {
   ];
 
   const recentActivity = [
-    { action: 'Payment processed', date: 'Dec 15, 2024', status: 'success' },
-    { action: 'Plan upgraded to Pro', date: 'Dec 10, 2024', status: 'info' },
+    { action: subscribed ? 'Subscription active' : 'No subscription', date: new Date().toLocaleDateString(), status: subscribed ? 'success' : 'info' },
     { action: 'Profile updated', date: 'Dec 8, 2024', status: 'info' },
-    { action: 'API key regenerated', date: 'Dec 5, 2024', status: 'warning' },
+    { action: 'Account created', date: 'Dec 5, 2024', status: 'success' },
   ];
 
   const getInitials = (email: string) => {
@@ -129,7 +195,7 @@ const Dashboard = () => {
                 {user?.email || 'User'}
               </p>
               <p className="text-xs text-gray-500">
-                Pro Member
+                {subscribed ? `${subscription_tier} Member` : 'Free User'}
               </p>
             </div>
           </div>
@@ -184,8 +250,17 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                Pro Plan Active
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={checkSubscription}
+                disabled={subscriptionLoading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${subscriptionLoading ? 'animate-spin' : ''}`} />
+                Refresh Status
+              </Button>
+              <Badge variant="outline" className={subscribed ? "text-green-600 border-green-600" : "text-gray-600 border-gray-600"}>
+                {getSubscriptionStatus()}
               </Badge>
             </div>
           </div>
@@ -233,30 +308,38 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+                  <div className={`flex items-center justify-between p-4 rounded-lg ${
+                    subscribed 
+                      ? 'bg-gradient-to-r from-purple-50 to-blue-50' 
+                      : 'bg-gray-50'
+                  }`}>
                     <div>
-                      <h4 className="font-semibold text-gray-900">Pro Plan</h4>
-                      <p className="text-sm text-gray-600">$29/month • Billed monthly</p>
+                      <h4 className="font-semibold text-gray-900">
+                        {subscribed ? `${subscription_tier} Plan` : 'No Active Plan'}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {subscribed 
+                          ? `Next billing: ${getBillingDate()}` 
+                          : 'Choose a plan to get started'
+                        }
+                      </p>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                    <Badge className={subscribed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                      {subscribed ? 'Active' : 'Inactive'}
+                    </Badge>
                   </div>
                   
                   <Separator />
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Next billing date</p>
-                      <p className="font-semibold">January 15, 2025</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Payment method</p>
-                      <p className="font-semibold">•••• 4242</p>
-                    </div>
-                  </div>
-                  
                   <div className="flex space-x-3 pt-4">
-                    <Button size="sm">Manage Billing</Button>
-                    <Button variant="outline" size="sm">Update Payment</Button>
+                    <Button onClick={handleManageBilling}>
+                      {subscribed ? 'Manage Billing' : 'Choose Plan'}
+                    </Button>
+                    {subscribed && (
+                      <Button variant="outline" onClick={() => navigate('/pricing')}>
+                        Change Plan
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -306,9 +389,9 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-12">
+                <Button variant="outline" className="h-12" onClick={handleManageBilling}>
                   <CreditCard className="h-4 w-4 mr-2" />
-                  Update Billing
+                  {subscribed ? 'Manage Billing' : 'Subscribe'}
                 </Button>
                 <Button variant="outline" className="h-12">
                   <Settings className="h-4 w-4 mr-2" />
