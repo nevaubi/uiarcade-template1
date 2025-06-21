@@ -3,7 +3,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -34,24 +33,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Redirect to dashboard on successful sign in
+        // Handle successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
-          // Small delay to ensure state is updated
+          console.log('User signed in, redirecting to dashboard...');
+          // Use a small delay to ensure state is properly updated
           setTimeout(() => {
-            if (window.location.pathname === '/auth') {
+            if (window.location.pathname === '/auth' || window.location.pathname === '/') {
               window.location.href = '/dashboard';
             }
           }, 100);
+        }
+
+        // Handle sign out
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
+          if (window.location.pathname === '/dashboard') {
+            window.location.href = '/';
+          }
         }
       }
     );
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -107,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
+      // The redirect will be handled by the onAuthStateChange listener
     }
 
     return { error };
@@ -125,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
+      // The redirect will be handled by the onAuthStateChange listener
     }
   };
 
