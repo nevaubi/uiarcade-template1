@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import AuthButton from '@/components/AuthButton';
 
 const Index = () => {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -79,9 +79,7 @@ const Index = () => {
                 <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
                   Pricing
                 </a>
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                  Get Started
-                </Button>
+                <AuthButton />
               </div>
             </div>
 
@@ -109,9 +107,7 @@ const Index = () => {
                 Pricing
               </a>
               <div className="px-3 py-2">
-                <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                  Get Started
-                </Button>
+                <AuthButton />
               </div>
             </div>
           </div>
