@@ -140,7 +140,7 @@ const Index = () => {
             {/* Social Proof Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">10k+</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Tons</div>
                 <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">Active Users</div>
               </div>
               <div className="text-center">
