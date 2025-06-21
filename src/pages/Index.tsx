@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
+import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
+import FAQSection from '@/components/FAQSection';
+
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -12,60 +14,37 @@ const Index = () => {
   // Smooth scroll animation hook
   const useScrollAnimation = () => {
     useEffect(() => {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in');
-          }
-        });
-      }, {
-        threshold: 0.1
-      });
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('animate-fade-in');
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
       const elements = document.querySelectorAll('.scroll-animate');
-      elements.forEach(el => observer.observe(el));
+      elements.forEach((el) => observer.observe(el));
+
       return () => observer.disconnect();
     }, []);
   };
+
   useScrollAnimation();
-  return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse" style={{
-        animationDelay: '1s'
-      }}></div>
-        <div className="absolute bottom-20 left-1/4 w-64 h-64 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl animate-pulse" style={{
-        animationDelay: '2s'
-      }}></div>
-        
-        {/* Floating geometric shapes */}
-        <div className="absolute top-1/4 left-1/3 w-8 h-8 border border-purple-300/20 rotate-45 animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-6 h-6 bg-blue-400/10 rounded-full animate-float" style={{
-        animationDelay: '3s'
-      }}></div>
-        <div className="absolute top-1/2 left-1/6 w-4 h-4 bg-purple-400/10 rotate-12 animate-float" style={{
-        animationDelay: '1.5s'
-      }}></div>
-      </div>
 
-      {/* Dot Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{
-      backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)',
-      backgroundSize: '24px 24px'
-    }}></div>
-
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 z-50 shadow-sm">
-        {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <button onClick={() => navigate('/')} className="cursor-pointer hover:opacity-80 transition-opacity">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    Template1
-                  </h1>
-                </button>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Template1
+                </h1>
               </div>
             </div>
             
@@ -78,13 +57,20 @@ const Index = () => {
                 <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
                   Pricing
                 </a>
+                <a href="#faq" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                  FAQ
+                </a>
                 <AuthButton />
               </div>
             </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </div>
@@ -92,7 +78,8 @@ const Index = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+        {isMenuOpen && (
+          <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <a href="#features" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
                 Features
@@ -100,168 +87,166 @@ const Index = () => {
               <a href="#pricing" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
                 Pricing
               </a>
+              <a href="#faq" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                FAQ
+              </a>
               <div className="px-3 py-2">
                 <AuthButton />
               </div>
             </div>
-          </div>}
+          </div>
+        )}
       </nav>
 
-      {/* Hero Section - Enhanced for large screens */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="scroll-animate opacity-0 transform translate-y-8">
-            {/* Trust Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border border-purple-200 dark:border-purple-700/50 mb-8 xl:mb-10 shadow-sm hover:shadow-md transition-all duration-300">
-              <Sparkles className="h-4 w-4 xl:h-5 xl:w-5 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm xl:text-base font-medium text-purple-700 dark:text-purple-300">
-                Saving you weeks of development time
-              </span>
+          <h1 className="text-4xl sm:text-6xl font-bold text-slate-900 dark:text-white mb-6 scroll-animate opacity-0">
+            Build Your SaaS
+            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Faster</span>
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto scroll-animate opacity-0">
+            The modern SaaS boilerplate with authentication, payments, and a beautiful UI. 
+            Start shipping in minutes, not months.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 scroll-animate opacity-0">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => navigate('/auth')}
+            >
+              Get Started <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              View Features
+            </Button>
+          </div>
+          
+          {/* Trust Indicators */}
+          <div className="flex items-center justify-center space-x-8 text-slate-600 dark:text-slate-400 scroll-animate opacity-0">
+            <div className="flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              <span>1000+ Developers</span>
             </div>
-
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl 2xl:text-9xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float xl:text-7xl">
-              Build Amazing
-              <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent relative">
-                SaaS Products
-                {/* Subtle glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 blur-2xl -z-10"></div>
-              </span>
-            </h1>
-            
-            <p className="text-xl sm:text-2xl xl:text-3xl text-slate-600 dark:text-slate-300 mb-4 xl:mb-6 max-w-4xl xl:max-w-5xl mx-auto leading-relaxed">Build, ship, and scale FASTER than ever before</p>
-            
-            <p className="text-lg xl:text-xl text-slate-500 dark:text-slate-400 mb-12 xl:mb-16 max-w-2xl xl:max-w-3xl mx-auto">
-              Join other devs who are saving days and weeks of unnecessary boilerplate creation and are shipping on DAY ONE.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-6 xl:gap-8 justify-center items-center mb-16 xl:mb-20">
-              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group pulse-glow" onClick={() => navigate('/auth?tab=signup')}>
-                {/* Button glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"></div>
-                <span className="relative z-10">Start Free Trial</span>
-                <ArrowRight className="ml-3 h-5 w-5 xl:h-6 xl:w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-              </Button>
-              
-              <Button variant="outline" size="lg" className="text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 border-2 border-slate-300 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-300 backdrop-blur-sm glass-morph">
-                Watch Demo
-              </Button>
+            <div className="flex items-center">
+              <Star className="h-5 w-5 mr-2 text-yellow-500" />
+              <span>4.9/5 Rating</span>
             </div>
-
-            {/* Enhanced Social Proof Stats */}
-            <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 max-w-2xl xl:max-w-4xl mx-auto">
-              <div className="text-center group">
-                <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                  Tons
-                </div>
-                <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
-              </div>
-              <div className="text-center group">
-                <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                  99.9%
-                </div>
-                <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
-              </div>
-              <div className="text-center group">
-                <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                  24/7
-                </div>
-                <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Support</div>
-              </div>
+            <div className="flex items-center">
+              <Shield className="h-5 w-5 mr-2" />
+              <span>Secure by Default</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="pt-16 pb-24 px-4 sm:px-6 lg:px-8 relative">
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20 scroll-animate opacity-0 transform translate-y-8">
-            <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-              Everything you need to succeed
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Everything You Need to Launch
             </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Powerful features designed to help you build and scale your SaaS business with confidence and speed.
+            <p className="text-xl text-slate-600 dark:text-slate-300">
+              Stop reinventing the wheel. Start with a solid foundation.
             </p>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[{
-            icon: Zap,
-            title: 'Lightning Fast',
-            description: 'Built for speed with modern technologies and optimized performance.',
-            gradient: 'from-yellow-400 to-orange-500'
-          }, {
-            icon: Shield,
-            title: 'Enterprise Security',
-            description: 'Bank-level security with end-to-end encryption and compliance.',
-            gradient: 'from-green-400 to-emerald-500'
-          }, {
-            icon: Users,
-            title: 'Team Collaboration',
-            description: 'Work together seamlessly with real-time collaboration tools.',
-            gradient: 'from-blue-400 to-cyan-500'
-          }, {
-            icon: Star,
-            title: 'Complete Stripe Integration',
-            description: 'Deep insights into your business with comprehensive analytics.',
-            gradient: 'from-purple-400 to-pink-500'
-          }, {
-            icon: Check,
-            title: 'Easy Integration',
-            description: 'Connect with your favorite tools through our robust API.',
-            gradient: 'from-indigo-400 to-purple-500'
-          }, {
-            icon: ArrowRight,
-            title: 'Scalable Infrastructure',
-            description: 'Grow from startup to enterprise with our scalable platform.',
-            gradient: 'from-rose-400 to-red-500'
-          }].map((feature, index) => <Card key={index} className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden border-0 glass-morph backdrop-blur-sm" style={{
-            animationDelay: `${index * 150}ms`
-          }}>
-                {/* Card border gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute inset-[1px] bg-white/90 dark:bg-slate-800/90 rounded-lg backdrop-blur-sm"></div>
-                
-                <CardHeader className="relative z-10">
-                  <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${feature.gradient} p-3 mb-4 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
-                    <feature.icon className="h-10 w-10 text-white" />
-                  </div>
-                  <CardTitle className="text-xl font-semibold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                    {feature.title}
-                  </CardTitle>
+            {[
+              {
+                title: 'Authentication',
+                description: 'Secure user authentication with Supabase. Email/password and social logins ready.',
+                icon: Shield,
+              },
+              {
+                title: 'Payments',
+                description: 'Stripe integration with subscriptions, one-time payments, and customer portal.',
+                icon: CreditCard,
+              },
+              {
+                title: 'Database',
+                description: 'PostgreSQL database with Supabase. Real-time subscriptions and row-level security.',
+                icon: Database,
+              },
+              {
+                title: 'Modern UI',
+                description: 'Beautiful components with Tailwind CSS and shadcn/ui. Dark mode included.',
+                icon: Palette,
+              },
+              {
+                title: 'Type Safety',
+                description: 'Full TypeScript support with proper types for all components and functions.',
+                icon: Code,
+              },
+              {
+                title: 'Fast Performance',
+                description: 'Optimized build with Vite. Lightning-fast HMR and optimized production builds.',
+                icon: Zap,
+              },
+            ].map((feature, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow scroll-animate opacity-0">
+                <CardHeader>
+                  <feature.icon className="h-12 w-12 text-purple-600 dark:text-purple-400 mb-4" />
+                  <CardTitle>{feature.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="relative z-10">
-                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{feature.description}</p>
+                <CardContent>
+                  <p className="text-slate-600 dark:text-slate-300">{feature.description}</p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <div id="pricing" className="relative">
-        <PricingSection />
-      </div>
+      <PricingSection />
+      
+      {/* FAQ Section */}
+      <FAQSection />
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-600 to-blue-600">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Ready to Build Your SaaS?
+          </h2>
+          <p className="text-xl text-purple-100 mb-8">
+            Join thousands of developers who are shipping faster with our boilerplate.
+          </p>
+          <Button 
+            size="lg" 
+            variant="secondary"
+            onClick={() => navigate('/auth')}
+          >
+            Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 dark:bg-slate-950 relative">
+      <footer className="bg-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
+            <div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
                 Template1
               </h3>
-              <p className="text-slate-400 mb-4 max-w-md">
-                The modern platform for teams who want to build, ship, and scale their SaaS applications faster than ever before.
+              <p className="text-slate-400">
+                The modern SaaS boilerplate for builders who ship.
               </p>
             </div>
             
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">API Docs</a></li>
+                <li><a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#faq" className="text-slate-400 hover:text-white transition-colors">FAQ</a></li>
               </ul>
             </div>
             
@@ -273,13 +258,29 @@ const Index = () => {
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy</a></li>
               </ul>
             </div>
+            
+            <div>
+              <h4 className="text-white font-semibold mb-4">Connect</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Twitter</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">GitHub</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Discord</a></li>
+              </ul>
+            </div>
           </div>
           
           <div className="border-t border-slate-800 mt-8 pt-8 text-center">
-            <p className="text-slate-400">© 2025 Template1. All rights reserved.</p>
+            <p className="text-slate-400">
+              © 2024 Template1. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
+// Add missing icon imports at the top
+import { CreditCard, Database, Palette, Code } from 'lucide-react';
+
 export default Index;
