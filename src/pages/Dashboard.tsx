@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -128,7 +129,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen w-full max-w-full bg-gray-50 flex overflow-x-hidden">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -208,24 +209,24 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-0">
+      <div className="flex-1 w-full min-w-0 lg:ml-0">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
-          <div className="flex items-center justify-between h-16 px-6">
-            <div className="flex items-center">
+          <div className="flex items-center justify-between h-16 px-4 lg:px-6">
+            <div className="flex items-center min-w-0">
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden mr-4"
+                className="lg:hidden mr-2"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-6 w-6" />
               </Button>
-              <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">Dashboard</h2>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
               {subscriptionError && (
-                <div className="text-sm text-red-600 mr-2">
+                <div className="text-xs lg:text-sm text-red-600 mr-1 lg:mr-2 hidden sm:block">
                   {subscriptionError}
                 </div>
               )}
@@ -234,31 +235,33 @@ const Dashboard = () => {
                 size="sm"
                 onClick={() => checkSubscription(true)}
                 disabled={subscriptionLoading}
+                className="hidden sm:flex"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${subscriptionLoading ? 'animate-spin' : ''}`} />
                 Refresh Status
               </Button>
               <Badge variant="outline" className={subscribed ? "text-green-600 border-green-600" : subscriptionError ? "text-red-600 border-red-600" : "text-gray-600 border-gray-600"}>
-                {getSubscriptionStatus()}
+                <span className="hidden sm:inline">{getSubscriptionStatus()}</span>
+                <span className="sm:hidden">{subscribed ? 'Active' : 'Inactive'}</span>
               </Badge>
             </div>
           </div>
         </header>
 
         {/* Dashboard Content */}
-        <main className="p-6">
+        <main className="p-4 lg:p-6 w-full">
           {/* Welcome Section */}
-          <div className="mb-8">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="mb-6 lg:mb-8">
+            <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
               Welcome back, {user?.email?.split('@')[0] || 'User'}!
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm lg:text-base text-gray-600">
               Here's what's happening with your account today.
             </p>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
             {stats.map((stat, index) => (
               <Card key={index}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -268,7 +271,7 @@ const Dashboard = () => {
                   <stat.icon className={`h-4 w-4 ${stat.color}`} />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-900 break-words">{stat.value}</div>
                   <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
                 </CardContent>
               </Card>
@@ -276,7 +279,7 @@ const Dashboard = () => {
           </div>
 
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-4 lg:gap-6">
             {/* Subscription Status */}
             <Card>
               <CardHeader>
@@ -292,28 +295,29 @@ const Dashboard = () => {
                       ? 'bg-gradient-to-r from-purple-50 to-blue-50' 
                       : 'bg-gray-50'
                   }`}>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-semibold text-gray-900 truncate">
                         {subscribed ? `${subscription_tier} Plan` : 'No Active Plan'}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 break-words">
                         {subscribed 
                           ? `Next billing: ${getBillingDate()}` 
                           : 'Choose a plan to get started'
                         }
                       </p>
                     </div>
-                    <Badge className={subscribed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                    <Badge className={`${subscribed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"} flex-shrink-0 ml-2`}>
                       {subscribed ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                   
                   <Separator />
                   
-                  <div className="flex space-x-3 pt-4">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
                     <Button 
                       onClick={handleManageBilling}
                       disabled={portalLoading}
+                      className="w-full sm:w-auto"
                     >
                       {portalLoading ? (
                         <>
@@ -325,7 +329,7 @@ const Dashboard = () => {
                       )}
                     </Button>
                     {subscribed && (
-                      <Button variant="outline" onClick={() => navigate('/pricing')}>
+                      <Button variant="outline" onClick={() => navigate('/pricing')} className="w-full sm:w-auto">
                         Change Plan
                       </Button>
                     )}
@@ -336,7 +340,7 @@ const Dashboard = () => {
           </div>
 
           {/* Additional Quick Actions */}
-          <Card className="mt-6">
+          <Card className="mt-4 lg:mt-6">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>
