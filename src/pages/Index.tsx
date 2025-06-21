@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
-
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -120,7 +119,7 @@ const Index = () => {
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl 2xl:text-9xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float xl:text-7xl">
               Build Amazing
               <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent relative">
                 SaaS Products
@@ -283,5 +282,4 @@ const Index = () => {
       </footer>
     </div>;
 };
-
 export default Index;
