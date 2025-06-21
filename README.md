@@ -18,18 +18,19 @@ A complete, production-ready SaaS boilerplate that saves you weeks of developmen
 - Protected routes and session management
 - User profile management
 - Secure authentication flow with proper error handling
+- Google Auth UI (optional integration, can include other auth methods as well)
 
 ### 💳 Stripe Payment Integration
 - Subscription management (Basic, Pro, Enterprise tiers)
-- One-time payments support
-- Customer portal for subscription management
-- Real-time subscription status updates
+- Monthly & Annual Plans
+- End-to-end Customer portal for subscription management
+- Real-time subscription status updates (cancels, upgrades, payment method changes, etc)
 - No webhooks required - simplified implementation
+- Input your personal API keys/price IDs into the fully production ready template
 
 ### 🎨 Modern UI/UX
-- Beautiful, responsive design with Tailwind CSS
+- Beautiful, screen responsive design with Tailwind CSS
 - shadcn/ui component library
-- Dark mode support ready
 - Animated landing page with premium feel
 - Mobile-first responsive design
 
@@ -38,6 +39,8 @@ A complete, production-ready SaaS boilerplate that saves you weeks of developmen
 - Row-Level Security (RLS) policies
 - Real-time subscriptions
 - Edge functions for secure operations
+- Schema included
+- Subscription and profile management already integrated
 
 ### 🚀 Developer Experience
 - TypeScript for type safety
@@ -63,6 +66,7 @@ A complete, production-ready SaaS boilerplate that saves you weeks of developmen
 - A Supabase account and project
 - A Stripe account
 - Git
+- Lovable account (not required)
 
 ### 1. Clone and Install
 
@@ -94,14 +98,6 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 2. Add your Stripe Secret Key to Supabase Edge Function secrets
 3. Configure your pricing tiers in the PricingSection component
 4. Test with Stripe's test mode before going live
-
-### 5. Run the Development Server
-
-```bash
-npm run dev
-```
-
-Visit `http://localhost:5173` to see your SaaS boilerplate in action!
 
 ## ⚙️ Configuration
 
@@ -148,7 +144,7 @@ Configure these secrets in your Supabase project settings:
 
 ### Stripe Webhooks (Optional)
 
-While not required for basic functionality, you can set up webhooks for advanced payment handling:
+While not required for basic functionality, you can set up webhooks for advanced payment handling (template comes fully webhook integrated and functional):
 
 - Endpoint: `https://your-project.supabase.co/functions/v1/stripe-webhook`
 - Events: `invoice.payment_succeeded`, `customer.subscription.deleted`
@@ -230,10 +226,6 @@ The project includes a `vercel.json` configuration for optimal deployment.
 - Check the browser console for error messages
 - Review Supabase Edge Function logs
 - Verify your environment variables are set correctly
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
