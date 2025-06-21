@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -11,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 const PricingSection = () => {
   const [isAnnual, setIsAnnual] = useState(false);
-  const { createCheckout, subscribed, subscription_tier } = useSubscription();
+  const { createCheckout, subscribed, subscription_tier, checkoutLoading } = useSubscription();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -164,9 +163,16 @@ const PricingSection = () => {
                         : 'bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
                     }`}
                     onClick={() => handleSubscribe(plan)}
-                    disabled={isCurrentPlan(plan.name)}
+                    disabled={isCurrentPlan(plan.name) || checkoutLoading}
                   >
-                    {isCurrentPlan(plan.name) ? 'Current Plan' : 'Get Started'}
+                    {checkoutLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      isCurrentPlan(plan.name) ? 'Current Plan' : 'Get Started'
+                    )}
                   </Button>
                 </div>
               </CardContent>
