@@ -42,9 +42,14 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Template1
-                </h1>
+                <button
+                  onClick={() => navigate('/')}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    Template1
+                  </h1>
+                </button>
               </div>
             </div>
             
