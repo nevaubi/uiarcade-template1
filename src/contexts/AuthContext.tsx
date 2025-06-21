@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscription } from '@/hooks/useSubscription';
 
 interface PostAuthCallback {
   plan: string;
@@ -123,13 +122,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
+      // FIXED: Add mobile detection and handle appropriately
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // On mobile, redirect in same tab to avoid popup blocking
+        console.log('Mobile detected: redirecting in same tab');
+        window.location.href = data.url;
+      } else {
+        // On desktop, open in new tab
+        console.log('Desktop detected: opening in new tab');
+        window.open(data.url, '_blank');
+      }
       
       toast({
-        title: "Checkout opened",
-        description: "Complete your subscription in the new tab.",
+        title: isMobile ? "Redirecting to checkout" : "Checkout opened",
+        description: isMobile ? "Please complete your subscription." : "Complete your subscription in the new tab.",
       });
+      
     } catch (error) {
       console.error('Post-auth checkout error:', error);
       toast({
@@ -222,3 +232,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export default AuthProvider;
