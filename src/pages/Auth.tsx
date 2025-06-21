@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,9 +19,13 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Get plan parameters from URL
+  // Get parameters from URL
   const planParam = searchParams.get('plan');
   const billingParam = searchParams.get('billing');
+  const tabParam = searchParams.get('tab');
+
+  // Set default tab based on URL parameter
+  const defaultTab = tabParam === 'signup' ? 'signup' : 'signin';
 
   useEffect(() => {
     if (user) {
@@ -146,7 +149,7 @@ const Auth = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="signin" onValueChange={resetForm}>
+              <Tabs defaultValue={defaultTab} onValueChange={resetForm}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>

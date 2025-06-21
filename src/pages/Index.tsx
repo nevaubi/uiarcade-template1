@@ -109,7 +109,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-8 py-3"
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate('/auth?tab=signup')}
               >
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
