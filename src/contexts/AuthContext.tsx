@@ -3,6 +3,12 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
+
+interface PostAuthCallback {
+  plan: string;
+  billing: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +17,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
+  setPostAuthCallback: (callback: PostAuthCallback | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,12 +46,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle successful sign in
+        // Handle successful sign in with post-auth callback
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, redirecting to dashboard...');
+          console.log('User signed in, checking for post-auth callback...');
+          
           // Use a small delay to ensure state is properly updated
           setTimeout(() => {
-            if (window.location.pathname === '/auth' || window.location.pathname === '/') {
+            if (postAuthCallback) {
+              console.log('Executing post-auth callback:', postAuthCallback);
+              handlePostAuthCheckout(postAuthCallback);
+              setPostAuthCallback(null); // Clear the callback after use
+            } else if (window.location.pathname === '/auth' || window.location.pathname === '/') {
               window.location.href = '/dashboard';
             }
           }, 100);
@@ -68,7 +81,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [postAuthCallback]);
+
+  const handlePostAuthCheckout = async (callback: PostAuthCallback) => {
+    try {
+      console.log('Starting post-auth checkout for:', callback);
+      
+      // Map plan names to pricing data
+      const pricingPlans = {
+        starter: {
+          monthlyPriceId: 'price_1RcNqWDBIslKIY5sRPrUZSwO',
+          annualPriceId: 'price_1RcNtSDBIslKIY5sbtJZKhIi',
+        },
+        pro: {
+          monthlyPriceId: 'price_1RcNryDBIslKIY5sJpOan8AV',
+          annualPriceId: 'price_1RcNubDBIslKIY5sZMM2yYNG',
+        },
+        enterprise: {
+          monthlyPriceId: 'price_1RcNsfDBIslKIY5sIVc446gj',
+          annualPriceId: 'price_1RcNvSDBIslKIY5s2eB93M48',
+        }
+      };
+
+      const plan = pricingPlans[callback.plan as keyof typeof pricingPlans];
+      if (!plan) {
+        throw new Error(`Invalid plan: ${callback.plan}`);
+      }
+
+      const priceId = callback.billing === 'annual' ? plan.annualPriceId : plan.monthlyPriceId;
+      
+      console.log('Creating checkout with priceId:', priceId);
+      
+      // Use the checkout function from subscription hook
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+      
+      toast({
+        title: "Checkout opened",
+        description: "Complete your subscription in the new tab.",
+      });
+    } catch (error) {
+      console.error('Post-auth checkout error:', error);
+      toast({
+        title: "Checkout Error",
+        description: "Failed to start checkout. Please try again from the pricing page.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
@@ -147,6 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut,
     loading,
+    setPostAuthCallback,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

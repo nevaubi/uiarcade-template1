@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,14 +16,29 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { signUp, signIn, user } = useAuth();
+  const { signUp, signIn, user, setPostAuthCallback } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Get plan parameters from URL
+  const planParam = searchParams.get('plan');
+  const billingParam = searchParams.get('billing');
 
   useEffect(() => {
     if (user) {
       navigate('/');
     }
   }, [user, navigate]);
+
+  // Set up post-auth callback if plan parameters exist
+  useEffect(() => {
+    if (planParam && billingParam && setPostAuthCallback) {
+      setPostAuthCallback({
+        plan: planParam,
+        billing: billingParam
+      });
+    }
+  }, [planParam, billingParam, setPostAuthCallback]);
 
   const handleSubmit = async (e: React.FormEvent, isSignUp: boolean) => {
     e.preventDefault();
@@ -123,7 +139,10 @@ const Auth = () => {
                 Template1
               </CardTitle>
               <CardDescription>
-                Welcome! Sign in to your account or create a new one.
+                {planParam ? 
+                  `Sign in to continue with your ${planParam} plan selection.` :
+                  'Welcome! Sign in to your account or create a new one.'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>

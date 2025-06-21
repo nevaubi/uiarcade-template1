@@ -7,12 +7,14 @@ import { Switch } from '@/components/ui/switch';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const PricingSection = () => {
   const [isAnnual, setIsAnnual] = useState(false);
   const { createCheckout, subscribed, subscription_tier } = useSubscription();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const pricingPlans = [
     {
@@ -46,11 +48,10 @@ const PricingSection = () => {
 
   const handleSubscribe = async (plan: any) => {
     if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to subscribe to a plan.",
-        variant: "destructive",
-      });
+      // Navigate to auth with plan parameters
+      const planParam = plan.name.toLowerCase();
+      const billingParam = isAnnual ? 'annual' : 'monthly';
+      navigate(`/auth?plan=${planParam}&billing=${billingParam}`);
       return;
     }
 
