@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ import AuthButton from '@/components/AuthButton';
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { signUp, signIn, user } = useAuth();
@@ -31,7 +29,7 @@ const Auth = () => {
     setLoading(true);
 
     if (isSignUp) {
-      await signUp(email, password, fullName);
+      await signUp(email, password, '');
     } else {
       await signIn(email, password);
     }
@@ -47,7 +45,6 @@ const Auth = () => {
   const resetForm = () => {
     setEmail('');
     setPassword('');
-    setFullName('');
   };
 
   return (
@@ -174,18 +171,6 @@ const Auth = () => {
                 
                 <TabsContent value="signup" className="space-y-4">
                   <form onSubmit={(e) => handleSubmit(e, true)} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-fullname">Full Name</Label>
-                      <Input
-                        id="signup-fullname"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <Input
