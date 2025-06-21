@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
-
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -14,38 +12,29 @@ const Index = () => {
   // Smooth scroll animation hook
   const useScrollAnimation = () => {
     useEffect(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('animate-fade-in');
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
-
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in');
+          }
+        });
+      }, {
+        threshold: 0.1
+      });
       const elements = document.querySelectorAll('.scroll-animate');
-      elements.forEach((el) => observer.observe(el));
-
+      elements.forEach(el => observer.observe(el));
       return () => observer.disconnect();
     }, []);
   };
-
   useScrollAnimation();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <button
-                  onClick={() => navigate('/')}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
-                >
+                <button onClick={() => navigate('/')} className="cursor-pointer hover:opacity-80 transition-opacity">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                     Template1
                   </h1>
@@ -68,11 +57,7 @@ const Index = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </div>
@@ -80,8 +65,7 @@ const Index = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+        {isMenuOpen && <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <a href="#features" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
                 Features
@@ -93,8 +77,7 @@ const Index = () => {
                 <AuthButton />
               </div>
             </div>
-          </div>
-        )}
+          </div>}
       </nav>
 
       {/* Hero Section */}
@@ -111,11 +94,7 @@ const Index = () => {
               The modern platform for teams who want to build, ship, and scale their SaaS applications faster than ever before.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-8 py-3"
-                onClick={() => navigate('/auth?tab=signup')}
-              >
+              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-8 py-3" onClick={() => navigate('/auth?tab=signup')}>
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -140,43 +119,33 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Zap,
-                title: 'Lightning Fast',
-                description: 'Built for speed with modern technologies and optimized performance.',
-              },
-              {
-                icon: Shield,
-                title: 'Enterprise Security',
-                description: 'Bank-level security with end-to-end encryption and compliance.',
-              },
-              {
-                icon: Users,
-                title: 'Team Collaboration',
-                description: 'Work together seamlessly with real-time collaboration tools.',
-              },
-              {
-                icon: Star,
-                title: 'Analytics & Insights',
-                description: 'Deep insights into your business with comprehensive analytics.',
-              },
-              {
-                icon: Check,
-                title: 'Easy Integration',
-                description: 'Connect with your favorite tools through our robust API.',
-              },
-              {
-                icon: ArrowRight,
-                title: 'Scalable Infrastructure',
-                description: 'Grow from startup to enterprise with our scalable platform.',
-              },
-            ].map((feature, index) => (
-              <Card
-                key={index}
-                className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-lg transition-all duration-300 group"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+            {[{
+            icon: Zap,
+            title: 'Lightning Fast',
+            description: 'Built for speed with modern technologies and optimized performance.'
+          }, {
+            icon: Shield,
+            title: 'Enterprise Security',
+            description: 'Bank-level security with end-to-end encryption and compliance.'
+          }, {
+            icon: Users,
+            title: 'Team Collaboration',
+            description: 'Work together seamlessly with real-time collaboration tools.'
+          }, {
+            icon: Star,
+            title: 'Analytics & Insights',
+            description: 'Deep insights into your business with comprehensive analytics.'
+          }, {
+            icon: Check,
+            title: 'Easy Integration',
+            description: 'Connect with your favorite tools through our robust API.'
+          }, {
+            icon: ArrowRight,
+            title: 'Scalable Infrastructure',
+            description: 'Grow from startup to enterprise with our scalable platform.'
+          }].map((feature, index) => <Card key={index} className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-lg transition-all duration-300 group" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                 <CardHeader>
                   <feature.icon className="h-12 w-12 text-purple-600 group-hover:text-blue-600 transition-colors mb-4" />
                   <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
@@ -184,8 +153,7 @@ const Index = () => {
                 <CardContent>
                   <p className="text-slate-600 dark:text-slate-300">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -228,14 +196,10 @@ const Index = () => {
           </div>
           
           <div className="border-t border-slate-800 mt-8 pt-8 text-center">
-            <p className="text-slate-400">
-              © 2024 Template1. All rights reserved.
-            </p>
+            <p className="text-slate-400">© 2025 Template1. All rights reserved.</p>
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
