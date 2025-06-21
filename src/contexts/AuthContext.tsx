@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             if (postAuthCallback) {
               console.log('Executing post-auth callback:', postAuthCallback);
-              handlePostAuthCheckout(postAuthCallback);
+              handlePostAuthCheckout(postAuthCallback, session); // Pass fresh session
               setPostAuthCallback(null); // Clear the callback after use
             } else if (window.location.pathname === '/auth' || window.location.pathname === '/') {
               window.location.href = '/dashboard';
@@ -83,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, [postAuthCallback]);
 
-  const handlePostAuthCheckout = async (callback: PostAuthCallback) => {
+  const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {
       console.log('Starting post-auth checkout for:', callback);
       
@@ -112,11 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Creating checkout with priceId:', priceId);
       
-      // Use the checkout function from subscription hook
+      // Use the fresh session from authentication callback
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
         headers: {
-          Authorization: `Bearer ${session?.access_token}`,
+          Authorization: `Bearer ${freshSession.access_token}`,
         },
       });
 
