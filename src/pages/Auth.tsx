@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,11 +27,15 @@ const Auth = () => {
   // Set default tab based on URL parameter
   const defaultTab = tabParam === 'signup' ? 'signup' : 'signin';
 
+  // FIXED: Only redirect if no plan parameters exist
   useEffect(() => {
     if (user) {
-      navigate('/');
+      // Don't redirect if we're processing a plan selection
+      if (!planParam && !billingParam) {
+        navigate('/');
+      }
     }
-  }, [user, navigate]);
+  }, [user, navigate, planParam, billingParam]);
 
   // Set up post-auth callback if plan parameters exist
   useEffect(() => {
