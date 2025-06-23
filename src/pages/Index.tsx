@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
-import FAQSection from '@/components/FAQSection';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -245,11 +244,6 @@ const Index = () => {
         <PricingSection />
       </div>
 
-      {/* FAQ Section */}
-      <div id="faq" className="relative">
-        <FAQSection />
-      </div>
-
       {/* Footer */}
       <footer className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 dark:bg-slate-950 relative">
         <div className="max-w-7xl mx-auto">
@@ -289,4 +283,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
