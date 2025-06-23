@@ -150,21 +150,21 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Enhanced Social Proof Stats */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12">
-                <div className="text-center lg:text-left group">
+              {/* Enhanced Social Proof Stats - Now centered on all screen sizes */}
+              <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center">
+                <div className="group">
                   <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                     Tons
                   </div>
                   <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
                 </div>
-                <div className="text-center lg:text-left group">
+                <div className="group">
                   <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                     99.9%
                   </div>
                   <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
                 </div>
-                <div className="text-center lg:text-left group">
+                <div className="group">
                   <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                     24/7
                   </div>
