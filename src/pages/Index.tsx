@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
+import FAQSection from '@/components/FAQSection';
+
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -243,6 +245,11 @@ const Index = () => {
         <PricingSection />
       </div>
 
+      {/* FAQ Section */}
+      <div id="faq" className="relative">
+        <FAQSection />
+      </div>
+
       {/* Footer */}
       <footer className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 dark:bg-slate-950 relative">
         <div className="max-w-7xl mx-auto">
@@ -259,8 +266,8 @@ const Index = () => {
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">API Docs</a></li>
               </ul>
             </div>
@@ -270,7 +277,7 @@ const Index = () => {
               <ul className="space-y-2">
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">About</a></li>
                 <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy</a></li>
+                <li><Link to="/privacy" className="text-slate-400 hover:text-white transition-colors">Privacy</Link></li>
               </ul>
             </div>
           </div>
