@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
 import { 
@@ -19,7 +20,9 @@ import {
   Calendar,
   TrendingUp,
   RefreshCw,
-  Loader2
+  Loader2,
+  File,
+  LayoutGrid
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -27,6 +30,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const { toast } = useToast();
   const { 
     subscribed, 
@@ -47,7 +51,6 @@ const Dashboard = () => {
         title: "Payment successful!",
         description: "Your subscription has been activated.",
       });
-      // Refresh subscription status after successful payment with force refresh
       setTimeout(() => {
         checkSubscription(true);
       }, 2000);
@@ -84,9 +87,9 @@ const Dashboard = () => {
   };
 
   const sidebarItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', active: true },
-    { icon: CreditCard, label: 'Billing' },
-    { icon: Settings, label: 'Settings' },
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
+    { id: 'placeholder1', icon: File, label: 'Placeholder Tab1', active: activeTab === 'placeholder1' },
+    { id: 'placeholder2', icon: LayoutGrid, label: 'Placeholder Tab2', active: activeTab === 'placeholder2' },
   ];
 
   const getSubscriptionStatus = () => {
@@ -127,6 +130,216 @@ const Dashboard = () => {
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase();
   };
+
+  const renderDashboardContent = () => (
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div>
+        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+          Welcome back, {user?.email?.split('@')[0] || 'User'}!
+        </h3>
+        <p className="text-sm lg:text-base text-gray-600">
+          Here's what's happening with your account today.
+        </p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl lg:text-2xl font-bold text-gray-900 break-words">{stat.value}</div>
+              <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Subscription Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription Status</CardTitle>
+          <CardDescription>
+            Your current plan and billing information
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className={`flex items-center justify-between p-4 rounded-lg ${
+              subscribed 
+                ? 'bg-gradient-to-r from-purple-50 to-blue-50' 
+                : 'bg-gray-50'
+            }`}>
+              <div className="min-w-0 flex-1">
+                <h4 className="font-semibold text-gray-900 truncate">
+                  {subscribed ? `${subscription_tier} Plan` : 'No Active Plan'}
+                </h4>
+                <p className="text-sm text-gray-600 break-words">
+                  {subscribed 
+                    ? `Next billing: ${getBillingDate()}` 
+                    : 'Choose a plan to get started'
+                  }
+                </p>
+              </div>
+              <Badge className={`${subscribed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"} flex-shrink-0 ml-2`}>
+                {subscribed ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+            
+            <Separator />
+            
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+              <Button 
+                onClick={handleManageBilling}
+                disabled={portalLoading}
+                className="w-full sm:w-auto"
+              >
+                {portalLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  subscribed ? 'Manage Billing' : 'Choose Plan'
+                )}
+              </Button>
+              {subscribed && (
+                <Button variant="outline" onClick={() => navigate('/pricing')} className="w-full sm:w-auto">
+                  Change Plan
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>
+            Frequently used features and settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button 
+              variant="outline" 
+              className="h-12" 
+              onClick={handleManageBilling}
+              disabled={portalLoading}
+            >
+              {portalLoading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CreditCard className="h-4 w-4 mr-2" />
+              )}
+              {subscribed ? 'Manage Billing' : 'Subscribe'}
+            </Button>
+            <Button variant="outline" className="h-12">
+              <Settings className="h-4 w-4 mr-2" />
+              Account Settings
+            </Button>
+            <Button variant="outline" className="h-12">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              View Usage
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderPlaceholder1Content = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+          Placeholder Tab1
+        </h3>
+        <p className="text-sm lg:text-base text-gray-600">
+          This is a placeholder page for Tab1 functionality.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sample Content</CardTitle>
+          <CardDescription>
+            This is placeholder content for demonstration
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="p-4 border rounded-lg">
+              <h4 className="font-medium mb-2">Feature 1</h4>
+              <p className="text-sm text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <h4 className="font-medium mb-2">Feature 2</h4>
+              <p className="text-sm text-gray-600">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <h4 className="font-medium mb-2">Feature 3</h4>
+              <p className="text-sm text-gray-600">Ut enim ad minim veniam, quis nostrud exercitation.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderPlaceholder2Content = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+          Placeholder Tab2
+        </h3>
+        <p className="text-sm lg:text-base text-gray-600">
+          This is a placeholder page for Tab2 functionality.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuration Options</CardTitle>
+          <CardDescription>
+            Sample configuration settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <h4 className="font-medium">Setting 1</h4>
+                <p className="text-sm text-gray-600">Enable or disable this feature</p>
+              </div>
+              <Button variant="outline" size="sm">Toggle</Button>
+            </div>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <h4 className="font-medium">Setting 2</h4>
+                <p className="text-sm text-gray-600">Configure this option</p>
+              </div>
+              <Button variant="outline" size="sm">Configure</Button>
+            </div>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <h4 className="font-medium">Setting 3</h4>
+                <p className="text-sm text-gray-600">Manage this preference</p>
+              </div>
+              <Button variant="outline" size="sm">Manage</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="min-h-screen w-full max-w-full bg-gray-50 flex overflow-x-hidden">
@@ -180,7 +393,8 @@ const Dashboard = () => {
         <nav className="flex-1 px-4 py-6 space-y-2">
           {sidebarItems.map((item) => (
             <button
-              key={item.label}
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
               className={`
                 w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
                 ${item.active 
@@ -222,7 +436,11 @@ const Dashboard = () => {
               >
                 <Menu className="h-6 w-6" />
               </Button>
-              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">Dashboard</h2>
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
+                {activeTab === 'dashboard' ? 'Dashboard' : 
+                 activeTab === 'placeholder1' ? 'Placeholder Tab1' : 
+                 'Placeholder Tab2'}
+              </h2>
             </div>
             <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
               {subscriptionError && (
@@ -250,129 +468,9 @@ const Dashboard = () => {
 
         {/* Dashboard Content */}
         <main className="p-4 lg:p-6 w-full">
-          {/* Welcome Section */}
-          <div className="mb-6 lg:mb-8">
-            <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
-              Welcome back, {user?.email?.split('@')[0] || 'User'}!
-            </h3>
-            <p className="text-sm lg:text-base text-gray-600">
-              Here's what's happening with your account today.
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-            {stats.map((stat, index) => (
-              <Card key={index}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </CardTitle>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl lg:text-2xl font-bold text-gray-900 break-words">{stat.value}</div>
-                  <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 gap-4 lg:gap-6">
-            {/* Subscription Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Subscription Status</CardTitle>
-                <CardDescription>
-                  Your current plan and billing information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className={`flex items-center justify-between p-4 rounded-lg ${
-                    subscribed 
-                      ? 'bg-gradient-to-r from-purple-50 to-blue-50' 
-                      : 'bg-gray-50'
-                  }`}>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-gray-900 truncate">
-                        {subscribed ? `${subscription_tier} Plan` : 'No Active Plan'}
-                      </h4>
-                      <p className="text-sm text-gray-600 break-words">
-                        {subscribed 
-                          ? `Next billing: ${getBillingDate()}` 
-                          : 'Choose a plan to get started'
-                        }
-                      </p>
-                    </div>
-                    <Badge className={`${subscribed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"} flex-shrink-0 ml-2`}>
-                      {subscribed ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
-                    <Button 
-                      onClick={handleManageBilling}
-                      disabled={portalLoading}
-                      className="w-full sm:w-auto"
-                    >
-                      {portalLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
-                        subscribed ? 'Manage Billing' : 'Choose Plan'
-                      )}
-                    </Button>
-                    {subscribed && (
-                      <Button variant="outline" onClick={() => navigate('/pricing')} className="w-full sm:w-auto">
-                        Change Plan
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Additional Quick Actions */}
-          <Card className="mt-4 lg:mt-6">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>
-                Frequently used features and settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="h-12" 
-                  onClick={handleManageBilling}
-                  disabled={portalLoading}
-                >
-                  {portalLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <CreditCard className="h-4 w-4 mr-2" />
-                  )}
-                  {subscribed ? 'Manage Billing' : 'Subscribe'}
-                </Button>
-                <Button variant="outline" className="h-12">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Account Settings
-                </Button>
-                <Button variant="outline" className="h-12">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  View Usage
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {activeTab === 'dashboard' && renderDashboardContent()}
+          {activeTab === 'placeholder1' && renderPlaceholder1Content()}
+          {activeTab === 'placeholder2' && renderPlaceholder2Content()}
         </main>
       </div>
     </div>
