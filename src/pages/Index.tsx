@@ -139,7 +139,7 @@ const Index = () => {
               <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group pulse-glow" onClick={() => navigate('/auth?tab=signup')}>
                 {/* Button glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"></div>
-                <span className="relative z-10">Start Free Trial</span>
+                <span className="relative z-10">Get Started Free</span>
                 <ArrowRight className="ml-3 h-5 w-5 xl:h-6 xl:w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
               
