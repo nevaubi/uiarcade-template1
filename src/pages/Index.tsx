@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
+import ReviewsSection from '@/components/ReviewsSection';
+import FaqSection from '@/components/FaqSection';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,31 +31,35 @@ const Index = () => {
   };
   useScrollAnimation();
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse" style={{
-        animationDelay: '1s'
-      }}></div>
-        <div className="absolute bottom-20 left-1/4 w-64 h-64 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl animate-pulse" style={{
-        animationDelay: '2s'
-      }}></div>
-        
-        {/* Floating geometric shapes */}
-        <div className="absolute top-1/4 left-1/3 w-8 h-8 border border-purple-300/20 rotate-45 animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-6 h-6 bg-blue-400/10 rounded-full animate-float" style={{
-        animationDelay: '3s'
-      }}></div>
-        <div className="absolute top-1/2 left-1/6 w-4 h-4 bg-purple-400/10 rotate-12 animate-float" style={{
-        animationDelay: '1.5s'
-      }}></div>
+      {/* Background Aurora Effect */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div 
+          className="absolute w-96 h-96 bg-purple-400/20 dark:bg-purple-800/30 rounded-full blur-3xl"
+          style={{ 
+            animation: 'aurora 20s infinite linear',
+            '--start-x': '10vw', '--start-y': '10vh',
+            '--end-x': '70vw', '--end-y': '40vh'
+          } as React.CSSProperties}
+        ></div>
+        <div 
+          className="absolute w-96 h-96 bg-blue-400/20 dark:bg-blue-800/30 rounded-full blur-3xl"
+          style={{ 
+            animation: 'aurora 22s infinite linear',
+            '--start-x': '80vw', '--start-y': '20vh',
+            '--end-x': '20vw', '--end-y': '80vh',
+            animationDelay: '3s'
+          } as React.CSSProperties}
+        ></div>
+        <div 
+          className="absolute w-72 h-72 bg-pink-400/10 dark:bg-pink-800/20 rounded-full blur-3xl"
+          style={{ 
+            animation: 'aurora 25s infinite linear',
+            '--start-x': '30vw', '--start-y': '70vh',
+            '--end-x': '80vw', '--end-y': '10vh',
+            animationDelay: '5s'
+          } as React.CSSProperties}
+        ></div>
       </div>
-
-      {/* Dot Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{
-      backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)',
-      backgroundSize: '24px 24px'
-    }}></div>
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 z-50 shadow-sm">
@@ -109,7 +115,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section - Enhanced for large screens with 2-column layout */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
+      <section className="pt-32 pb-8 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-16 items-center">
             {/* Left Column - Content */}
@@ -150,8 +156,8 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Enhanced Social Proof Stats - Now centered on all screen sizes */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center">
+              {/* Enhanced Social Proof Stats - Only visible on small screens */}
+              <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center md:hidden">
                 <div className="group">
                   <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                     Tons
@@ -198,13 +204,35 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Enhanced Social Proof Stats - Only visible on medium screens and up */}
+              <div className="hidden md:grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center mt-8">
+                <div className="group">
+                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                    Tons
+                  </div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
+                </div>
+                <div className="group">
+                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                    99.9%
+                  </div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
+                </div>
+                <div className="group">
+                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                    24/7
+                  </div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Support</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="pt-16 pb-24 px-4 sm:px-6 lg:px-8 relative">
+      <section id="features" className="pt-8 pb-24 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 scroll-animate opacity-0 transform translate-y-8">
             <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
@@ -272,13 +300,19 @@ const Index = () => {
       {/* Pricing Section */}
       <div id="pricing" className="relative">
         <PricingSection />
+
+        {/* Reviews Section */}
+        <ReviewsSection />
+
+        {/* FAQ Section */}
+        <FaqSection />
       </div>
 
       {/* Footer */}
-      <footer className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 dark:bg-slate-950 relative">
+      <footer className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 dark:bg-slate-950 relative">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="col-span-2 md:col-span-2">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
                 Template1
               </h3>
