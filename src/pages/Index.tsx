@@ -85,6 +85,9 @@ const Index = () => {
                 <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
                   Pricing
                 </a>
+                <Link to="/blog" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                  Blog
+                </Link>
                 <AuthButton />
               </div>
             </div>
@@ -107,6 +110,9 @@ const Index = () => {
               <a href="#pricing" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
                 Pricing
               </a>
+              <Link to="/blog" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                Blog
+              </Link>
               <div className="px-3 py-2">
                 <AuthButton />
               </div>
@@ -326,7 +332,7 @@ const Index = () => {
               <ul className="space-y-2">
                 <li><a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
                 <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">API Docs</a></li>
+                <li><Link to="/blog" className="text-slate-400 hover:text-white transition-colors">Blog</Link></li>
               </ul>
             </div>
             
