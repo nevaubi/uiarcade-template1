@@ -18,7 +18,8 @@ const Blog = () => {
       author: "Sarah Johnson",
       publishDate: "2025-06-20",
       readTime: "8 min read",
-      category: "Development"
+      category: "Development",
+      isPublished: true
     },
     {
       id: 2,
@@ -28,29 +29,38 @@ const Blog = () => {
       author: "Mike Chen",
       publishDate: "2025-06-18",
       readTime: "12 min read",
-      category: "Payments"
+      category: "Payments",
+      isPublished: true
     },
     {
       id: 3,
       title: "Authentication Best Practices for Modern Apps",
-      excerpt: "Implement secure authentication flows with Supabase Auth, including social logins and multi-factor authentication.",
+      excerpt: "Coming soon: Learn about implementing secure authentication flows with modern techniques and best practices.",
       image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       author: "Alex Rivera",
-      publishDate: "2025-06-15",
+      publishDate: "Coming Soon",
       readTime: "10 min read",
-      category: "Security"
+      category: "Security",
+      isPublished: false
     },
     {
       id: 4,
       title: "Scaling Your SaaS: From MVP to Enterprise",
-      excerpt: "Strategic insights on growing your SaaS product, optimizing performance, and building for enterprise customers.",
+      excerpt: "Coming soon: Strategic insights on growing your SaaS product and building for enterprise customers.",
       image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       author: "Emily Watson",
-      publishDate: "2025-06-12",
+      publishDate: "Coming Soon",
       readTime: "15 min read",
-      category: "Business"
+      category: "Business",
+      isPublished: false
     }
   ];
+
+  const handlePostClick = (post: typeof blogPosts[0]) => {
+    if (post.isPublished) {
+      navigate(`/blog/${post.id}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -104,32 +114,65 @@ const Blog = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
             {blogPosts.map((post) => (
-              <Card key={post.id} className="group hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden border-0 glass-morph backdrop-blur-sm cursor-pointer" onClick={() => navigate(`/blog/${post.id}`)}>
+              <Card 
+                key={post.id} 
+                className={`group transition-all duration-500 overflow-hidden border-0 glass-morph backdrop-blur-sm ${
+                  post.isPublished 
+                    ? 'hover:shadow-2xl hover:-translate-y-2 cursor-pointer' 
+                    : 'opacity-60 cursor-not-allowed'
+                }`}
+                onClick={() => handlePostClick(post)}
+              >
                 <div className="relative overflow-hidden">
                   <img 
                     src={post.image} 
                     alt={post.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-48 object-cover transition-transform duration-500 ${
+                      post.isPublished ? 'group-hover:scale-105' : 'grayscale'
+                    }`}
                   />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    <span className={`text-white px-3 py-1 rounded-full text-sm font-semibold ${
+                      post.isPublished 
+                        ? 'bg-gradient-to-r from-purple-600 to-blue-600' 
+                        : 'bg-slate-500'
+                    }`}>
                       {post.category}
                     </span>
                   </div>
+                  {!post.isPublished && (
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-slate-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                        Coming Soon
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 line-clamp-2">
+                  <CardTitle className={`text-xl font-semibold transition-colors duration-300 line-clamp-2 ${
+                    post.isPublished 
+                      ? 'group-hover:text-purple-600 dark:group-hover:text-purple-400' 
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}>
                     {post.title}
                   </CardTitle>
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  <p className="text-slate-600 dark:text-slate-300 line-clamp-3">
+                  <p className={`line-clamp-3 ${
+                    post.isPublished 
+                      ? 'text-slate-600 dark:text-slate-300' 
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}>
                     {post.excerpt}
                   </p>
                   
-                  <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                  <div className={`flex items-center justify-between text-sm ${
+                    post.isPublished 
+                      ? 'text-slate-500 dark:text-slate-400' 
+                      : 'text-slate-400 dark:text-slate-500'
+                  }`}>
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-1" />
@@ -137,7 +180,7 @@ const Blog = () => {
                       </div>
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
-                        {new Date(post.publishDate).toLocaleDateString()}
+                        {post.isPublished ? new Date(post.publishDate).toLocaleDateString() : post.publishDate}
                       </div>
                     </div>
                     <div className="flex items-center">
@@ -146,9 +189,19 @@ const Blog = () => {
                     </div>
                   </div>
                   
-                  <Button variant="ghost" className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-950/20 transition-colors">
-                    Read More 
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full transition-colors ${
+                      post.isPublished 
+                        ? 'group-hover:bg-purple-50 dark:group-hover:bg-purple-950/20' 
+                        : 'cursor-not-allowed opacity-60'
+                    }`}
+                    disabled={!post.isPublished}
+                  >
+                    {post.isPublished ? 'Read More' : 'Coming Soon'}
+                    {post.isPublished && (
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                    )}
                   </Button>
                 </CardContent>
               </Card>

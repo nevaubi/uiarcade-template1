@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -188,23 +187,10 @@ const BlogPost = () => {
             />
           </div>
 
-          {/* Related Posts */}
+          {/* View All Posts Section */}
           <div className="mt-16 pt-16 border-t border-slate-200 dark:border-slate-700">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
-              Related Posts
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/blog/2')}>
-                <CardContent className="p-6">
-                  <h4 className="font-semibold text-lg mb-2 hover:text-purple-600 transition-colors">
-                    Complete Guide to Stripe Integration
-                  </h4>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm">
-                    Master payment processing with Stripe...
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/blog')}>
+            <div className="text-center">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer max-w-md mx-auto" onClick={() => navigate('/blog')}>
                 <CardContent className="p-6">
                   <h4 className="font-semibold text-lg mb-2 hover:text-purple-600 transition-colors">
                     View All Posts
