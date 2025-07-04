@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,40 +31,17 @@ const Index = () => {
     }, []);
   };
   useScrollAnimation();
-  return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
-      {/* Background Aurora Effect */}
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50/80 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+      {/* Simplified Background Effects */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute w-96 h-96 bg-purple-400/20 dark:bg-purple-800/30 rounded-full blur-3xl"
-          style={{ 
-            animation: 'aurora 20s infinite linear',
-            '--start-x': '10vw', '--start-y': '10vh',
-            '--end-x': '70vw', '--end-y': '40vh'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className="absolute w-96 h-96 bg-blue-400/20 dark:bg-blue-800/30 rounded-full blur-3xl"
-          style={{ 
-            animation: 'aurora 22s infinite linear',
-            '--start-x': '80vw', '--start-y': '20vh',
-            '--end-x': '20vw', '--end-y': '80vh',
-            animationDelay: '3s'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className="absolute w-72 h-72 bg-pink-400/10 dark:bg-pink-800/20 rounded-full blur-3xl"
-          style={{ 
-            animation: 'aurora 25s infinite linear',
-            '--start-x': '30vw', '--start-y': '70vh',
-            '--end-x': '80vw', '--end-y': '10vh',
-            animationDelay: '5s'
-          } as React.CSSProperties}
-        ></div>
+        <div className="absolute w-[800px] h-[600px] bg-gradient-to-r from-purple-200/30 to-blue-200/30 dark:from-purple-800/20 dark:to-blue-800/20 rounded-full blur-3xl -top-48 -right-48 animate-float" style={{ animationDuration: '20s' }}></div>
+        <div className="absolute w-[600px] h-[400px] bg-gradient-to-r from-blue-200/20 to-indigo-200/20 dark:from-blue-800/15 dark:to-indigo-800/15 rounded-full blur-3xl -bottom-24 -left-24 animate-float" style={{ animationDuration: '25s', animationDelay: '5s' }}></div>
       </div>
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 z-50 shadow-sm">
-        {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -102,7 +80,8 @@ const Index = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+        {isMenuOpen && (
+          <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <a href="#features" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
                 Features
@@ -117,119 +96,109 @@ const Index = () => {
                 <AuthButton />
               </div>
             </div>
-          </div>}
+          </div>
+        )}
       </nav>
 
-      {/* Hero Section - Enhanced for large screens with 2-column layout */}
-      <section className="pt-32 pb-8 px-4 sm:px-6 lg:px-8 relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-16 items-center">
+      {/* Hero Section - Optimized for Conversion */}
+      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Column - Content */}
-            <div className="scroll-animate opacity-0 transform translate-y-8 text-center lg:text-left">
-              {/* Trust Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border border-purple-200 dark:border-purple-700/50 mb-8 xl:mb-10 shadow-sm hover:shadow-md transition-all duration-300">
-                <Sparkles className="h-4 w-4 xl:h-5 xl:w-5 text-purple-600 dark:text-purple-400" />
-                <span className="text-sm xl:text-base font-medium text-purple-700 dark:text-purple-300">
-                  Saving you weeks of development time
+            <div className="scroll-animate opacity-0 transform translate-y-8 text-center lg:text-left space-y-8">
+              {/* Trust Badge - Improved */}
+              <div className="inline-flex items-center gap-3 px-4 py-3 rounded-full bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200/50 dark:border-purple-700/30 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group">
+                <div className="p-1 bg-purple-100 dark:bg-purple-800/30 rounded-full">
+                  <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 group-hover:rotate-12 transition-transform duration-300" />
+                </div>
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                  Save weeks of development time
                 </span>
               </div>
 
-              <h1 className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float">
-                Build Amazing
-                <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent relative">
-                  SaaS Products
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 blur-2xl -z-10"></div>
-                </span>
-              </h1>
-              
-              <p className="text-xl sm:text-2xl xl:text-3xl text-slate-600 dark:text-slate-300 mb-4 xl:mb-6 leading-relaxed">Build, ship, and scale FASTER than ever before</p>
-              
-              <p className="text-lg xl:text-xl text-slate-500 dark:text-slate-400 mb-12 xl:mb-16">
-                Join other devs who are saving days and weeks of unnecessary boilerplate creation and are shipping on DAY ONE.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-6 xl:gap-8 justify-center lg:justify-start items-center mb-16 xl:mb-20">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group pulse-glow" onClick={() => navigate('/auth?tab=signup')}>
-                  {/* Button glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"></div>
-                  <span className="relative z-10">Get Started Free</span>
-                  <ArrowRight className="ml-3 h-5 w-5 xl:h-6 xl:w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-                </Button>
+              {/* Headline - Improved Typography */}
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
+                  Build Amazing
+                  <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent relative">
+                    SaaS Products
+                  </span>
+                </h1>
                 
-                <Button variant="outline" size="lg" className="text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 border-2 border-slate-300 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-300 backdrop-blur-sm glass-morph">
-                  Watch Demo
-                </Button>
+                <p className="text-xl sm:text-2xl text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
+                  Build, ship, and scale faster than ever
+                </p>
+                
+                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl lg:max-w-none">
+                  Join developers who save days of boilerplate creation and ship on day one.
+                </p>
               </div>
 
-              {/* Enhanced Social Proof Stats - Only visible on small screens */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center md:hidden">
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                    Tons
-                  </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
+              {/* CTA Section - Optimized for Conversion */}
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-8 py-4 h-14 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 min-w-[200px] font-semibold"
+                    onClick={() => navigate('/auth?tab=signup')}
+                  >
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="text-lg px-8 py-4 h-14 border-2 border-slate-300 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-300 min-w-[160px]"
+                  >
+                    Watch Demo
+                  </Button>
                 </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                    99.9%
+
+                {/* Social Proof - Repositioned */}
+                <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                  <div className="grid grid-cols-3 gap-8 text-center">
+                    <div className="space-y-1">
+                      <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                        Tons
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">Hours saved</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                        99.9%
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">Uptime</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                        24/7
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">Support</div>
+                    </div>
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
-                </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                    24/7
-                  </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Support</div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Image */}
-            <div className="scroll-animate opacity-0 transform translate-y-8 lg:order-last order-first lg:mt-0 mt-8" style={{ animationDelay: '0.3s' }}>
+            {/* Right Column - Image - Simplified */}
+            <div className="scroll-animate opacity-0 transform translate-y-8 lg:order-last order-first" style={{ animationDelay: '0.2s' }}>
               <div className="relative group">
-                {/* Glass-morphism container */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
-                <div className="relative bg-white/10 dark:bg-slate-800/20 backdrop-blur-sm border border-white/20 dark:border-slate-700/30 rounded-3xl p-2 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:scale-[1.02]">
+                <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all duration-500">
                   <img 
                     src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80" 
                     alt="Developer working on MacBook Pro" 
-                    className="w-full h-auto rounded-2xl shadow-lg transform group-hover:scale-[1.01] transition-transform duration-700 animate-float"
+                    className="w-full h-auto rounded-xl shadow-md aspect-[4/3] object-cover"
+                    loading="lazy"
                   />
                   
-                  {/* Floating elements around the image */}
-                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-20 blur-2xl animate-pulse"></div>
-                  <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-20 blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-                  
-                  {/* Code-like floating badges */}
-                  <div className="absolute top-8 -left-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-float opacity-90">
+                  {/* Floating Tech Badges - Simplified */}
+                  <div className="absolute top-6 -left-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg animate-float opacity-95">
                     React + TypeScript
                   </div>
-                  <div className="absolute bottom-12 -right-6 bg-gradient-to-r from-violet-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-float opacity-90" style={{ animationDelay: '2s' }}>
+                  <div className="absolute bottom-6 -right-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg animate-float opacity-95" style={{ animationDelay: '1s' }}>
                     Tailwind CSS
                   </div>
-                </div>
-              </div>
-              
-              {/* Enhanced Social Proof Stats - Only visible on medium screens and up */}
-              <div className="hidden md:grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center mt-8">
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                    Tons
-                  </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
-                </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                    99.9%
-                  </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
-                </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                    24/7
-                  </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Support</div>
                 </div>
               </div>
             </div>
@@ -238,7 +207,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="pt-8 pb-24 px-4 sm:px-6 lg:px-8 relative">
+      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 scroll-animate opacity-0 transform translate-y-8">
             <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-6">
@@ -250,39 +219,47 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[{
-            icon: Zap,
-            title: 'Lightning Fast',
-            description: 'Built for speed with modern technologies and optimized performance.',
-            gradient: 'from-yellow-400 to-orange-500'
-          }, {
-            icon: Shield,
-            title: 'Enterprise Security',
-            description: 'Bank-level security with end-to-end encryption and compliance.',
-            gradient: 'from-green-400 to-emerald-500'
-          }, {
-            icon: Users,
-            title: 'Team Collaboration',
-            description: 'Work together seamlessly with real-time collaboration tools.',
-            gradient: 'from-blue-400 to-cyan-500'
-          }, {
-            icon: Star,
-            title: 'Complete Stripe Integration',
-            description: 'Deep insights into your business with comprehensive analytics.',
-            gradient: 'from-purple-400 to-pink-500'
-          }, {
-            icon: Check,
-            title: 'Easy Integration',
-            description: 'Connect with your favorite tools through our robust API.',
-            gradient: 'from-indigo-400 to-purple-500'
-          }, {
-            icon: ArrowRight,
-            title: 'Scalable Infrastructure',
-            description: 'Grow from startup to enterprise with our scalable platform.',
-            gradient: 'from-rose-400 to-red-500'
-          }].map((feature, index) => <Card key={index} className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden border-0 glass-morph backdrop-blur-sm" style={{
-            animationDelay: `${index * 150}ms`
-          }}>
+            {[
+              {
+                icon: Zap,
+                title: 'Lightning Fast',
+                description: 'Built for speed with modern technologies and optimized performance.',
+                gradient: 'from-yellow-400 to-orange-500'
+              },
+              {
+                icon: Shield,
+                title: 'Enterprise Security',
+                description: 'Bank-level security with end-to-end encryption and compliance.',
+                gradient: 'from-green-400 to-emerald-500'
+              },
+              {
+                icon: Users,
+                title: 'Team Collaboration',
+                description: 'Work together seamlessly with real-time collaboration tools.',
+                gradient: 'from-blue-400 to-cyan-500'
+              },
+              {
+                icon: Star,
+                title: 'Complete Stripe Integration',
+                description: 'Deep insights into your business with comprehensive analytics.',
+                gradient: 'from-purple-400 to-pink-500'
+              },
+              {
+                icon: Check,
+                title: 'Easy Integration',
+                description: 'Connect with your favorite tools through our robust API.',
+                gradient: 'from-indigo-400 to-purple-500'
+              },
+              {
+                icon: ArrowRight,
+                title: 'Scalable Infrastructure',
+                description: 'Grow from startup to enterprise with our scalable platform.',
+                gradient: 'from-rose-400 to-red-500'
+              }
+            ].map((feature, index) => (
+              <Card key={index} className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden border-0 glass-morph backdrop-blur-sm" style={{
+                animationDelay: `${index * 150}ms`
+              }}>
                 {/* Card border gradient */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute inset-[1px] bg-white/90 dark:bg-slate-800/90 rounded-lg backdrop-blur-sm"></div>
@@ -298,7 +275,8 @@ const Index = () => {
                 <CardContent className="relative z-10">
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{feature.description}</p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -306,11 +284,7 @@ const Index = () => {
       {/* Pricing Section */}
       <div id="pricing" className="relative">
         <PricingSection />
-
-        {/* Reviews Section */}
         <ReviewsSection />
-
-        {/* FAQ Section */}
         <FaqSection />
       </div>
 
@@ -351,7 +325,8 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
 
 export default Index;
