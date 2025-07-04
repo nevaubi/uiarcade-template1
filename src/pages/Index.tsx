@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,11 +31,12 @@ const Index = () => {
     }, []);
   };
   useScrollAnimation();
+  
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
       {/* Background Aurora Effect */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div 
-          className="absolute w-96 h-96 bg-purple-400/20 dark:bg-purple-800/30 rounded-full blur-3xl"
+          className="absolute w-96 h-96 bg-purple-400/20 dark:bg-purple-800/30 rounded-full blur-3xl will-change-transform"
           style={{ 
             animation: 'aurora 20s infinite linear',
             '--start-x': '10vw', '--start-y': '10vh',
@@ -42,7 +44,7 @@ const Index = () => {
           } as React.CSSProperties}
         ></div>
         <div 
-          className="absolute w-96 h-96 bg-blue-400/20 dark:bg-blue-800/30 rounded-full blur-3xl"
+          className="absolute w-96 h-96 bg-blue-400/20 dark:bg-blue-800/30 rounded-full blur-3xl will-change-transform"
           style={{ 
             animation: 'aurora 22s infinite linear',
             '--start-x': '80vw', '--start-y': '20vh',
@@ -51,7 +53,7 @@ const Index = () => {
           } as React.CSSProperties}
         ></div>
         <div 
-          className="absolute w-72 h-72 bg-pink-400/10 dark:bg-pink-800/20 rounded-full blur-3xl"
+          className="absolute w-72 h-72 bg-pink-400/10 dark:bg-pink-800/20 rounded-full blur-3xl will-change-transform"
           style={{ 
             animation: 'aurora 25s infinite linear',
             '--start-x': '30vw', '--start-y': '70vh',
@@ -68,7 +70,7 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <button onClick={() => navigate('/')} className="cursor-pointer hover:opacity-80 transition-opacity">
+                <button onClick={() => navigate('/')} className="cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                     Template1
                   </h1>
@@ -79,13 +81,13 @@ const Index = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
-                <a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md px-2 py-1">
                   Features
                 </a>
-                <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md px-2 py-1">
                   Pricing
                 </a>
-                <Link to="/blog" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <Link to="/blog" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md px-2 py-1">
                   Blog
                 </Link>
                 <AuthButton />
@@ -94,7 +96,7 @@ const Index = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)} className="focus:ring-2 focus:ring-purple-500">
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </div>
@@ -104,13 +106,13 @@ const Index = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <a href="#features" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+              <a href="#features" className="block px-3 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md">
                 Features
               </a>
-              <a href="#pricing" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+              <a href="#pricing" className="block px-3 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md">
                 Pricing
               </a>
-              <Link to="/blog" className="block px-3 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+              <Link to="/blog" className="block px-3 py-3 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md">
                 Blog
               </Link>
               <div className="px-3 py-2">
@@ -120,116 +122,138 @@ const Index = () => {
           </div>}
       </nav>
 
-      {/* Hero Section - Enhanced for large screens with 2-column layout */}
+      {/* Hero Section - Enhanced for Fitts' Law compliance */}
       <section className="pt-32 pb-8 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-16 items-center">
             {/* Left Column - Content */}
             <div className="scroll-animate opacity-0 transform translate-y-8 text-center lg:text-left">
-              {/* Trust Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border border-purple-200 dark:border-purple-700/50 mb-8 xl:mb-10 shadow-sm hover:shadow-md transition-all duration-300">
-                <Sparkles className="h-4 w-4 xl:h-5 xl:w-5 text-purple-600 dark:text-purple-400" />
-                <span className="text-sm xl:text-base font-medium text-purple-700 dark:text-purple-300">
+              {/* Trust Badge - Enhanced for touch */}
+              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border border-purple-200 dark:border-purple-700/50 mb-8 xl:mb-12 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer min-h-[48px] focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2">
+                <Sparkles className="h-5 w-5 xl:h-6 xl:w-6 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                <span className="text-sm xl:text-base font-medium text-purple-700 dark:text-purple-300 leading-relaxed">
                   Saving you weeks of development time
                 </span>
               </div>
 
-              <h1 className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float">
+              {/* Enhanced Typography with fluid scaling */}
+              <h1 className="font-bold text-slate-900 dark:text-white mb-8 xl:mb-12 leading-tight animate-float will-change-transform" 
+                  style={{ fontSize: 'clamp(2.5rem, 8vw, 7rem)' }}>
                 Build Amazing
                 <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent relative">
                   SaaS Products
                   {/* Subtle glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 blur-2xl -z-10"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-blue-600/10 to-indigo-600/10 blur-2xl -z-10 will-change-transform"></div>
                 </span>
               </h1>
               
-              <p className="text-xl sm:text-2xl xl:text-3xl text-slate-600 dark:text-slate-300 mb-4 xl:mb-6 leading-relaxed">Build, ship, and scale FASTER than ever before</p>
+              <p className="text-slate-600 dark:text-slate-300 mb-4 xl:mb-6 leading-relaxed font-medium" 
+                 style={{ fontSize: 'clamp(1.25rem, 3vw, 2rem)' }}>
+                Build, ship, and scale FASTER than ever before
+              </p>
               
-              <p className="text-lg xl:text-xl text-slate-500 dark:text-slate-400 mb-12 xl:mb-16">
+              <p className="text-slate-500 dark:text-slate-400 mb-12 xl:mb-16 leading-relaxed max-w-2xl mx-auto lg:mx-0" 
+                 style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
                 Join other devs who are saving days and weeks of unnecessary boilerplate creation and are shipping on DAY ONE.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-6 xl:gap-8 justify-center lg:justify-start items-center mb-16 xl:mb-20">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group pulse-glow" onClick={() => navigate('/auth?tab=signup')}>
+              {/* Enhanced CTA Buttons - Optimized for Fitts' Law */}
+              <div className="flex flex-col sm:flex-row gap-6 xl:gap-8 justify-center lg:justify-start items-stretch sm:items-center mb-16 xl:mb-20">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group will-change-transform focus:ring-4 focus:ring-purple-500/50 focus:ring-offset-2 min-h-[56px] text-lg xl:text-xl px-12 xl:px-16 py-4 xl:py-6 w-full sm:w-auto sm:min-w-[280px]" 
+                  onClick={() => navigate('/auth?tab=signup')}
+                >
                   {/* Button glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"></div>
-                  <span className="relative z-10">Get Started Free</span>
-                  <ArrowRight className="ml-3 h-5 w-5 xl:h-6 xl:w-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl will-change-transform"></div>
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    Get Started Free
+                    <ArrowRight className="h-5 w-5 xl:h-6 xl:w-6 group-hover:translate-x-1 transition-transform duration-300 will-change-transform" />
+                  </span>
                 </Button>
                 
-                <Button variant="outline" size="lg" className="text-lg xl:text-xl px-10 xl:px-14 py-4 xl:py-6 border-2 border-slate-300 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-300 backdrop-blur-sm glass-morph">
-                  Watch Demo
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="font-semibold border-2 border-slate-300 dark:border-slate-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-300 backdrop-blur-sm focus:ring-4 focus:ring-purple-500/50 focus:ring-offset-2 min-h-[56px] text-lg xl:text-xl px-12 xl:px-16 py-4 xl:py-6 w-full sm:w-auto sm:min-w-[200px]"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    Watch Demo
+                  </span>
                 </Button>
               </div>
 
-              {/* Enhanced Social Proof Stats - Only visible on small screens */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center md:hidden">
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+              {/* Social Proof Stats - Repositioned and enhanced for mobile */}
+              <div className="grid grid-cols-3 gap-6 sm:gap-8 xl:gap-12 text-center md:hidden">
+                <div className="group cursor-pointer p-3 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300">
+                  <div className="text-2xl xl:text-3xl 2xl:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 will-change-transform">
                     Tons
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Of hours saved</div>
                 </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                <div className="group cursor-pointer p-3 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300">
+                  <div className="text-2xl xl:text-3xl 2xl:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 will-change-transform">
                     99.9%
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Uptime</div>
                 </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                <div className="group cursor-pointer p-3 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300">
+                  <div className="text-2xl xl:text-3xl 2xl:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 will-change-transform">
                     24/7
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Support</div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Support</div>
                 </div>
               </div>
             </div>
 
             {/* Right Column - Image */}
-            <div className="scroll-animate opacity-0 transform translate-y-8 lg:order-last order-first lg:mt-0 mt-8" style={{ animationDelay: '0.3s' }}>
+            <div className="scroll-animate opacity-0 transform translate-y-8 lg:order-last order-first lg:mt-0 mt-8 will-change-transform" style={{ animationDelay: '0.3s' }}>
               <div className="relative group">
                 {/* Glass-morphism container */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
-                <div className="relative bg-white/10 dark:bg-slate-800/20 backdrop-blur-sm border border-white/20 dark:border-slate-700/30 rounded-3xl p-2 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:scale-[1.02]">
-                  <img 
-                    src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80" 
-                    alt="Developer working on MacBook Pro" 
-                    className="w-full h-auto rounded-2xl shadow-lg transform group-hover:scale-[1.01] transition-transform duration-700 animate-float"
-                  />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-500 will-change-transform"></div>
+                <div className="relative bg-white/10 dark:bg-slate-800/20 backdrop-blur-sm border border-white/20 dark:border-slate-700/30 rounded-3xl p-2 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:scale-[1.02] will-change-transform">
+                  <div className="relative aspect-video overflow-hidden rounded-2xl">
+                    <img 
+                      src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80" 
+                      alt="Developer working on MacBook Pro showcasing the SaaS template development environment" 
+                      className="w-full h-full object-cover transform group-hover:scale-[1.01] transition-transform duration-700 animate-float will-change-transform"
+                      loading="eager"
+                    />
+                  </div>
                   
                   {/* Floating elements around the image */}
-                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-20 blur-2xl animate-pulse"></div>
-                  <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-20 blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-20 blur-2xl animate-pulse will-change-transform"></div>
+                  <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-20 blur-2xl animate-pulse will-change-transform" style={{ animationDelay: '1s' }}></div>
                   
                   {/* Code-like floating badges */}
-                  <div className="absolute top-8 -left-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-float opacity-90">
+                  <div className="absolute top-8 -left-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-float opacity-90 will-change-transform">
                     React + TypeScript
                   </div>
-                  <div className="absolute bottom-12 -right-6 bg-gradient-to-r from-violet-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg animate-float opacity-90" style={{ animationDelay: '2s' }}>
+                  <div className="absolute bottom-12 -right-6 bg-gradient-to-r from-violet-500 to-purple-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-float opacity-90 will-change-transform" style={{ animationDelay: '2s' }}>
                     Tailwind CSS
                   </div>
                 </div>
               </div>
               
               {/* Enhanced Social Proof Stats - Only visible on medium screens and up */}
-              <div className="hidden md:grid grid-cols-3 gap-4 sm:gap-8 xl:gap-12 text-center mt-8">
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+              <div className="hidden md:grid grid-cols-3 gap-6 sm:gap-8 xl:gap-12 text-center mt-12">
+                <div className="group cursor-pointer p-4 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300">
+                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 will-change-transform">
                     Tons
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Of hours saved</div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Of hours saved</div>
                 </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                <div className="group cursor-pointer p-4 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300">
+                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 will-change-transform">
                     99.9%
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Uptime</div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Uptime</div>
                 </div>
-                <div className="group">
-                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                <div className="group cursor-pointer p-4 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300">
+                  <div className="text-3xl xl:text-4xl 2xl:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 will-change-transform">
                     24/7
                   </div>
-                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-1">Support</div>
+                  <div className="text-sm xl:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Support</div>
                 </div>
               </div>
             </div>

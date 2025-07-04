@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -102,7 +103,7 @@
   }
 }
 
-/* Enhanced animations for improved UI */
+/* Enhanced animations for improved UI and performance */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -288,4 +289,82 @@ html {
     transform: translate(var(--start-x, 0), var(--start-y, 0)) scale(1);
     opacity: 0.5;
   }
+}
+
+/* Enhanced accessibility and focus states */
+.focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-float,
+  .animate-glow-pulse,
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
+/* Enhanced button styles for Fitts' Law compliance */
+.cta-button {
+  min-height: 56px;
+  min-width: 200px;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.2;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (max-width: 640px) {
+  .cta-button {
+    min-height: 48px;
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+}
+
+/* Enhanced touch targets */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Improved visual hierarchy */
+.text-hierarchy-primary {
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.text-hierarchy-secondary {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.text-hierarchy-body {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.6;
 }
