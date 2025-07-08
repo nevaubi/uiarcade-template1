@@ -19,13 +19,18 @@ const AuthButton = () => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800"
           onClick={() => navigate('/dashboard')}
         >
           <LayoutDashboard className="h-4 w-4" />
           Dashboard
         </Button>
-        <Button variant="ghost" size="sm" onClick={signOut}>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={signOut}
+          className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+        >
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
@@ -34,7 +39,7 @@ const AuthButton = () => {
 
   return (
     <Button
-      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transform hover:translate-y-[-1px] transition-all duration-200"
       onClick={() => navigate('/auth')}
     >
       Sign In
