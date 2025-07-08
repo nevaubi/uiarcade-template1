@@ -34,7 +34,7 @@ const AuthButton = () => {
 
   return (
     <Button
-      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+      className="bg-navy-900 hover:bg-navy-800 text-white btn-enhanced"
       onClick={() => navigate('/auth')}
     >
       Sign In
