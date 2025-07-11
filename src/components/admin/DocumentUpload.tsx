@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,10 +15,9 @@ import {
   File
 } from 'lucide-react';
 
-interface FileWithPreview extends File {
-  preview?: string;
-  uploadProgress?: number;
+interface FileWithStatus extends File {
   uploadStatus?: 'pending' | 'uploading' | 'success' | 'error';
+  uploadProgress?: number;
   errorMessage?: string;
 }
 
@@ -26,53 +26,19 @@ interface DocumentUploadProps {
   uploadDocument: (file: File) => Promise<string | null>;
 }
 
-// Utility function to validate File objects
-const validateFileObject = (file: any): { isValid: boolean; error?: string } => {
-  console.log('DocumentUpload: Validating file object:', file);
-  
-  if (!file) {
-    return { isValid: false, error: 'File object is null or undefined' };
-  }
-  
-  if (!(file instanceof File)) {
-    return { isValid: false, error: 'Object is not a File instance' };
-  }
-  
-  if (!file.name || typeof file.name !== 'string') {
-    return { isValid: false, error: `File name is invalid: ${file.name}` };
-  }
-  
-  if (file.size === undefined || typeof file.size !== 'number') {
-    return { isValid: false, error: `File size is invalid: ${file.size}` };
-  }
-  
-  return { isValid: true };
-};
-
 const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
-  const [files, setFiles] = useState<FileWithPreview[]>([]);
+  const [files, setFiles] = useState<FileWithStatus[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log('DocumentUpload: Files dropped:', acceptedFiles);
+    console.log('Files dropped:', acceptedFiles);
     
-    // Validate each file before adding to state
-    const validFiles: FileWithPreview[] = [];
-    
-    acceptedFiles.forEach((file, index) => {
-      const validation = validateFileObject(file);
-      if (validation.isValid) {
-        validFiles.push({
-          ...file,
-          uploadStatus: 'pending' as const,
-          uploadProgress: 0
-        });
-      } else {
-        console.error(`Invalid file at index ${index}:`, validation.error);
-      }
-    });
+    const filesWithStatus: FileWithStatus[] = acceptedFiles.map(file => ({
+      ...file,
+      uploadStatus: 'pending' as const,
+      uploadProgress: 0
+    }));
 
-    console.log('DocumentUpload: Valid files to add:', validFiles);
-    setFiles(prev => [...prev, ...validFiles]);
+    setFiles(prev => [...prev, ...filesWithStatus]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -87,25 +53,11 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
     multiple: true
   });
 
-  const handleUpload = async (file: FileWithPreview, index: number) => {
-    console.log('DocumentUpload: Starting upload for file:', file);
+  const handleUpload = async (file: FileWithStatus, index: number) => {
+    console.log('Starting upload for file:', file.name);
     
-    // Validate file again before upload
-    const validation = validateFileObject(file);
-    if (!validation.isValid) {
-      console.error('File validation failed during upload:', validation.error);
-      setFiles(prev => prev.map((f, i) => 
-        i === index ? { 
-          ...f, 
-          uploadStatus: 'error', 
-          errorMessage: validation.error 
-        } : f
-      ));
-      return;
-    }
-
     setFiles(prev => prev.map((f, i) => 
-      i === index ? { ...f, uploadStatus: 'uploading', uploadProgress: 0 } : f
+      i === index ? { ...f, uploadStatus: 'uploading', uploadProgress: 50 } : f
     ));
 
     try {
@@ -122,16 +74,16 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
         }, 2000);
       } else {
         setFiles(prev => prev.map((f, i) => 
-          i === index ? { ...f, uploadStatus: 'error', errorMessage: 'Upload failed' } : f
+          i === index ? { ...f, uploadStatus: 'error', errorMessage: 'Processing failed' } : f
         ));
       }
     } catch (error: any) {
-      console.error('Upload error in DocumentUpload:', error);
+      console.error('Upload error:', error);
       setFiles(prev => prev.map((f, i) => 
         i === index ? { 
           ...f, 
           uploadStatus: 'error', 
-          errorMessage: error.message || 'Upload failed' 
+          errorMessage: error.message || 'Processing failed' 
         } : f
       ));
     }
@@ -152,17 +104,7 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   };
 
   const getFileIcon = (file: File) => {
-    // Safely get file extension
-    let extension: string | undefined;
-    try {
-      if (file.name && typeof file.name === 'string') {
-        const nameParts = file.name.split('.');
-        extension = nameParts.length > 1 ? nameParts.pop()?.toLowerCase() : undefined;
-      }
-    } catch (error) {
-      console.error('Error getting file extension:', error);
-      extension = undefined;
-    }
+    const extension = file.name.split('.').pop()?.toLowerCase();
 
     switch (extension) {
       case 'pdf':
@@ -177,7 +119,7 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status?: string) => {
     switch (status) {
       case 'uploading':
         return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
@@ -206,7 +148,7 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
           Upload Documents
         </CardTitle>
         <CardDescription>
-          Upload documents to build your chatbot's knowledge base. Supported formats: PDF, DOCX, TXT, MD (Max 10MB per file)
+          Upload documents to build your chatbot's knowledge base. Files are processed instantly in your browser! Supported formats: PDF, DOCX, TXT, MD (Max 10MB per file)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -238,7 +180,7 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
         {files.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium">Files to Upload</h4>
+              <h4 className="font-medium">Files to Process</h4>
               <div className="flex gap-2">
                 <Button 
                   onClick={handleUploadAll}
@@ -248,12 +190,12 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
                   {uploading ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Uploading...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <Upload className="h-4 w-4 mr-2" />
-                      Upload All
+                      Process All
                     </>
                   )}
                 </Button>
@@ -276,10 +218,10 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
                   
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {file.name || 'Unknown file'}
+                      {file.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {formatFileSize(file.size || 0)}
+                      {formatFileSize(file.size)}
                     </p>
                     
                     {file.uploadStatus === 'uploading' && (
@@ -302,8 +244,8 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
                         'outline'
                       }
                     >
-                      {file.uploadStatus === 'pending' && 'Pending'}
-                      {file.uploadStatus === 'uploading' && 'Uploading'}
+                      {file.uploadStatus === 'pending' && 'Ready'}
+                      {file.uploadStatus === 'uploading' && 'Processing'}
                       {file.uploadStatus === 'success' && 'Success'}
                       {file.uploadStatus === 'error' && 'Error'}
                     </Badge>
