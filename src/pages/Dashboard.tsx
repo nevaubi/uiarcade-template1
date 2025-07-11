@@ -28,15 +28,12 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, checkAdminStatus } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // Initialize adminViewMode based on isAdmin status
-  const [adminViewMode, setAdminViewMode] = useState(isAdmin);
-  
+  const [adminViewMode, setAdminViewMode] = useState(false);
   const { toast } = useToast();
   const { 
     subscribed, 
@@ -52,7 +49,10 @@ const Dashboard = () => {
 
   // Update adminViewMode when isAdmin changes
   useEffect(() => {
-    setAdminViewMode(isAdmin);
+    console.log('Dashboard: isAdmin changed to:', isAdmin);
+    if (isAdmin) {
+      setAdminViewMode(true);
+    }
   }, [isAdmin]);
 
   useEffect(() => {
@@ -175,6 +175,27 @@ const Dashboard = () => {
           }
         </p>
       </div>
+
+      {/* Debug Info - REMOVE THIS AFTER FIXING */}
+      <Card className="border-2 border-orange-500 bg-orange-50">
+        <CardHeader>
+          <CardTitle className="text-orange-700">Debug Info</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p><strong>User Email:</strong> {user?.email || 'None'}</p>
+          <p><strong>User ID:</strong> {user?.id || 'None'}</p>
+          <p><strong>isAdmin:</strong> {isAdmin ? '✅ TRUE' : '❌ FALSE'}</p>
+          <p><strong>adminViewMode:</strong> {adminViewMode ? '✅ TRUE' : '❌ FALSE'}</p>
+          <Button 
+            onClick={() => checkAdminStatus()} 
+            variant="outline" 
+            size="sm"
+            className="mt-2"
+          >
+            Refresh Admin Status
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
