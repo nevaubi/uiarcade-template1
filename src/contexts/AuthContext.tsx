@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,8 +38,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  const checkAdminStatus = async () => {
-    if (!user) {
+  // FIX: Accept userId as parameter instead of relying on state
+  const checkAdminStatusForUser = async (userId: string) => {
+    if (!userId) {
+      console.error('No userId provided to checkAdminStatusForUser');
       setIsAdmin(false);
       return;
     }
@@ -49,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
 
       if (error) {
@@ -58,10 +59,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      console.log('Admin status for user', userId, ':', data?.is_admin);
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
+    }
+  };
+
+  // Wrapper function that uses current user from state
+  const checkAdminStatus = async () => {
+    if (user?.id) {
+      await checkAdminStatusForUser(user.id);
     }
   };
 
@@ -74,9 +83,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in
-        if (session?.user) {
-          await checkAdminStatus();
+        // FIX: Pass the user ID directly instead of relying on state
+        if (session?.user?.id) {
+          await checkAdminStatusForUser(session.user.id);
         } else {
           setIsAdmin(false);
         }
@@ -89,8 +98,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             if (postAuthCallback) {
               console.log('Executing post-auth callback:', postAuthCallback);
-              handlePostAuthCheckout(postAuthCallback, session); // Pass fresh session
-              setPostAuthCallback(null); // Clear the callback after use
+              handlePostAuthCheckout(postAuthCallback, session);
+              setPostAuthCallback(null);
             } else if (window.location.pathname === '/auth' || window.location.pathname === '/') {
               window.location.href = '/dashboard';
             }
@@ -115,16 +124,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session
-      if (session?.user) {
-        await checkAdminStatus();
+      // FIX: Pass the user ID directly
+      if (session?.user?.id) {
+        await checkAdminStatusForUser(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [postAuthCallback]);
 
-  // ... rest of existing code (handlePostAuthCheckout, signUp, signIn, signOut functions)
   const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {
       console.log('Starting post-auth checkout for:', callback);
@@ -152,56 +160,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const priceId = callback.billing === 'annual' ? plan.annualPriceId : plan.monthlyPriceId;
       
-      console.log('Creating checkout with priceId:', priceId);
+      console.log('Creating checkout with price ID:', priceId);
       
-      // Use the fresh session from authentication callback
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId },
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/create-checkout`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${freshSession.access_token}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${freshSession.access_token}`,
         },
+        body: JSON.stringify({ priceId }),
       });
 
-      if (error) {
-        throw error;
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      // FIXED: Add mobile detection and handle appropriately
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // On mobile, redirect in same tab to avoid popup blocking
-        console.log('Mobile detected: redirecting in same tab');
+      if (data.url) {
         window.location.href = data.url;
       } else {
-        // On desktop, open in new tab
-        console.log('Desktop detected: opening in new tab');
-        window.open(data.url, '_blank');
+        throw new Error('No checkout URL received');
       }
-      
-      toast({
-        title: isMobile ? "Redirecting to checkout" : "Checkout opened",
-        description: isMobile ? "Please complete your subscription." : "Complete your subscription in the new tab.",
-      });
-      
     } catch (error) {
       console.error('Post-auth checkout error:', error);
       toast({
-        title: "Checkout Error",
-        description: "Failed to start checkout. Please try again from the pricing page.",
+        title: "Checkout Failed",
+        description: error instanceof Error ? error.message : "Failed to create checkout session",
         variant: "destructive",
       });
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const redirectUrl = `${window.location.origin}/dashboard`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         },
@@ -216,8 +211,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } else {
       toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link to complete your registration.",
+        title: "Success!",
+        description: "Please check your email to verify your account.",
       });
     }
 
