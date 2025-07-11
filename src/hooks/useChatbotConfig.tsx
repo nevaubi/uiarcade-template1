@@ -29,26 +29,18 @@ export const useChatbotConfig = () => {
   const fetchConfig = async () => {
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Fetching chatbot config...');
       
-      if (!session?.access_token) {
-        console.error('No session found');
-        return;
-      }
-
-      const response = await fetch('/api/v1/functions/v1/chatbot-config', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
+      const { data, error } = await supabase.functions.invoke('chatbot-config', {
+        method: 'GET'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch configuration');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
       }
 
-      const data = await response.json();
+      console.log('Fetched config:', data);
       setConfig(data);
     } catch (error) {
       console.error('Error fetching chatbot config:', error);
@@ -65,34 +57,27 @@ export const useChatbotConfig = () => {
   const updateConfig = async (updates: Partial<ChatbotConfig>) => {
     try {
       setUpdating(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Updating chatbot config with:', updates);
       
-      if (!session?.access_token) {
-        throw new Error('No session found');
-      }
-
-      const response = await fetch('/api/v1/functions/v1/chatbot-config', {
+      const { data, error } = await supabase.functions.invoke('chatbot-config', {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
+        body: updates
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update configuration');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
       }
 
-      const updatedConfig = await response.json();
-      setConfig(updatedConfig);
+      console.log('Updated config:', data);
+      setConfig(data);
       
       toast({
         title: "Success",
         description: "Configuration updated successfully",
       });
 
-      return updatedConfig;
+      return data;
     } catch (error) {
       console.error('Error updating chatbot config:', error);
       toast({

@@ -13,6 +13,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Chatbot config function called with method:', req.method);
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -26,13 +28,17 @@ serve(async (req) => {
     const { data: { user } } = await supabaseClient.auth.getUser()
     
     if (!user) {
+      console.log('No authenticated user found');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('Authenticated user:', user.id);
+
     if (req.method === 'GET') {
+      console.log('Fetching chatbot config...');
       const { data, error } = await supabaseClient
         .from('chatbot_config')
         .select('*')
@@ -48,6 +54,7 @@ serve(async (req) => {
         )
       }
 
+      console.log('Successfully fetched config:', data);
       return new Response(
         JSON.stringify(data),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -55,7 +62,9 @@ serve(async (req) => {
     }
 
     if (req.method === 'PUT') {
+      console.log('Updating chatbot config...');
       const updates = await req.json()
+      console.log('Update data:', updates);
       
       // Add updated_by and updated_at
       const updateData = {
@@ -80,6 +89,7 @@ serve(async (req) => {
         )
       }
 
+      console.log('Successfully updated config:', data);
       return new Response(
         JSON.stringify(data),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
