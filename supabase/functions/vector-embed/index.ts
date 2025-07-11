@@ -1,3 +1,4 @@
+
 // supabase/functions/vector-embed/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -96,7 +97,7 @@ const initializeVectorClient = () => {
   return new VectorClient(url, token);
 };
 
-// Generate embeddings using OpenAI
+// Generate embeddings using OpenAI with text-embedding-3-small model (768 dimensions)
 const generateEmbedding = async (text: string): Promise<number[]> => {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -111,8 +112,9 @@ const generateEmbedding = async (text: string): Promise<number[]> => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'text-embedding-ada-002',
+      model: 'text-embedding-3-small',
       input: text,
+      dimensions: 768,
     }),
   });
   
@@ -125,7 +127,7 @@ const generateEmbedding = async (text: string): Promise<number[]> => {
   return data.data[0].embedding;
 };
 
-// Batch generate embeddings
+// Batch generate embeddings with text-embedding-3-small model (768 dimensions)
 const generateEmbeddings = async (texts: string[]): Promise<number[][]> => {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -140,8 +142,9 @@ const generateEmbeddings = async (texts: string[]): Promise<number[][]> => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'text-embedding-ada-002',
+      model: 'text-embedding-3-small',
       input: texts,
+      dimensions: 768,
     }),
   });
   
