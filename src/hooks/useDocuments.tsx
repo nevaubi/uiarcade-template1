@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -16,8 +15,18 @@ interface DocumentChunk {
   created_at: string;
 }
 
+interface DocumentInfo {
+  name: string;
+  file_type: string;
+  chunks: DocumentChunk[];
+  total_chunks: number;
+  total_words: number;
+  created_at: string;
+  created_by?: string;
+}
+
 export const useDocuments = () => {
-  const [documents, setDocuments] = useState<DocumentChunk[]>([]);
+  const [documents, setDocuments] = useState<DocumentInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -31,7 +40,27 @@ export const useDocuments = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data || []);
+      
+      // Group chunks by document name
+      const grouped = (data || []).reduce((acc, chunk) => {
+        if (!acc[chunk.document_name]) {
+          acc[chunk.document_name] = {
+            name: chunk.document_name,
+            file_type: chunk.file_type,
+            chunks: [],
+            total_chunks: 0,
+            total_words: 0,
+            created_at: chunk.created_at,
+            created_by: chunk.created_by
+          };
+        }
+        acc[chunk.document_name].chunks.push(chunk);
+        acc[chunk.document_name].total_chunks++;
+        acc[chunk.document_name].total_words += chunk.word_count;
+        return acc;
+      }, {} as Record<string, DocumentInfo>);
+
+      setDocuments(Object.values(grouped));
     } catch (error) {
       console.error('Error fetching documents:', error);
       toast({
@@ -126,29 +155,6 @@ export const useDocuments = () => {
     }
   };
 
-  // Group chunks by document name for display
-  const getDocumentsByName = () => {
-    const grouped = documents.reduce((acc, chunk) => {
-      if (!acc[chunk.document_name]) {
-        acc[chunk.document_name] = {
-          name: chunk.document_name,
-          file_type: chunk.file_type,
-          chunks: [],
-          total_chunks: 0,
-          total_words: 0,
-          created_at: chunk.created_at,
-          created_by: chunk.created_by
-        };
-      }
-      acc[chunk.document_name].chunks.push(chunk);
-      acc[chunk.document_name].total_chunks++;
-      acc[chunk.document_name].total_words += chunk.word_count;
-      return acc;
-    }, {} as Record<string, any>);
-
-    return Object.values(grouped);
-  };
-
   useEffect(() => {
     fetchDocuments();
 
@@ -170,7 +176,7 @@ export const useDocuments = () => {
   }, []);
 
   return {
-    documents: getDocumentsByName(),
+    documents,
     loading,
     uploading,
     uploadDocument,
