@@ -1,16 +1,17 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Shield, Database, Activity, Loader2, RefreshCw, Calendar, Mail, MoreHorizontal } from 'lucide-react';
+import { Users, Shield, Database, Activity, Loader2, RefreshCw, Calendar, Mail, MoreHorizontal, BarChart3 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import UserSearchFilter from './UserSearchFilter';
 import DataExport from './DataExport';
+import VisualAnalytics from './VisualAnalytics';
 
 interface UserProfile {
   id: string;
@@ -283,176 +284,196 @@ const AdminPanel: React.FC = () => {
         <StatCard title="Database Records" value={users.length + subscribers.length} icon={Database} color="text-purple-600" />
       </div>
 
-      {/* Data Export Section */}
-      <DataExport users={users} subscribers={subscribers} />
-
-      {/* Users Management with Data Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Users className="h-5 w-5 mr-2" />
+      {/* Tabs for different admin sections */}
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
             User Management
-          </CardTitle>
-          <CardDescription>
-            Search, filter, and manage user accounts ({users.length} total users found)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UserSearchFilter
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            adminFilter={adminFilter}
-            onAdminFilterChange={setAdminFilter}
-            subscriptionFilter={subscriptionFilter}
-            onSubscriptionFilterChange={setSubscriptionFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            onClearFilters={handleClearFilters}
-            resultCount={filteredUsers.length}
-            totalCount={users.length}
-          />
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Visual Analytics
+          </TabsTrigger>
+        </TabsList>
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Subscription</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      {users.length === 0 ? 'No users found in database' : 'No users match your current filters'}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredUsers.map((user) => {
-                    const subscriber = subscribers.find(sub => sub.email === user.email);
-                    return (
-                      <TableRow key={user.id} className="transition-colors hover:bg-muted/50">
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-medium">{user.full_name || 'No name'}</div>
-                            <div className="text-sm text-muted-foreground flex items-center">
-                              <Mail className="h-3 w-3 mr-1" />
-                              {user.email}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={subscriber?.is_admin ? "default" : "secondary"}
-                            className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
-                          >
-                            {subscriber?.is_admin ? "Admin" : "User"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
-                            {subscriber?.subscribed ? "Active" : "Free"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-muted-foreground flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>Send Email</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">Suspend User</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+        <TabsContent value="users" className="space-y-6">
+          {/* Data Export Section */}
+          <DataExport users={users} subscribers={subscribers} />
+
+          {/* Users Management with Data Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                User Management
+              </CardTitle>
+              <CardDescription>
+                Search, filter, and manage user accounts ({users.length} total users found)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UserSearchFilter
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                adminFilter={adminFilter}
+                onAdminFilterChange={setAdminFilter}
+                subscriptionFilter={subscriptionFilter}
+                onSubscriptionFilterChange={setSubscriptionFilter}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                onClearFilters={handleClearFilters}
+                resultCount={filteredUsers.length}
+                totalCount={users.length}
+              />
+
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Subscription</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          {users.length === 0 ? 'No users found in database' : 'No users match your current filters'}
                         </TableCell>
                       </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                    ) : (
+                      filteredUsers.map((user) => {
+                        const subscriber = subscribers.find(sub => sub.email === user.email);
+                        return (
+                          <TableRow key={user.id} className="transition-colors hover:bg-muted/50">
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-medium">{user.full_name || 'No name'}</div>
+                                <div className="text-sm text-muted-foreground flex items-center">
+                                  <Mail className="h-3 w-3 mr-1" />
+                                  {user.email}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={subscriber?.is_admin ? "default" : "secondary"}
+                                className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
+                              >
+                                {subscriber?.is_admin ? "Admin" : "User"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
+                                {subscriber?.subscribed ? "Active" : "Free"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm text-muted-foreground flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {new Date(user.created_at).toLocaleDateString()}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>View Details</DropdownMenuItem>
+                                  <DropdownMenuItem>Send Email</DropdownMenuItem>
+                                  <DropdownMenuItem className="text-destructive">Suspend User</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Subscription Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Activity className="h-5 w-5 mr-2" />
-            Subscription Overview
-          </CardTitle>
-          <CardDescription>
-            Monitor user subscriptions and billing ({subscribers.length} total subscribers found)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Expires</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {subscribers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                      No subscription data found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  subscribers.slice(0, 10).map((subscriber, index) => (
-                    <TableRow key={subscriber.email + index} className="transition-colors hover:bg-muted/50">
-                      <TableCell className="font-medium">{subscriber.email}</TableCell>
-                      <TableCell>
-                        <span className="text-sm">
-                          {subscriber.subscription_tier ? `${subscriber.subscription_tier} Plan` : 'No active plan'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
-                            {subscriber.subscribed ? "Active" : "Inactive"}
-                          </Badge>
-                          {subscriber.is_admin && (
-                            <Badge className="bg-amber-100 text-amber-800 border-amber-300">Admin</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {subscriber.subscription_end ? (
-                          <div className="text-sm text-muted-foreground flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {new Date(subscriber.subscription_end).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
+          {/* Subscription Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Activity className="h-5 w-5 mr-2" />
+                Subscription Overview
+              </CardTitle>
+              <CardDescription>
+                Monitor user subscriptions and billing ({subscribers.length} total subscribers found)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Plan</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Expires</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {subscribers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                          No subscription data found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      subscribers.slice(0, 10).map((subscriber, index) => (
+                        <TableRow key={subscriber.email + index} className="transition-colors hover:bg-muted/50">
+                          <TableCell className="font-medium">{subscriber.email}</TableCell>
+                          <TableCell>
+                            <span className="text-sm">
+                              {subscriber.subscription_tier ? `${subscriber.subscription_tier} Plan` : 'No active plan'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
+                                {subscriber.subscribed ? "Active" : "Inactive"}
+                              </Badge>
+                              {subscriber.is_admin && (
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-300">Admin</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {subscriber.subscription_end ? (
+                              <div className="text-sm text-muted-foreground flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {new Date(subscriber.subscription_end).toLocaleDateString()}
+                              </div>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <VisualAnalytics users={users} subscribers={subscribers} loading={loading} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
