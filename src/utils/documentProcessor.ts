@@ -1,4 +1,3 @@
-
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
@@ -33,9 +32,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 // Processing timeout (30 seconds)
 const PROCESSING_TIMEOUT = 30000;
 
-// Type guard for PDF.js text items
+// Type guard for PDF.js text items - only TextItem has str property
 const isTextItem = (item: any): item is { str: string } => {
-  return item && typeof item.str === 'string';
+  return item && typeof item === 'object' && typeof item.str === 'string';
 };
 
 // Validate file before processing
@@ -128,7 +127,7 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
-        // Use type guard instead of specific type
+        // Filter for TextItem objects only and extract text
         const pageText = textContent.items
           .filter(isTextItem)
           .map((item) => item.str)
