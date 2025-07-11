@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface ChatbotConfig {
   id: string;
@@ -25,11 +25,20 @@ export const useChatbotConfig = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchConfig = async () => {
+    // Only fetch if user is authenticated
+    if (!user) {
+      console.log('No authenticated user, skipping config fetch');
+      setConfig(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      console.log('Fetching chatbot config...');
+      console.log('Fetching chatbot config for authenticated user...');
       
       const { data, error } = await supabase.functions.invoke('chatbot-config', {
         method: 'GET'
@@ -37,8 +46,8 @@ export const useChatbotConfig = () => {
 
       if (error) {
         console.error('Supabase function error:', error);
-        // Don't show error toast for unauthorized access - this is expected for non-admin users
-        if (error.message && !error.message.includes('Unauthorized')) {
+        // Only show error toast for actual errors, not auth issues
+        if (!error.message?.includes('Unauthorized')) {
           toast({
             title: "Error",
             description: "Failed to load chatbot configuration",
@@ -53,7 +62,6 @@ export const useChatbotConfig = () => {
       setConfig(data);
     } catch (error) {
       console.error('Error fetching chatbot config:', error);
-      // Don't show error toast for non-admin users
       setConfig(null);
     } finally {
       setLoading(false);
@@ -61,6 +69,11 @@ export const useChatbotConfig = () => {
   };
 
   const updateConfig = async (updates: Partial<ChatbotConfig>) => {
+    if (!user) {
+      console.error('Cannot update config without authentication');
+      return;
+    }
+
     try {
       setUpdating(true);
       console.log('Updating chatbot config with:', updates);
@@ -99,7 +112,7 @@ export const useChatbotConfig = () => {
 
   useEffect(() => {
     fetchConfig();
-  }, []);
+  }, [user]); // Re-fetch when user changes
 
   return {
     config,
