@@ -43,43 +43,52 @@ const AdminPanel: React.FC = () => {
   const fetchAdminData = async () => {
     try {
       setRefreshing(true);
+      console.log('AdminPanel: Starting data fetch...');
       
       // Fetch user profiles
+      console.log('AdminPanel: Fetching user profiles...');
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, full_name, created_at')
         .order('created_at', { ascending: false });
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        console.error('AdminPanel: Error fetching profiles:', profilesError);
         toast({
           title: "Error",
           description: "Failed to load user profiles",
           variant: "destructive",
         });
       } else {
+        console.log('AdminPanel: Successfully fetched profiles:', profilesData?.length || 0, 'profiles');
+        console.log('AdminPanel: Profile data:', profilesData);
         setUsers(profilesData || []);
       }
 
       // Fetch subscriber information
+      console.log('AdminPanel: Fetching subscriber information...');
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
         .select('email, subscribed, subscription_tier, subscription_end, is_admin, created_at, stripe_customer_id')
         .order('created_at', { ascending: false });
 
       if (subscribersError) {
-        console.error('Error fetching subscribers:', subscribersError);
+        console.error('AdminPanel: Error fetching subscribers:', subscribersError);
         toast({
           title: "Error",
           description: "Failed to load subscription data",
           variant: "destructive",
         });
       } else {
+        console.log('AdminPanel: Successfully fetched subscribers:', subscribersData?.length || 0, 'subscribers');
+        console.log('AdminPanel: Subscriber data:', subscribersData);
         setSubscribers(subscribersData || []);
       }
 
+      console.log('AdminPanel: Data fetch completed successfully');
+
     } catch (error) {
-      console.error('Error in fetchAdminData:', error);
+      console.error('AdminPanel: Error in fetchAdminData:', error);
       toast({
         title: "Error",
         description: "Failed to load admin data",
@@ -92,11 +101,20 @@ const AdminPanel: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log('AdminPanel: Component mounted, fetching initial data...');
     fetchAdminData();
   }, []);
 
   // Filtered and sorted users based on search and filter criteria
   const filteredUsers = useMemo(() => {
+    console.log('AdminPanel: Filtering users...', {
+      totalUsers: users.length,
+      searchTerm,
+      adminFilter,
+      subscriptionFilter,
+      sortBy
+    });
+
     let filtered = users.filter(user => {
       const subscriber = subscribers.find(sub => sub.email === user.email);
       
@@ -133,10 +151,12 @@ const AdminPanel: React.FC = () => {
       }
     });
 
+    console.log('AdminPanel: Filtered users result:', filtered.length, 'users after filtering');
     return filtered;
   }, [users, subscribers, searchTerm, adminFilter, subscriptionFilter, sortBy]);
 
   const handleClearFilters = () => {
+    console.log('AdminPanel: Clearing all filters');
     setSearchTerm('');
     setAdminFilter('all');
     setSubscriptionFilter('all');
@@ -151,6 +171,13 @@ const AdminPanel: React.FC = () => {
       if (!sub.subscription_end) return false;
       return new Date(sub.subscription_end) > new Date();
     }).length;
+
+    console.log('AdminPanel: Stats calculated:', {
+      totalUsers,
+      adminUsers,
+      totalSubscribers,
+      activeSubscriptions
+    });
 
     return { totalUsers, adminUsers, totalSubscribers, activeSubscriptions };
   };
@@ -239,7 +266,7 @@ const AdminPanel: React.FC = () => {
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <CardDescription>
-            Search, filter, and manage user accounts
+            Search, filter, and manage user accounts ({users.length} total users found)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -260,7 +287,7 @@ const AdminPanel: React.FC = () => {
           <div className="space-y-4">
             {filteredUsers.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
-                {users.length === 0 ? 'No users found' : 'No users match your current filters'}
+                {users.length === 0 ? 'No users found in database' : 'No users match your current filters'}
               </p>
             ) : (
               filteredUsers.map((user) => {
@@ -299,7 +326,7 @@ const AdminPanel: React.FC = () => {
         <CardHeader>
           <CardTitle>Subscription Overview</CardTitle>
           <CardDescription>
-            Monitor user subscriptions and billing
+            Monitor user subscriptions and billing ({subscribers.length} total subscribers found)
           </CardDescription>
         </CardHeader>
         <CardContent>
