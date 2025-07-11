@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -113,7 +112,7 @@ const AdminPanel: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <Shield className="h-6 w-6 mr-2 text-red-600" />
+            <Shield className="h-6 w-6 mr-2 text-amber-600" />
             Admin Panel
           </h2>
           <p className="text-gray-600">System administration and user management</p>
@@ -144,7 +143,7 @@ const AdminPanel: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
-            <Shield className="h-4 w-4 text-red-600" />
+            <Shield className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.adminUsers}</div>
@@ -201,7 +200,7 @@ const AdminPanel: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant={subscriber?.is_admin ? "destructive" : "secondary"}>
+                      <Badge className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-gray-100 text-gray-800"}>
                         {subscriber?.is_admin ? "Admin" : "User"}
                       </Badge>
                     </div>
@@ -244,7 +243,7 @@ const AdminPanel: React.FC = () => {
                       {subscriber.subscribed ? "Active" : "Inactive"}
                     </Badge>
                     {subscriber.is_admin && (
-                      <Badge variant="destructive">Admin</Badge>
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-300">Admin</Badge>
                     )}
                   </div>
                 </div>

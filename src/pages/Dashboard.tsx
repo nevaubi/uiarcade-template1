@@ -146,14 +146,14 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Admin Badge */}
+      {/* Admin Badge - Updated to gold color scheme */}
       {isAdmin && (
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-300 rounded-lg p-4">
           <div className="flex items-center">
-            <Shield className="h-5 w-5 text-red-600 mr-2" />
+            <Shield className="h-5 w-5 text-amber-600 mr-2" />
             <div>
-              <h4 className="font-semibold text-red-800">Administrator Access</h4>
-              <p className="text-sm text-red-700">You have admin privileges on this account.</p>
+              <h4 className="font-semibold text-amber-800">Administrator Access</h4>
+              <p className="text-sm text-amber-700">You have admin privileges on this account.</p>
             </div>
           </div>
         </div>
@@ -403,7 +403,7 @@ const Dashboard = () => {
                   {subscribed ? `${subscription_tier} Member` : 'Free User'}
                 </p>
                 {isAdmin && (
-                  <Badge variant="destructive" className="text-xs">
+                  <Badge className="text-xs bg-amber-100 text-amber-800 border-amber-300">
                     Admin
                   </Badge>
                 )}
@@ -424,7 +424,7 @@ const Dashboard = () => {
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }
-                ${item.id === 'admin' ? 'border border-red-200' : ''}
+                ${item.id === 'admin' ? 'border border-amber-300' : ''}
               `}
             >
               <item.icon className="h-5 w-5 mr-3" />
@@ -466,7 +466,7 @@ const Dashboard = () => {
                  activeTab === 'placeholder2' ? 'Placeholder Tab2' :
                  activeTab === 'admin' ? 'Admin Panel' : 'Dashboard'}
                 {activeTab === 'admin' && (
-                  <Shield className="h-5 w-5 ml-2 text-red-600" />
+                  <Shield className="h-5 w-5 ml-2 text-amber-600" />
                 )}
               </h2>
             </div>
