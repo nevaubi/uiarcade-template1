@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -10,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
+import AdminPanel from '@/components/admin/AdminPanel';
 import { 
   LayoutDashboard, 
   CreditCard, 
@@ -22,11 +22,12 @@ import {
   RefreshCw,
   Loader2,
   File,
-  LayoutGrid
+  LayoutGrid,
+  Shield
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -90,6 +91,7 @@ const Dashboard = () => {
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
     { id: 'placeholder1', icon: File, label: 'Placeholder Tab1', active: activeTab === 'placeholder1' },
     { id: 'placeholder2', icon: LayoutGrid, label: 'Placeholder Tab2', active: activeTab === 'placeholder2' },
+    ...(isAdmin ? [{ id: 'admin', icon: Shield, label: 'Admin Panel', active: activeTab === 'admin' }] : [])
   ];
 
   const getSubscriptionStatus = () => {
@@ -142,6 +144,19 @@ const Dashboard = () => {
           Here's what's happening with your account today.
         </p>
       </div>
+
+      {/* Admin Badge */}
+      {isAdmin && (
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <Shield className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="font-semibold text-red-800">Administrator Access</h4>
+              <p className="text-sm text-red-700">You have admin privileges on this account.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
@@ -382,9 +397,16 @@ const Dashboard = () => {
               <p className="text-sm font-medium text-gray-900 truncate">
                 {user?.email || 'User'}
               </p>
-              <p className="text-xs text-gray-500">
-                {subscribed ? `${subscription_tier} Member` : 'Free User'}
-              </p>
+              <div className="flex items-center space-x-2">
+                <p className="text-xs text-gray-500">
+                  {subscribed ? `${subscription_tier} Member` : 'Free User'}
+                </p>
+                {isAdmin && (
+                  <Badge variant="destructive" className="text-xs">
+                    Admin
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -401,6 +423,7 @@ const Dashboard = () => {
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }
+                ${item.id === 'admin' ? 'border border-red-200' : ''}
               `}
             >
               <item.icon className="h-5 w-5 mr-3" />
@@ -436,10 +459,14 @@ const Dashboard = () => {
               >
                 <Menu className="h-6 w-6" />
               </Button>
-              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate flex items-center">
                 {activeTab === 'dashboard' ? 'Dashboard' : 
                  activeTab === 'placeholder1' ? 'Placeholder Tab1' : 
-                 'Placeholder Tab2'}
+                 activeTab === 'placeholder2' ? 'Placeholder Tab2' :
+                 activeTab === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                {activeTab === 'admin' && (
+                  <Shield className="h-5 w-5 ml-2 text-red-600" />
+                )}
               </h2>
             </div>
             <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
@@ -471,6 +498,7 @@ const Dashboard = () => {
           {activeTab === 'dashboard' && renderDashboardContent()}
           {activeTab === 'placeholder1' && renderPlaceholder1Content()}
           {activeTab === 'placeholder2' && renderPlaceholder2Content()}
+          {activeTab === 'admin' && isAdmin && <AdminPanel />}
         </main>
       </div>
     </div>
