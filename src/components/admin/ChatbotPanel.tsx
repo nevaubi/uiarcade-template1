@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,15 +23,20 @@ import {
   Users,
   TrendingUp,
   RotateCcw,
-  AlertCircle,
-  MessageCircle,
-  Eye
+  AlertCircle
 } from 'lucide-react';
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
 import { useDocuments } from '@/hooks/useDocuments';
-import { useChatbot } from '@/contexts/ChatbotContext';
 import ErrorBoundary from '../ErrorBoundary';
+
+interface Document {
+  id: string;
+  name: string;
+  size: string;
+  uploadDate: string;
+  status: 'processed' | 'processing' | 'error';
+}
 
 interface Conversation {
   id: string;
@@ -49,21 +53,40 @@ interface ChatbotStats {
   lastActivity: string;
 }
 
+interface ChatbotSettings {
+  name: string;
+  avatar: string;
+  description: string;
+  personality: string;
+  role: string;
+  customInstructions: string;
+  responseStyle: string;
+  maxLength: string;
+  includeCitations: boolean;
+  creativityLevel: number;
+  fallbackResponse: string;
+}
+
 const ChatbotPanel = () => {
   const [activeTab, setActiveTab] = useState('my-chatbot');
+  const [chatbotStatus, setChatbotStatus] = useState<'active' | 'draft' | 'training' | 'error'>('draft');
   const [testMessage, setTestMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [stats, setStats] = useState<ChatbotStats | null>(null);
-
-  // Use chatbot context for database-backed configuration
-  const { 
-    config, 
-    updateConfig, 
-    configLoading, 
-    configUpdating, 
-    isActive, 
-    setIsActive 
-  } = useChatbot();
+  const [settings, setSettings] = useState<ChatbotSettings>({
+    name: '',
+    avatar: '',
+    description: '',
+    personality: '',
+    role: '',
+    customInstructions: '',
+    responseStyle: '',
+    maxLength: '',
+    includeCitations: false,
+    creativityLevel: 30,
+    fallbackResponse: ''
+  });
 
   // Move useDocuments hook here - single source of truth
   const { 
@@ -76,22 +99,42 @@ const ChatbotPanel = () => {
   } = useDocuments();
 
   useEffect(() => {
-    // Set mock stats with actual document count
-    setStats({
-      totalChats: 0,
-      avgResponseTime: '0s',
-      userSatisfaction: '0%',
-      documentsCount: documents.length,
-      lastActivity: 'Never'
-    });
+    // Placeholder for data fetching
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // TODO: Fetch chatbot data from backend
+        // const data = await fetchChatbotData();
+        // setConversations(data.conversations);
+        // setStats(data.stats);
+        // setSettings(data.settings);
+        // setChatbotStatus(data.status);
+        
+        // Simulate loading delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Set mock stats with actual document count
+        setStats({
+          totalChats: 0,
+          avgResponseTime: '0s',
+          userSatisfaction: '0%',
+          documentsCount: documents.length,
+          lastActivity: 'Never'
+        });
+      } catch (error) {
+        console.error('Error fetching chatbot data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [documents.length]);
 
-  const handleSettingsUpdate = async (field: string, value: any) => {
-    try {
-      await updateConfig({ [field]: value });
-    } catch (error) {
-      console.error('Failed to update setting:', error);
-    }
+  const handleSettingsUpdate = async (field: keyof ChatbotSettings, value: any) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+    // TODO: Update settings in backend
+    // await updateChatbotSettings({ [field]: value });
   };
 
   const handleTestMessage = async () => {
@@ -103,24 +146,11 @@ const ChatbotPanel = () => {
   };
 
   const toggleChatbotStatus = async () => {
-    try {
-      await setIsActive(!isActive);
-    } catch (error) {
-      console.error('Failed to toggle chatbot status:', error);
-    }
+    const newStatus = chatbotStatus === 'active' ? 'draft' : 'active';
+    setChatbotStatus(newStatus);
+    // TODO: Update status in backend
+    // await updateChatbotStatus(newStatus);
   };
-
-  if (configLoading) {
-    return (
-      <div className="w-full p-6">
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full">
@@ -142,11 +172,10 @@ const ChatbotPanel = () => {
                 </CardTitle>
                 <Button 
                   onClick={toggleChatbotStatus}
-                  variant={isActive ? 'default' : 'outline'}
+                  variant={chatbotStatus === 'active' ? 'default' : 'outline'}
                   size="sm"
-                  disabled={configUpdating}
                 >
-                  {isActive ? (
+                  {chatbotStatus === 'active' ? (
                     <>
                       <Pause className="h-4 w-4 mr-2" />
                       Active
@@ -162,63 +191,40 @@ const ChatbotPanel = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Total Conversations</p>
-                  <p className="text-2xl font-semibold">{stats?.totalChats || 0}</p>
-                  <p className="text-xs text-gray-400">All time</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Avg Response Time</p>
-                  <p className="text-2xl font-semibold">{stats?.avgResponseTime || '0s'}</p>
-                  <p className="text-xs text-gray-400">Last 24h</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">User Satisfaction</p>
-                  <p className="text-2xl font-semibold">{stats?.userSatisfaction || '0%'}</p>
-                  <p className="text-xs text-gray-400">Based on feedback</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Knowledge Base</p>
-                  <p className="text-2xl font-semibold">{stats?.documentsCount || 0}</p>
-                  <p className="text-xs text-gray-400">Documents</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Activation Notice */}
-          <Card className={`transition-all duration-300 ${isActive ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className={`h-5 w-5 ${isActive ? 'text-green-600' : 'text-blue-600'}`} />
-                Chatbot Widget
-              </CardTitle>
-              <CardDescription>
-                {isActive 
-                  ? 'Your chatbot is now active and visible to website visitors'
-                  : 'Activate your chatbot to make it available to website visitors'
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start justify-between">
-                <div className="flex-1 space-y-2">
-                  <div className={`flex items-center gap-2 text-sm ${isActive ? 'text-green-700' : 'text-blue-700'}`}>
-                    <Eye className="h-4 w-4" />
-                    <span>
-                      {isActive 
-                        ? 'A floating chat icon is now visible in the bottom-right corner'
-                        : 'When activated, a floating chat icon will appear in the bottom-right corner'
-                      }
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600">
-                    Visitors can click the chat icon to interact with your AI assistant powered by your uploaded documents.
-                  </p>
-                </div>
-                <Badge className={`${isActive ? "bg-green-100 text-green-800 border-green-300" : "bg-blue-100 text-blue-800 border-blue-300"} ml-4`}>
-                  {isActive ? 'Live' : 'Inactive'}
-                </Badge>
+                {isLoading ? (
+                  <>
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Total Conversations</p>
+                      <p className="text-2xl font-semibold">{stats?.totalChats || 0}</p>
+                      <p className="text-xs text-gray-400">All time</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Avg Response Time</p>
+                      <p className="text-2xl font-semibold">{stats?.avgResponseTime || '0s'}</p>
+                      <p className="text-xs text-gray-400">Last 24h</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">User Satisfaction</p>
+                      <p className="text-2xl font-semibold">{stats?.userSatisfaction || '0%'}</p>
+                      <p className="text-xs text-gray-400">Based on feedback</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Knowledge Base</p>
+                      <p className="text-2xl font-semibold">{stats?.documentsCount || 0}</p>
+                      <p className="text-xs text-gray-400">Documents</p>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -258,7 +264,17 @@ const ChatbotPanel = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {conversations.length === 0 ? (
+              {isLoading ? (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  ))}
+                </div>
+              ) : conversations.length === 0 ? (
                 <div className="text-center py-4 text-gray-500">
                   <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <p>No conversations yet</p>
@@ -308,9 +324,8 @@ const ChatbotPanel = () => {
                   <Input 
                     id="chatbot-name" 
                     placeholder="e.g., Support Assistant" 
-                    value={config?.chatbot_name || ''}
-                    onChange={(e) => handleSettingsUpdate('chatbot_name', e.target.value)}
-                    disabled={configUpdating}
+                    value={settings.name}
+                    onChange={(e) => handleSettingsUpdate('name', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -318,9 +333,8 @@ const ChatbotPanel = () => {
                   <Input 
                     id="description" 
                     placeholder="Brief description of your chatbot" 
-                    value={config?.description || ''}
+                    value={settings.description}
                     onChange={(e) => handleSettingsUpdate('description', e.target.value)}
-                    disabled={configUpdating}
                   />
                 </div>
               </div>
@@ -340,9 +354,8 @@ const ChatbotPanel = () => {
                 <div className="space-y-2">
                   <Label htmlFor="personality">Personality</Label>
                   <Select 
-                    value={config?.personality || ''}
+                    value={settings.personality}
                     onValueChange={(value) => handleSettingsUpdate('personality', value)}
-                    disabled={configUpdating}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select personality" />
@@ -360,9 +373,8 @@ const ChatbotPanel = () => {
                   <Input 
                     id="role" 
                     placeholder="e.g., Customer Support Specialist" 
-                    value={config?.role || ''}
+                    value={settings.role}
                     onChange={(e) => handleSettingsUpdate('role', e.target.value)}
-                    disabled={configUpdating}
                   />
                 </div>
               </div>
@@ -373,9 +385,8 @@ const ChatbotPanel = () => {
                   id="custom-instructions" 
                   placeholder="Add specific instructions for your chatbot..." 
                   className="min-h-[100px]"
-                  value={config?.custom_instructions || ''}
-                  onChange={(e) => handleSettingsUpdate('custom_instructions', e.target.value)}
-                  disabled={configUpdating}
+                  value={settings.customInstructions}
+                  onChange={(e) => handleSettingsUpdate('customInstructions', e.target.value)}
                 />
               </div>
             </CardContent>
@@ -394,9 +405,8 @@ const ChatbotPanel = () => {
                 <div className="space-y-2">
                   <Label htmlFor="response-style">Response Style</Label>
                   <Select 
-                    value={config?.response_style || ''}
-                    onValueChange={(value) => handleSettingsUpdate('response_style', value)}
-                    disabled={configUpdating}
+                    value={settings.responseStyle}
+                    onValueChange={(value) => handleSettingsUpdate('responseStyle', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select style" />
@@ -412,9 +422,8 @@ const ChatbotPanel = () => {
                 <div className="space-y-2">
                   <Label htmlFor="max-length">Max Response Length</Label>
                   <Select 
-                    value={config?.max_response_length || ''}
-                    onValueChange={(value) => handleSettingsUpdate('max_response_length', value)}
-                    disabled={configUpdating}
+                    value={settings.maxLength}
+                    onValueChange={(value) => handleSettingsUpdate('maxLength', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select length" />
@@ -434,15 +443,14 @@ const ChatbotPanel = () => {
                 <div className="flex items-center gap-4">
                   <Slider 
                     id="creativity"
-                    value={[config?.creativity_level || 30]}
-                    onValueChange={(value) => handleSettingsUpdate('creativity_level', value[0])}
+                    value={[settings.creativityLevel]}
+                    onValueChange={(value) => handleSettingsUpdate('creativityLevel', value[0])}
                     max={100}
                     step={10}
                     className="flex-1"
-                    disabled={configUpdating}
                   />
                   <span className="text-sm text-gray-600 w-12">
-                    {config?.creativity_level || 30}%
+                    {settings.creativityLevel}%
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">
@@ -459,9 +467,8 @@ const ChatbotPanel = () => {
                 </div>
                 <Switch 
                   id="citations"
-                  checked={config?.include_citations || false}
-                  onCheckedChange={(checked) => handleSettingsUpdate('include_citations', checked)}
-                  disabled={configUpdating}
+                  checked={settings.includeCitations}
+                  onCheckedChange={(checked) => handleSettingsUpdate('includeCitations', checked)}
                 />
               </div>
 
@@ -471,13 +478,19 @@ const ChatbotPanel = () => {
                   id="fallback-response" 
                   placeholder="What should the chatbot say when it can't answer?" 
                   className="min-h-[80px]"
-                  value={config?.fallback_response || ''}
-                  onChange={(e) => handleSettingsUpdate('fallback_response', e.target.value)}
-                  disabled={configUpdating}
+                  value={settings.fallbackResponse}
+                  onChange={(e) => handleSettingsUpdate('fallbackResponse', e.target.value)}
                 />
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Settings Button */}
+          <div className="flex justify-end">
+            <Button size="lg">
+              Save Settings
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
