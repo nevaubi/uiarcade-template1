@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { processDocument } from '@/utils/documentProcessor';
-import { storeDocumentVectors } from '@/services/vectorService';
+import { storeDocumentVectors, deleteDocumentVectors } from '@/services/vectorService';
 
 interface DocumentChunk {
   id: string;
@@ -109,33 +109,49 @@ export const useDocuments = () => {
       if (error) throw error;
 
       console.log(`Successfully processed ${processedDoc.chunks.length} chunks`);
-
-      // Store vectors after successful chunk insertion
+      
+      // Store vectors in Upstash via Edge Function
       try {
-        console.log('Starting vector embedding generation...');
-        const chunksForVector = data.map(chunk => ({
-          id: chunk.id,
-          content: chunk.content,
-          chunk_index: chunk.chunk_index,
-          word_count: chunk.word_count
-        }));
-
-        await storeDocumentVectors(processedDoc.document_name, chunksForVector);
-        console.log('Vector embeddings stored successfully');
+        // Only attempt vector embedding if we have the chunks
+        if (data && data.length > 0) {
+          toast({
+            title: "Processing...",
+            description: "Creating vector embeddings for better search...",
+          });
+          
+          // Prepare chunks with IDs for vector storage
+          const chunksWithIds = data.map((chunk: any) => ({
+            id: chunk.id,
+            content: chunk.content,
+            chunk_index: chunk.chunk_index,
+            word_count: chunk.word_count,
+          }));
+          
+          await storeDocumentVectors(processedDoc.document_name, chunksWithIds);
+          
+          toast({
+            title: "Success",
+            description: `Document processed! Created ${processedDoc.chunks.length} chunks with vector embeddings.`,
+          });
+        }
       } catch (vectorError: any) {
-        console.error('Vector storage failed (non-blocking):', vectorError);
-        // Don't fail the whole upload if vector storage fails
+        console.error('Vector embedding error:', vectorError);
+        
+        // Check if it's a configuration error
+        const errorMessage = vectorError.message || '';
+        const isConfigError = errorMessage.includes('API key') || 
+                            errorMessage.includes('not configured') ||
+                            errorMessage.includes('Edge function not found');
+        
+        // Don't fail the entire upload if vector embedding fails
         toast({
-          title: "Warning",
-          description: "Document uploaded but vector embeddings failed. Search functionality may be limited.",
+          title: "Partial Success",
+          description: isConfigError 
+            ? "Document uploaded but vector search not configured. Contact admin to enable."
+            : "Document uploaded but vector embedding failed. Search may be limited.",
           variant: "default",
         });
       }
-      
-      toast({
-        title: "Success",
-        description: `Document processed successfully! Created ${processedDoc.chunks.length} chunks.`,
-      });
 
       await fetchDocuments();
       return data?.[0]?.id || null;
@@ -155,6 +171,15 @@ export const useDocuments = () => {
 
   const deleteDocument = async (documentName: string) => {
     try {
+      // Delete from vector database FIRST (while chunks still exist in Supabase)
+      try {
+        await deleteDocumentVectors(documentName);
+      } catch (vectorError) {
+        console.error('Failed to delete vectors:', vectorError);
+        // Continue even if vector deletion fails
+      }
+
+      // THEN delete from Supabase
       const { error } = await supabase
         .from('document_chunks')
         .delete()
