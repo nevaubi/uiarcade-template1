@@ -41,7 +41,14 @@ export const useDocuments = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data || []);
+      
+      // Cast the database response to match our Document interface
+      const typedDocuments: Document[] = (data || []).map(doc => ({
+        ...doc,
+        processing_status: doc.processing_status as 'pending' | 'processing' | 'processed' | 'error'
+      }));
+      
+      setDocuments(typedDocuments);
     } catch (error) {
       console.error('Error fetching documents:', error);
       toast({
