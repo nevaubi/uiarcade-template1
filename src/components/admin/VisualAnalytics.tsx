@@ -108,7 +108,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
   const chartConfig = {
     users: {
-      label: "Users",
+      label: "New Users",
       color: "hsl(var(--chart-1))",
     },
     revenue: {
@@ -124,7 +124,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       color: "hsl(var(--chart-3))",
     },
     count: {
-      label: "Count",
+      label: "Subscriptions",
       color: "hsl(var(--chart-1))",
     },
   };
@@ -212,7 +212,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
       {/* Enhanced Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* User Registration Timeline - Changed to Bar Chart */}
+        {/* User Registration Timeline - Bar Chart with Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">User Registration Timeline</CardTitle>
@@ -239,10 +239,12 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                   content={<ChartTooltipContent />}
                   cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
                 />
+                <ChartLegend content={<ChartLegendContent />} />
                 <Bar 
                   dataKey="users" 
                   fill="var(--color-users)"
                   radius={[4, 4, 0, 0]}
+                  name="New Users"
                 />
               </BarChart>
             </ChartContainer>
@@ -278,7 +280,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </CardContent>
         </Card>
 
-        {/* Monthly Revenue Trend - Changed to Bar Chart */}
+        {/* Monthly Revenue Trend - Bar Chart with Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">Monthly Revenue Trend</CardTitle>
@@ -305,10 +307,12 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                   content={<ChartTooltipContent />}
                   cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
                 />
+                <ChartLegend content={<ChartLegendContent />} />
                 <Bar
                   dataKey="revenue"
                   fill="var(--color-revenue)"
                   radius={[4, 4, 0, 0]}
+                  name="Revenue ($)"
                 />
               </BarChart>
             </ChartContainer>
@@ -345,7 +349,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
         </Card>
       </div>
 
-      {/* Subscription Status Bar Chart */}
+      {/* Subscription Status Bar Chart with Legend */}
       <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
         <CardHeader>
           <CardTitle className="text-xl font-semibold">Subscription Status Overview</CardTitle>
@@ -372,10 +376,12 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                 content={<ChartTooltipContent />}
                 cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
               />
+              <ChartLegend content={<ChartLegendContent />} />
               <Bar 
                 dataKey="count" 
                 fill="var(--color-count)"
                 radius={[4, 4, 0, 0]}
+                name="Subscriptions"
               />
             </BarChart>
           </ChartContainer>

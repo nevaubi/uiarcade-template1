@@ -56,6 +56,13 @@
     --navy-200: 220 32% 87%;
     --navy-100: 220 36% 94%;
     --navy-50: 220 40% 98%;
+
+    /* Chart color system - Professional, vibrant palette */
+    --chart-1: 220 70% 50%;
+    --chart-2: 142 69% 58%;
+    --chart-3: 271 81% 56%;
+    --chart-4: 25 95% 53%;
+    --chart-5: 173 58% 39%;
   }
 
   .dark {
@@ -95,6 +102,13 @@
     --sidebar-accent-foreground: 220 20% 96%;
     --sidebar-border: 220 25% 27%;
     --sidebar-ring: 220 20% 84%;
+
+    /* Chart colors adjusted for dark mode */
+    --chart-1: 220 70% 60%;
+    --chart-2: 142 69% 68%;
+    --chart-3: 271 81% 66%;
+    --chart-4: 25 95% 63%;
+    --chart-5: 173 58% 49%;
   }
 }
 
