@@ -26,6 +26,7 @@ import {
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
 import { useDocuments } from '@/hooks/useDocuments';
+import ErrorBoundary from '../ErrorBoundary';
 
 interface Document {
   id: string;
@@ -368,17 +369,19 @@ const ChatbotPanel = () => {
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-6">
-          <DocumentUpload 
-            uploading={uploading}
-            uploadDocument={uploadDocument}
-          />
-          <DocumentManager 
-            documents={documents}
-            loading={documentsLoading}
-            deleteDocument={deleteDocument}
-            reprocessDocument={reprocessDocument}
-            getDocumentChunks={getDocumentChunks}
-          />
+          <ErrorBoundary>
+            <DocumentUpload 
+              uploading={uploading}
+              uploadDocument={uploadDocument}
+            />
+            <DocumentManager 
+              documents={documents}
+              loading={documentsLoading}
+              deleteDocument={deleteDocument}
+              reprocessDocument={reprocessDocument}
+              getDocumentChunks={getDocumentChunks}
+            />
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">

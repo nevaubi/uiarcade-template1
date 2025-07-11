@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +24,8 @@ interface DocumentChunk {
   word_count: number;
   created_at: string;
 }
+
+const allowedTypes = ['pdf', 'docx', 'txt', 'md'];
 
 export const useDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -73,16 +74,19 @@ export const useDocuments = () => {
 
     setUploading(true);
     try {
-      // Validate file type and size
-      const allowedTypes = ['pdf', 'docx', 'txt', 'md'];
+      // Validate file type and size with better error messages
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       
       if (!fileExtension || !allowedTypes.includes(fileExtension)) {
-        throw new Error('Invalid file type. Only PDF, DOCX, TXT, and MD files are allowed.');
+        throw new Error(`Invalid file type: .${fileExtension}. Only PDF, DOCX, TXT, and MD files are allowed.`);
       }
 
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         throw new Error('File size exceeds 10MB limit.');
+      }
+
+      if (file.size === 0) {
+        throw new Error('Cannot upload empty file.');
       }
 
       // Generate unique filename
@@ -90,12 +94,19 @@ export const useDocuments = () => {
       const fileName = `${timestamp}-${file.name}`;
       const filePath = `admin/${fileName}`;
 
+      console.log(`Starting upload: ${file.name} (${file.size} bytes, type: ${fileExtension})`);
+
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('chatbot-documents')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      console.log('File uploaded to storage successfully');
 
       // Create document record
       const { data: documentData, error: dbError } = await supabase
@@ -112,23 +123,40 @@ export const useDocuments = () => {
         .select()
         .single();
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database insert error:', dbError);
+        // Try to clean up uploaded file
+        await supabase.storage.from('chatbot-documents').remove([filePath]);
+        throw new Error(`Database error: ${dbError.message}`);
+      }
 
-      // Trigger document processing
-      const { error: processError } = await supabase.functions.invoke('process-document', {
-        body: {
-          documentId: documentData.id,
-          fileName: fileName,
-          fileType: fileExtension
+      console.log('Document record created:', documentData.id);
+
+      // Trigger document processing with better error handling
+      try {
+        const { data: functionData, error: processError } = await supabase.functions.invoke('process-document', {
+          body: {
+            documentId: documentData.id,
+            fileName: fileName,
+            fileType: fileExtension
+          }
+        });
+
+        if (processError) {
+          console.error('Processing function error:', processError);
+          toast({
+            title: "Warning",
+            description: "Document uploaded but processing failed. You can retry processing later.",
+            variant: "destructive",
+          });
+        } else {
+          console.log('Processing function response:', functionData);
         }
-      });
-
-      if (processError) {
-        console.error('Processing error:', processError);
-        // Don't throw here - document is uploaded, processing can be retried
+      } catch (functionError) {
+        console.error('Function invocation error:', functionError);
         toast({
           title: "Warning",
-          description: "Document uploaded but processing failed. You can retry processing later.",
+          description: "Document uploaded but processing may have issues. Check the document status.",
           variant: "destructive",
         });
       }
