@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 const ChatWidget = () => {
-  const { isActive, isWidgetOpen, setIsWidgetOpen } = useChatbot();
+  const { isActive, isWidgetOpen, setIsWidgetOpen, chatbotName } = useChatbot();
   const [message, setMessage] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -65,7 +65,7 @@ const ChatWidget = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Bot className="h-4 w-4" />
-                AI Assistant
+                {chatbotName}
               </CardTitle>
               <div className="flex items-center gap-1">
                 <Button

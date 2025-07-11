@@ -37,18 +37,24 @@ export const useChatbotConfig = () => {
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw error;
+        // Don't show error toast for unauthorized access - this is expected for non-admin users
+        if (error.message && !error.message.includes('Unauthorized')) {
+          toast({
+            title: "Error",
+            description: "Failed to load chatbot configuration",
+            variant: "destructive",
+          });
+        }
+        setConfig(null);
+        return;
       }
 
       console.log('Fetched config:', data);
       setConfig(data);
     } catch (error) {
       console.error('Error fetching chatbot config:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load chatbot configuration",
-        variant: "destructive",
-      });
+      // Don't show error toast for non-admin users
+      setConfig(null);
     } finally {
       setLoading(false);
     }

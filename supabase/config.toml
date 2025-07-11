@@ -22,6 +22,11 @@ port = 54323
 
 [functions.check-subscription]
 
+[functions.chatbot-config]
+
+[functions.chatbot-status]
+verify_jwt = false
+
 [functions.create-checkout]
 
 [functions.customer-portal]
