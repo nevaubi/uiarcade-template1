@@ -29,6 +29,8 @@ port = 54323
 [functions.stripe-webhook]
 verify_jwt = false
 
+[functions.vector-embed]
+
 [storage]
 enabled = true
 port = 54324

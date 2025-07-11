@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { processDocument } from '@/utils/documentProcessor';
+import { storeDocumentVectors } from '@/services/vectorService';
 
 interface DocumentChunk {
   id: string;
@@ -108,6 +109,28 @@ export const useDocuments = () => {
       if (error) throw error;
 
       console.log(`Successfully processed ${processedDoc.chunks.length} chunks`);
+
+      // Store vectors after successful chunk insertion
+      try {
+        console.log('Starting vector embedding generation...');
+        const chunksForVector = data.map(chunk => ({
+          id: chunk.id,
+          content: chunk.content,
+          chunk_index: chunk.chunk_index,
+          word_count: chunk.word_count
+        }));
+
+        await storeDocumentVectors(processedDoc.document_name, chunksForVector);
+        console.log('Vector embeddings stored successfully');
+      } catch (vectorError: any) {
+        console.error('Vector storage failed (non-blocking):', vectorError);
+        // Don't fail the whole upload if vector storage fails
+        toast({
+          title: "Warning",
+          description: "Document uploaded but vector embeddings failed. Search functionality may be limited.",
+          variant: "default",
+        });
+      }
       
       toast({
         title: "Success",
