@@ -26,6 +26,15 @@ import {
   Shield
 } from 'lucide-react';
 
+// Define the sidebar item type with optional isAdmin property
+interface SidebarItem {
+  id: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  active: boolean;
+  isAdmin?: boolean;
+}
+
 const Dashboard = () => {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -88,8 +97,8 @@ const Dashboard = () => {
   };
 
   // Define sidebar items - show admin features immediately if user is admin
-  const getSidebarItems = () => {
-    const baseItems = [
+  const getSidebarItems = (): SidebarItem[] => {
+    const baseItems: SidebarItem[] = [
       { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
     ];
 
