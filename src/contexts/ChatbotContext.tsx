@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useChatbotConfig, ChatbotConfig } from '@/hooks/useChatbotConfig';
 import { useChatbotStatus, PublicChatbotStatus } from '@/hooks/useChatbotStatus';
@@ -17,6 +16,7 @@ interface ChatbotContextType {
   isAdmin: boolean;
   chatbotName: string;
   chatbotDescription: string;
+  shouldShowWidget: boolean; // New property
 }
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
@@ -37,21 +37,31 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const { user } = useAuth();
   
-  // Try to fetch admin config (will fail gracefully for non-admin users)
-  const { config, loading: configLoading, updating: configUpdating, updateConfig } = useChatbotConfig();
-  
-  // Always fetch public status for widget visibility
+  // Always fetch public status for everyone
   const { status: publicStatus, loading: statusLoading } = useChatbotStatus();
+  
+  // Conditionally use config hook based on auth
+  const configHook = user ? useChatbotConfig() : { 
+    config: null, 
+    loading: false, 
+    updating: false, 
+    updateConfig: async () => undefined 
+  };
+  
+  const { config, loading: configLoading, updating: configUpdating, updateConfig } = configHook;
   
   // Determine if user is admin based on successful config fetch
   const isAdmin = config !== null && user !== null;
   
-  // Derive isActive from appropriate source
+  // For admins: show config status, for public: show public status
   const isActive = isAdmin ? config?.current_status === 'active' : publicStatus?.current_status === 'active';
   
-  // Get chatbot display info from appropriate source
-  const chatbotName = isAdmin ? (config?.chatbot_name || 'AI Assistant') : (publicStatus?.chatbot_name || 'AI Assistant');
-  const chatbotDescription = isAdmin ? (config?.description || 'Your helpful AI assistant') : (publicStatus?.description || 'Your helpful AI assistant');
+  // Widget should only show for non-authenticated users when active
+  const shouldShowWidget = !user && publicStatus?.current_status === 'active';
+  
+  // Get chatbot display info
+  const chatbotName = publicStatus?.chatbot_name || 'AI Assistant';
+  const chatbotDescription = publicStatus?.description || 'Your helpful AI assistant';
 
   const setIsActive = async (active: boolean) => {
     if (isAdmin && updateConfig) {
@@ -75,6 +85,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
         isAdmin,
         chatbotName,
         chatbotDescription,
+        shouldShowWidget,
       }}
     >
       {children}
