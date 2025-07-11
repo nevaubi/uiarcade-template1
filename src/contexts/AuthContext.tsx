@@ -18,7 +18,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   setPostAuthCallback: (callback: PostAuthCallback | null) => void;
-  checkAdminStatus: () => Promise<void>;
+  checkAdminStatus: (user?: User | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,8 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  const checkAdminStatus = async () => {
-    if (!user) {
+  const checkAdminStatus = async (targetUser?: User | null) => {
+    const userToCheck = targetUser !== undefined ? targetUser : user;
+    
+    if (!userToCheck) {
       setIsAdmin(false);
       return;
     }
@@ -49,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', user.id)
+        .eq('id', userToCheck.id)
         .single();
 
       if (error) {
@@ -74,9 +76,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in
+        // Check admin status when user signs in - pass session user directly
         if (session?.user) {
-          await checkAdminStatus();
+          await checkAdminStatus(session.user);
         } else {
           setIsAdmin(false);
         }
@@ -115,9 +117,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session
+      // Check admin status for initial session - pass session user directly
       if (session?.user) {
-        await checkAdminStatus();
+        await checkAdminStatus(session.user);
       }
     });
 
