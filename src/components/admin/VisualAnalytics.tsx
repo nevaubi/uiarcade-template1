@@ -52,11 +52,14 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
     }, {} as Record<string, number>);
 
     const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+    const total = Object.values(tierCounts).reduce((sum, count) => sum + count, 0);
     
     return Object.entries(tierCounts).map(([tier, count], index) => ({
       name: tier,
       value: count,
-      fill: colors[index % colors.length]
+      fill: colors[index % colors.length],
+      percentage: Math.round((count / total) * 100),
+      label: `${tier} (${count} users - ${Math.round((count / total) * 100)}%)`
     }));
   }, [subscribers]);
 
@@ -64,10 +67,23 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
   const roleData = useMemo(() => {
     const adminCount = subscribers.filter(sub => sub.is_admin).length;
     const userCount = users.length - adminCount;
+    const total = adminCount + userCount;
 
     return [
-      { name: 'Users', value: userCount, fill: 'hsl(var(--chart-1))' },
-      { name: 'Admins', value: adminCount, fill: 'hsl(var(--chart-2))' }
+      { 
+        name: 'Users', 
+        value: userCount, 
+        fill: 'hsl(var(--chart-1))',
+        percentage: Math.round((userCount / total) * 100),
+        label: `Regular Users (${userCount} users - ${Math.round((userCount / total) * 100)}%)`
+      },
+      { 
+        name: 'Admins', 
+        value: adminCount, 
+        fill: 'hsl(var(--chart-2))',
+        percentage: Math.round((adminCount / total) * 100),
+        label: `Administrators (${adminCount} users - ${Math.round((adminCount / total) * 100)}%)`
+      }
     ];
   }, [users, subscribers]);
 
@@ -95,17 +111,6 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       .slice(-6);
   }, [subscribers]);
 
-  // Process data for Active vs Inactive Subscriptions
-  const subscriptionStatusData = useMemo(() => {
-    const activeCount = subscribers.filter(sub => sub.subscribed).length;
-    const inactiveCount = subscribers.length - activeCount;
-
-    return [
-      { status: 'Active', count: activeCount },
-      { status: 'Inactive', count: inactiveCount }
-    ];
-  }, [subscribers]);
-
   const chartConfig = {
     users: {
       label: "New Users",
@@ -115,18 +120,27 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       label: "Revenue ($)",
       color: "hsl(var(--chart-2))",
     },
-    active: {
-      label: "Active",
-      color: "hsl(var(--chart-1))",
-    },
-    inactive: {
-      label: "Inactive",
-      color: "hsl(var(--chart-3))",
-    },
-    count: {
-      label: "Subscriptions",
-      color: "hsl(var(--chart-1))",
-    },
+  };
+
+  // Custom Legend Content for Pie Charts
+  const CustomPieChartLegend = ({ payload }: any) => {
+    if (!payload?.length) return null;
+    
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2 text-sm">
+            <div 
+              className="h-3 w-3 rounded-sm" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="font-medium text-foreground">
+              {entry.payload.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
@@ -172,7 +186,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           <CardContent>
             <div className="text-3xl font-bold text-green-900 dark:text-green-100">{subscribers.filter(s => s.subscribed).length.toLocaleString()}</div>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-              {Math.round((subscribers.filter(s => s.subscribed).length / Math.max(subscribers.length, 1)) * 100)}% conversion rate
+              Active recurring subscriptions
             </p>
           </CardContent>
         </Card>
@@ -251,7 +265,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </CardContent>
         </Card>
 
-        {/* Subscription Distribution */}
+        {/* Subscription Distribution with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">Subscription Distribution</CardTitle>
@@ -273,8 +287,29 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
+                <ChartTooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-lg">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="h-3 w-3 rounded-sm" 
+                              style={{ backgroundColor: data.fill }}
+                            />
+                            <span className="font-medium">{data.name}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {data.value} users ({data.percentage}%)
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <ChartLegend content={<CustomPieChartLegend />} />
               </PieChart>
             </ChartContainer>
           </CardContent>
@@ -319,7 +354,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </CardContent>
         </Card>
 
-        {/* Admin vs Users Ratio */}
+        {/* User Roles Distribution with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">User Roles Distribution</CardTitle>
@@ -341,52 +376,34 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
+                <ChartTooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-lg">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="h-3 w-3 rounded-sm" 
+                              style={{ backgroundColor: data.fill }}
+                            />
+                            <span className="font-medium">{data.name}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {data.value} users ({data.percentage}%)
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <ChartLegend content={<CustomPieChartLegend />} />
               </PieChart>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
-
-      {/* Subscription Status Bar Chart with Legend */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Subscription Status Overview</CardTitle>
-          <CardDescription className="text-base">Active vs inactive subscription comparison</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-80">
-            <BarChart data={subscriptionStatusData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-              <XAxis 
-                dataKey="status" 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent />}
-                cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar 
-                dataKey="count" 
-                fill="var(--color-count)"
-                radius={[4, 4, 0, 0]}
-                name="Subscriptions"
-              />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 };
