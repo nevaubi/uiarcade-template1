@@ -33,6 +33,11 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 // Processing timeout (30 seconds)
 const PROCESSING_TIMEOUT = 30000;
 
+// Type guard for PDF.js text items
+const isTextItem = (item: any): item is { str: string } => {
+  return item && typeof item.str === 'string';
+};
+
 // Validate file before processing
 const validateFile = (file: File): void => {
   if (!file) {
@@ -91,7 +96,7 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     console.log(`Successfully extracted ${text.length} characters from ${file.name}`);
     
     if (!text.trim()) {
-      throw new Error('No text content found in file');
+      throw new Error('No readable text found in document');
     }
     
     return text;
@@ -123,9 +128,9 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
-        // Use proper typing for text content items
+        // Use type guard instead of specific type
         const pageText = textContent.items
-          .filter((item): item is pdfjsLib.TextItem => 'str' in item)
+          .filter(isTextItem)
           .map((item) => item.str)
           .join(' ');
         
