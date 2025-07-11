@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Shield, Database, Activity, Loader2, RefreshCw } from 'lucide-react';
+import UserSearchFilter from './UserSearchFilter';
+import DataExport from './DataExport';
 
 interface UserProfile {
   id: string;
@@ -19,6 +22,8 @@ interface SubscriberInfo {
   subscription_tier: string;
   subscription_end: string;
   is_admin: boolean;
+  created_at: string;
+  stripe_customer_id: string;
 }
 
 const AdminPanel: React.FC = () => {
@@ -26,6 +31,13 @@ const AdminPanel: React.FC = () => {
   const [subscribers, setSubscribers] = useState<SubscriberInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [adminFilter, setAdminFilter] = useState('all');
+  const [subscriptionFilter, setSubscriptionFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  
   const { toast } = useToast();
 
   const fetchAdminData = async () => {
@@ -52,7 +64,7 @@ const AdminPanel: React.FC = () => {
       // Fetch subscriber information
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
-        .select('email, subscribed, subscription_tier, subscription_end, is_admin')
+        .select('email, subscribed, subscription_tier, subscription_end, is_admin, created_at, stripe_customer_id')
         .order('created_at', { ascending: false });
 
       if (subscribersError) {
@@ -82,6 +94,54 @@ const AdminPanel: React.FC = () => {
   useEffect(() => {
     fetchAdminData();
   }, []);
+
+  // Filtered and sorted users based on search and filter criteria
+  const filteredUsers = useMemo(() => {
+    let filtered = users.filter(user => {
+      const subscriber = subscribers.find(sub => sub.email === user.email);
+      
+      // Search filter
+      const matchesSearch = !searchTerm || 
+        (user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.email?.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Admin filter
+      const matchesAdmin = adminFilter === 'all' ||
+        (adminFilter === 'admin' && subscriber?.is_admin) ||
+        (adminFilter === 'user' && !subscriber?.is_admin);
+      
+      // Subscription filter
+      const matchesSubscription = subscriptionFilter === 'all' ||
+        (subscriptionFilter === 'active' && subscriber?.subscribed) ||
+        (subscriptionFilter === 'inactive' && !subscriber?.subscribed);
+      
+      return matchesSearch && matchesAdmin && matchesSubscription;
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'name':
+          return (a.full_name || '').localeCompare(b.full_name || '');
+        case 'email':
+          return (a.email || '').localeCompare(b.email || '');
+        case 'newest':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    return filtered;
+  }, [users, subscribers, searchTerm, adminFilter, subscriptionFilter, sortBy]);
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setAdminFilter('all');
+    setSubscriptionFilter('all');
+    setSortBy('newest');
+  };
 
   const getStats = () => {
     const totalUsers = users.length;
@@ -171,20 +231,39 @@ const AdminPanel: React.FC = () => {
         </Card>
       </div>
 
+      {/* Data Export Section */}
+      <DataExport users={users} subscribers={subscribers} />
+
       {/* Users Management */}
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <CardDescription>
-            Manage user accounts and permissions
+            Search, filter, and manage user accounts
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <UserSearchFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            adminFilter={adminFilter}
+            onAdminFilterChange={setAdminFilter}
+            subscriptionFilter={subscriptionFilter}
+            onSubscriptionFilterChange={setSubscriptionFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            onClearFilters={handleClearFilters}
+            resultCount={filteredUsers.length}
+            totalCount={users.length}
+          />
+
           <div className="space-y-4">
-            {users.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No users found</p>
+            {filteredUsers.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                {users.length === 0 ? 'No users found' : 'No users match your current filters'}
+              </p>
             ) : (
-              users.map((user) => {
+              filteredUsers.map((user) => {
                 const subscriber = subscribers.find(sub => sub.email === user.email);
                 return (
                   <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -202,6 +281,9 @@ const AdminPanel: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <Badge className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-gray-100 text-gray-800"}>
                         {subscriber?.is_admin ? "Admin" : "User"}
+                      </Badge>
+                      <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
+                        {subscriber?.subscribed ? "Subscribed" : "Free"}
                       </Badge>
                     </div>
                   </div>
