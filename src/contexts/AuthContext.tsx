@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,9 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  // Modified to accept user parameter
-  const checkAdminStatusForUser = async (userToCheck: User | null) => {
-    if (!userToCheck) {
+  const checkAdminStatus = async () => {
+    if (!user) {
       setIsAdmin(false);
       return;
     }
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', userToCheck.id)
+        .eq('id', user.id)
         .single();
 
       if (error) {
@@ -58,17 +58,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      console.log('Admin status check result:', data);
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
     }
-  };
-
-  // Wrapper function that uses current user state
-  const checkAdminStatus = async () => {
-    await checkAdminStatusForUser(user);
   };
 
   useEffect(() => {
@@ -80,9 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in - pass the user directly
+        // Check admin status when user signs in
         if (session?.user) {
-          await checkAdminStatusForUser(session.user);
+          await checkAdminStatus();
         } else {
           setIsAdmin(false);
         }
@@ -121,15 +115,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session - pass the user directly
+      // Check admin status for initial session
       if (session?.user) {
-        await checkAdminStatusForUser(session.user);
+        await checkAdminStatus();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [postAuthCallback]);
 
+  // ... rest of existing code (handlePostAuthCheckout, signUp, signIn, signOut functions)
   const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {
       console.log('Starting post-auth checkout for:', callback);
@@ -157,31 +152,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const priceId = callback.billing === 'annual' ? plan.annualPriceId : plan.monthlyPriceId;
       
-      // Create checkout session
-      const { data: { url }, error } = await supabase.functions.invoke('create-checkout', {
+      console.log('Creating checkout with priceId:', priceId);
+      
+      // Use the fresh session from authentication callback
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
+        headers: {
+          Authorization: `Bearer ${freshSession.access_token}`,
+        },
       });
 
-      if (error) throw error;
-
-      if (url) {
-        window.location.href = url;
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error('Error during post-auth checkout:', error);
+
+      // FIXED: Add mobile detection and handle appropriately
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // On mobile, redirect in same tab to avoid popup blocking
+        console.log('Mobile detected: redirecting in same tab');
+        window.location.href = data.url;
+      } else {
+        // On desktop, open in new tab
+        console.log('Desktop detected: opening in new tab');
+        window.open(data.url, '_blank');
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to start checkout process. Please try again.",
+        title: isMobile ? "Redirecting to checkout" : "Checkout opened",
+        description: isMobile ? "Please complete your subscription." : "Complete your subscription in the new tab.",
+      });
+      
+    } catch (error) {
+      console.error('Post-auth checkout error:', error);
+      toast({
+        title: "Checkout Error",
+        description: "Failed to start checkout. Please try again from the pricing page.",
         variant: "destructive",
       });
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    const redirectUrl = `${window.location.origin}/dashboard`;
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         },
@@ -196,8 +216,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } else {
       toast({
-        title: "Success!",
-        description: "Please check your email to verify your account.",
+        title: "Check your email",
+        description: "We've sent you a confirmation link to complete your registration.",
       });
     }
 

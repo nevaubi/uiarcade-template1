@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
 import WebsiteAnalytics from '@/components/WebsiteAnalytics';
@@ -26,21 +27,13 @@ import {
   Shield
 } from 'lucide-react';
 
-// Define the sidebar item type with optional isAdmin property
-interface SidebarItem {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  active: boolean;
-  isAdmin?: boolean;
-}
-
 const Dashboard = () => {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [adminViewMode, setAdminViewMode] = useState(false);
   const { toast } = useToast();
   const { 
     subscribed, 
@@ -96,18 +89,24 @@ const Dashboard = () => {
     }
   };
 
-  // Define sidebar items - show admin features immediately if user is admin
-  const getSidebarItems = (): SidebarItem[] => {
-    const baseItems: SidebarItem[] = [
+  const handleAdminViewToggle = (checked: boolean) => {
+    setAdminViewMode(checked);
+    // Reset to dashboard when switching views
+    setActiveTab('dashboard');
+  };
+
+  // Define sidebar items based on admin status and view mode
+  const getSidebarItems = () => {
+    const baseItems = [
       { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
     ];
 
-    // Add admin features directly if user is admin
-    if (isAdmin) {
-      baseItems.push(
-        { id: 'analytics', icon: BarChart3, label: 'Website Analytics', active: activeTab === 'analytics', isAdmin: true },
-        { id: 'tools', icon: Wrench, label: 'Website Tools', active: activeTab === 'tools', isAdmin: true }
-      );
+    if (isAdmin && adminViewMode) {
+      return [
+        ...baseItems,
+        { id: 'analytics', icon: BarChart3, label: 'Website Analytics', active: activeTab === 'analytics' },
+        { id: 'tools', icon: Wrench, label: 'Website Tools', active: activeTab === 'tools' },
+      ];
     }
 
     return baseItems;
@@ -160,37 +159,14 @@ const Dashboard = () => {
       <div>
         <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
           Welcome back, {user?.email?.split('@')[0] || 'User'}!
-          {isAdmin && (
-            <Badge variant="outline" className="ml-2 text-purple-600 border-purple-600">
-              <Shield className="h-3 w-3 mr-1" />
-              Admin
-            </Badge>
-          )}
         </h3>
         <p className="text-sm lg:text-base text-gray-600">
-          {isAdmin 
-            ? "You have admin access to website management features."
+          {isAdmin && adminViewMode 
+            ? "You're viewing the admin dashboard with full website management capabilities."
             : "Here's what's happening with your account today."
           }
         </p>
       </div>
-
-      {/* Admin Features Notice */}
-      {isAdmin && (
-        <Card className="border-purple-200 bg-purple-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Shield className="h-5 w-5 text-purple-600 mr-2" />
-              <div>
-                <h4 className="font-medium text-purple-900">Admin Dashboard Access</h4>
-                <p className="text-sm text-purple-700">
-                  You can access Website Analytics and Tools from the sidebar.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
@@ -356,6 +332,25 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
+          
+          {/* Admin View Toggle */}
+          {isAdmin && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <label htmlFor="admin-toggle" className="text-xs font-medium text-gray-700">
+                  Admin View
+                </label>
+                <Switch
+                  id="admin-toggle"
+                  checked={adminViewMode}
+                  onCheckedChange={handleAdminViewToggle}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {adminViewMode ? 'Admin Dashboard' : 'User Dashboard'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -365,7 +360,7 @@ const Dashboard = () => {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`
-                w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors relative
+                w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
                 ${item.active 
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -374,11 +369,6 @@ const Dashboard = () => {
             >
               <item.icon className="h-5 w-5 mr-3" />
               {item.label}
-              {item.isAdmin && (
-                <Badge variant="outline" className="ml-auto text-xs px-1 py-0 h-5 border-purple-300 text-purple-600">
-                  Admin
-                </Badge>
-              )}
             </button>
           ))}
         </nav>
@@ -411,7 +401,7 @@ const Dashboard = () => {
                 <Menu className="h-6 w-6" />
               </Button>
               <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                {activeTab === 'dashboard' ? (isAdmin ? 'Admin Dashboard' : 'Dashboard') : 
+                {activeTab === 'dashboard' ? (isAdmin && adminViewMode ? 'Admin Dashboard' : 'Dashboard') : 
                  activeTab === 'analytics' ? 'Website Analytics' : 
                  activeTab === 'tools' ? 'Website Tools' : 'Dashboard'}
               </h2>
