@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,8 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   const checkAdminStatus = async () => {
-    const currentUser = user;
-    if (!currentUser) {
+    if (!user) {
       setIsAdmin(false);
       return;
     }
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', currentUser.id)
+        .eq('id', user.id)
         .single();
 
       if (error) {
@@ -58,8 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      console.log('Admin status for user:', currentUser.email, 'is_admin:', data?.is_admin);
-      setIsAdmin(data?.is_admin === true);
+      setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
@@ -67,71 +66,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      
-      console.log('Initial session:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Check admin status for initial session
-      if (session?.user) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', session.user.id)
-            .single();
-
-          if (!error && mounted) {
-            console.log('Initial admin check:', session.user.email, 'is_admin:', data?.is_admin);
-            setIsAdmin(data?.is_admin === true);
-          }
-        } catch (error) {
-          console.error('Error in initial admin check:', error);
-        }
-      }
-      
-      if (mounted) {
-        setLoading(false);
-      }
-    });
-
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
-        
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
 
         // Check admin status when user signs in
+        if (session?.user) {
+          await checkAdminStatus();
+        } else {
+          setIsAdmin(false);
+        }
+
+        // Handle successful sign in with post-auth callback
         if (event === 'SIGNED_IN' && session?.user) {
-          try {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('is_admin')
-              .eq('id', session.user.id)
-              .single();
-
-            if (!error && mounted) {
-              console.log('Sign-in admin check:', session.user.email, 'is_admin:', data?.is_admin);
-              setIsAdmin(data?.is_admin === true);
-            }
-          } catch (error) {
-            console.error('Error checking admin on sign-in:', error);
-          }
-
-          // Handle post-auth callback
+          console.log('User signed in, checking for post-auth callback...');
+          
+          // Use a small delay to ensure state is properly updated
           setTimeout(() => {
-            if (postAuthCallback && mounted) {
+            if (postAuthCallback) {
               console.log('Executing post-auth callback:', postAuthCallback);
-              handlePostAuthCheckout(postAuthCallback, session);
-              setPostAuthCallback(null);
+              handlePostAuthCheckout(postAuthCallback, session); // Pass fresh session
+              setPostAuthCallback(null); // Clear the callback after use
             } else if (window.location.pathname === '/auth' || window.location.pathname === '/') {
               window.location.href = '/dashboard';
             }
@@ -146,30 +105,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             window.location.href = '/';
           }
         }
-
-        if (mounted) {
-          setLoading(false);
-        }
       }
     );
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []); // Remove dependencies to avoid re-running
+    // Get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      
+      // Check admin status for initial session
+      if (session?.user) {
+        await checkAdminStatus();
+      }
+    });
 
-  // Re-check admin status when user changes
-  useEffect(() => {
-    if (user) {
-      checkAdminStatus();
-    }
-  }, [user?.id]);
+    return () => subscription.unsubscribe();
+  }, [postAuthCallback]);
 
+  // ... rest of existing code (handlePostAuthCheckout, signUp, signIn, signOut functions)
   const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {
       console.log('Starting post-auth checkout for:', callback);
       
+      // Map plan names to pricing data
       const pricingPlans = {
         starter: {
           monthlyPriceId: 'price_1RcNqWDBIslKIY5sRPrUZSwO',
@@ -192,30 +152,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const priceId = callback.billing === 'annual' ? plan.annualPriceId : plan.monthlyPriceId;
       
-      const { data: { url }, error } = await supabase.functions.invoke('create-checkout', {
+      console.log('Creating checkout with priceId:', priceId);
+      
+      // Use the fresh session from authentication callback
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
+        headers: {
+          Authorization: `Bearer ${freshSession.access_token}`,
+        },
       });
 
-      if (error) throw error;
-
-      if (url) {
-        window.location.href = url;
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error('Error during post-auth checkout:', error);
+
+      // FIXED: Add mobile detection and handle appropriately
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // On mobile, redirect in same tab to avoid popup blocking
+        console.log('Mobile detected: redirecting in same tab');
+        window.location.href = data.url;
+      } else {
+        // On desktop, open in new tab
+        console.log('Desktop detected: opening in new tab');
+        window.open(data.url, '_blank');
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to start checkout process. Please try again.",
+        title: isMobile ? "Redirecting to checkout" : "Checkout opened",
+        description: isMobile ? "Please complete your subscription." : "Complete your subscription in the new tab.",
+      });
+      
+    } catch (error) {
+      console.error('Post-auth checkout error:', error);
+      toast({
+        title: "Checkout Error",
+        description: "Failed to start checkout. Please try again from the pricing page.",
         variant: "destructive",
       });
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    const redirectUrl = `${window.location.origin}/dashboard`;
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         },
@@ -230,8 +216,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } else {
       toast({
-        title: "Success!",
-        description: "Please check your email to verify your account.",
+        title: "Check your email",
+        description: "We've sent you a confirmation link to complete your registration.",
       });
     }
 
@@ -255,6 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
+      // The redirect will be handled by the onAuthStateChange listener
     }
 
     return { error };
@@ -273,6 +260,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
+      // The redirect will be handled by the onAuthStateChange listener
     }
   };
 
