@@ -107,7 +107,6 @@ const AdminPanel: React.FC = () => {
     fetchAdminData();
   }, []);
 
-  // Filtered and sorted users based on search and filter criteria
   const filteredUsers = useMemo(() => {
     console.log('AdminPanel: Filtering users...', {
       totalUsers: users.length,
@@ -187,13 +186,13 @@ const AdminPanel: React.FC = () => {
   const stats = getStats();
 
   const StatCard = ({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) => (
-    <Card className="transition-all duration-200 hover:shadow-md">
+    <Card className="transition-all duration-200 hover:shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className={`h-4 w-4 ${color}`} />
+        <CardTitle className="text-sm font-semibold text-muted-foreground">{title}</CardTitle>
+        <Icon className={`h-5 w-5 ${color}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-3xl font-bold tracking-tight">{value.toLocaleString()}</div>
       </CardContent>
     </Card>
   );
@@ -217,30 +216,32 @@ const AdminPanel: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-10 w-48 mb-3" />
             <Skeleton className="h-4 w-64" />
           </div>
-          <Skeleton className="h-9 w-28" />
+          <Skeleton className="h-10 w-32" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Skeleton className="h-12 w-64" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="border-0 bg-gradient-to-br from-background to-muted/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-5 w-5" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-12" />
+                <Skeleton className="h-8 w-16" />
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <Card>
+        <Card className="border-0 shadow-lg">
           <CardHeader>
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-4 w-48" />
@@ -254,61 +255,61 @@ const AdminPanel: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Admin Panel Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-foreground flex items-center">
-            <Shield className="h-7 w-7 mr-3 text-primary" />
+          <h1 className="text-4xl font-bold text-foreground flex items-center tracking-tight">
+            <Shield className="h-8 w-8 mr-4 text-primary" />
             Admin Panel
-          </h2>
-          <p className="text-muted-foreground mt-1">System administration and user management</p>
+          </h1>
+          <p className="text-muted-foreground mt-2 text-lg">System administration and user management</p>
         </div>
         <Button
           onClick={fetchAdminData}
           disabled={refreshing}
           variant="outline"
-          size="sm"
-          className="transition-all duration-200"
+          size="lg"
+          className="transition-all duration-200 hover:shadow-md"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh Data
         </Button>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-600" />
-        <StatCard title="Admin Users" value={stats.adminUsers} icon={Shield} color="text-amber-600" />
-        <StatCard title="Active Subscribers" value={stats.totalSubscribers} icon={Activity} color="text-green-600" />
-        <StatCard title="Database Records" value={users.length + subscribers.length} icon={Database} color="text-purple-600" />
-      </div>
-
-      {/* Tabs for different admin sections */}
-      <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users" className="flex items-center gap-2">
+      {/* Tabs for different admin sections - Moved to top */}
+      <Tabs defaultValue="users" className="space-y-8">
+        <TabsList className="grid w-full max-w-md grid-cols-2 h-12">
+          <TabsTrigger value="users" className="flex items-center gap-2 text-base font-medium">
             <Users className="h-4 w-4" />
             User Management
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
+          <TabsTrigger value="analytics" className="flex items-center gap-2 text-base font-medium">
             <BarChart3 className="h-4 w-4" />
             Visual Analytics
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="users" className="space-y-8">
+          {/* Enhanced Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-600" />
+            <StatCard title="Admin Users" value={stats.adminUsers} icon={Shield} color="text-amber-600" />
+            <StatCard title="Active Subscribers" value={stats.totalSubscribers} icon={Activity} color="text-green-600" />
+            <StatCard title="Database Records" value={users.length + subscribers.length} icon={Database} color="text-purple-600" />
+          </div>
+
           {/* Data Export Section */}
           <DataExport users={users} subscribers={subscribers} />
 
           {/* Users Management with Data Table */}
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="h-5 w-5 mr-2" />
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <Users className="h-5 w-5 mr-3" />
                 User Management
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Search, filter, and manage user accounts ({users.length} total users found)
               </CardDescription>
             </CardHeader>
@@ -327,21 +328,21 @@ const AdminPanel: React.FC = () => {
                 totalCount={users.length}
               />
 
-              <div className="rounded-md border">
+              <div className="rounded-lg border border-border/50 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Subscription</TableHead>
-                      <TableHead>Joined</TableHead>
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="font-semibold">User</TableHead>
+                      <TableHead className="font-semibold">Role</TableHead>
+                      <TableHead className="font-semibold">Subscription</TableHead>
+                      <TableHead className="font-semibold">Joined</TableHead>
                       <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                           {users.length === 0 ? 'No users found in database' : 'No users match your current filters'}
                         </TableCell>
                       </TableRow>
@@ -403,31 +404,31 @@ const AdminPanel: React.FC = () => {
           </Card>
 
           {/* Subscription Overview */}
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Activity className="h-5 w-5 mr-2" />
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <Activity className="h-5 w-5 mr-3" />
                 Subscription Overview
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Monitor user subscriptions and billing ({subscribers.length} total subscribers found)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
+              <div className="rounded-lg border border-border/50 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Expires</TableHead>
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="font-semibold">Email</TableHead>
+                      <TableHead className="font-semibold">Plan</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Expires</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {subscribers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                           No subscription data found
                         </TableCell>
                       </TableRow>

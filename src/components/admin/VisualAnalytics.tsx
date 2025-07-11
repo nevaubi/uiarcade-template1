@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Users, Activity, DollarSign } from 'lucide-react';
 
 interface UserProfile {
@@ -51,7 +51,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       return acc;
     }, {} as Record<string, number>);
 
-    const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
+    const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
     
     return Object.entries(tierCounts).map(([tier, count], index) => ({
       name: tier,
@@ -66,8 +66,8 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
     const userCount = users.length - adminCount;
 
     return [
-      { name: 'Users', value: userCount, fill: '#8884d8' },
-      { name: 'Admins', value: adminCount, fill: '#82ca9d' }
+      { name: 'Users', value: userCount, fill: 'hsl(var(--chart-1))' },
+      { name: 'Admins', value: adminCount, fill: 'hsl(var(--chart-2))' }
     ];
   }, [users, subscribers]);
 
@@ -112,7 +112,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       color: "hsl(var(--chart-1))",
     },
     revenue: {
-      label: "Revenue",
+      label: "Revenue ($)",
       color: "hsl(var(--chart-2))",
     },
     active: {
@@ -123,19 +123,23 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       label: "Inactive",
       color: "hsl(var(--chart-3))",
     },
+    count: {
+      label: "Count",
+      color: "hsl(var(--chart-1))",
+    },
   };
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {[...Array(6)].map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
             <CardHeader>
-              <div className="h-4 bg-muted rounded animate-pulse" />
-              <div className="h-3 bg-muted rounded animate-pulse w-2/3" />
+              <div className="h-5 bg-muted rounded-md animate-pulse" />
+              <div className="h-4 bg-muted rounded-md animate-pulse w-2/3 mt-2" />
             </CardHeader>
             <CardContent>
-              <div className="h-64 bg-muted rounded animate-pulse" />
+              <div className="h-80 bg-muted rounded-lg animate-pulse" />
             </CardContent>
           </Card>
         ))}
@@ -144,164 +148,189 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
   }
 
   return (
-    <div className="space-y-6">
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+    <div className="space-y-8">
+      {/* Enhanced Key Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Users</CardTitle>
+            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">{users.length.toLocaleString()}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
               +{users.filter(u => new Date(u.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} this month
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300">Active Subscriptions</CardTitle>
+            <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{subscribers.filter(s => s.subscribed).length}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((subscribers.filter(s => s.subscribed).length / subscribers.length) * 100)}% conversion rate
+            <div className="text-3xl font-bold text-green-900 dark:text-green-100">{subscribers.filter(s => s.subscribed).length.toLocaleString()}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              {Math.round((subscribers.filter(s => s.subscribed).length / Math.max(subscribers.length, 1)) * 100)}% conversion rate
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Est. Monthly Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-purple-700 dark:text-purple-300">Est. Monthly Revenue</CardTitle>
+            <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${revenueData.reduce((sum, item) => sum + item.revenue, 0).toFixed(0)}
+            <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+              ${revenueData.reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
               Based on subscription tiers
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-amber-700 dark:text-amber-300">Growth Rate</CardTitle>
+            <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold text-amber-900 dark:text-amber-100">
               {userGrowthData.length > 1 ? 
-                Math.round(((userGrowthData[userGrowthData.length - 1]?.users || 0) / (userGrowthData[userGrowthData.length - 2]?.users || 1) - 1) * 100) 
+                Math.round(((userGrowthData[userGrowthData.length - 1]?.users || 0) / Math.max(userGrowthData[userGrowthData.length - 2]?.users || 1, 1) - 1) * 100) 
                 : 0}%
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
               Month over month
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Registration Timeline */}
-        <Card>
+      {/* Enhanced Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* User Registration Timeline - Changed to Bar Chart */}
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
-            <CardTitle>User Registration Timeline</CardTitle>
-            <CardDescription>New user registrations over the last 6 months</CardDescription>
+            <CardTitle className="text-xl font-semibold">User Registration Timeline</CardTitle>
+            <CardDescription className="text-base">New user registrations over the last 6 months</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64">
-              <LineChart data={userGrowthData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="users" 
-                  stroke="var(--color-users)" 
-                  strokeWidth={2}
-                  dot={{ fill: "var(--color-users)" }}
+            <ChartContainer config={chartConfig} className="h-80">
+              <BarChart data={userGrowthData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
                 />
-              </LineChart>
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+                />
+                <Bar 
+                  dataKey="users" 
+                  fill="var(--color-users)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
         {/* Subscription Distribution */}
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
-            <CardTitle>Subscription Distribution</CardTitle>
-            <CardDescription>Distribution of users across subscription tiers</CardDescription>
+            <CardTitle className="text-xl font-semibold">Subscription Distribution</CardTitle>
+            <CardDescription className="text-base">Distribution of users across subscription tiers</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64">
-              <PieChart>
+            <ChartContainer config={chartConfig} className="h-80">
+              <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <Pie
                   data={subscriptionData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
+                  outerRadius={100}
+                  innerRadius={40}
+                  paddingAngle={2}
                   dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
                 >
                   {subscriptionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
               </PieChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        {/* Monthly Revenue Trend */}
-        <Card>
+        {/* Monthly Revenue Trend - Changed to Bar Chart */}
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
-            <CardTitle>Monthly Revenue Trend</CardTitle>
-            <CardDescription>Estimated monthly recurring revenue</CardDescription>
+            <CardTitle className="text-xl font-semibold">Monthly Revenue Trend</CardTitle>
+            <CardDescription className="text-base">Estimated monthly recurring revenue</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64">
-              <AreaChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="var(--color-revenue)"
-                  fill="var(--color-revenue)"
-                  fillOpacity={0.3}
+            <ChartContainer config={chartConfig} className="h-80">
+              <BarChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
                 />
-              </AreaChart>
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+                />
+                <Bar
+                  dataKey="revenue"
+                  fill="var(--color-revenue)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
         {/* Admin vs Users Ratio */}
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader>
-            <CardTitle>User Roles Distribution</CardTitle>
-            <CardDescription>Admin vs regular users breakdown</CardDescription>
+            <CardTitle className="text-xl font-semibold">User Roles Distribution</CardTitle>
+            <CardDescription className="text-base">Admin vs regular users breakdown</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64">
-              <PieChart>
+            <ChartContainer config={chartConfig} className="h-80">
+              <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <Pie
                   data={roleData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={80}
-                  paddingAngle={5}
+                  innerRadius={50}
+                  outerRadius={100}
+                  paddingAngle={4}
                   dataKey="value"
                 >
                   {roleData.map((entry, index) => (
@@ -317,19 +346,37 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       </div>
 
       {/* Subscription Status Bar Chart */}
-      <Card>
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
         <CardHeader>
-          <CardTitle>Subscription Status Overview</CardTitle>
-          <CardDescription>Active vs inactive subscription comparison</CardDescription>
+          <CardTitle className="text-xl font-semibold">Subscription Status Overview</CardTitle>
+          <CardDescription className="text-base">Active vs inactive subscription comparison</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-64">
-            <BarChart data={subscriptionStatusData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="count" fill="var(--color-active)" />
+          <ChartContainer config={chartConfig} className="h-80">
+            <BarChart data={subscriptionStatusData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+              <XAxis 
+                dataKey="status" 
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+              />
+              <Bar 
+                dataKey="count" 
+                fill="var(--color-count)"
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ChartContainer>
         </CardContent>
