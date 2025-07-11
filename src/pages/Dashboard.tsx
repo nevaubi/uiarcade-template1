@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
 import AdminPanel from '@/components/admin/AdminPanel';
+import ChatbotPanel from '@/components/admin/ChatbotPanel';
 import { 
   LayoutDashboard, 
   CreditCard, 
@@ -23,7 +24,8 @@ import {
   Loader2,
   File,
   LayoutGrid,
-  Shield
+  Shield,
+  Bot
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -92,7 +94,10 @@ const Dashboard = () => {
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
     { id: 'placeholder1', icon: File, label: 'Placeholder Tab1', active: activeTab === 'placeholder1' },
     { id: 'placeholder2', icon: LayoutGrid, label: 'Placeholder Tab2', active: activeTab === 'placeholder2' },
-    ...(isAdmin ? [{ id: 'admin', icon: Shield, label: 'Admin Panel', active: activeTab === 'admin' }] : [])
+    ...(isAdmin ? [
+      { id: 'admin', icon: Shield, label: 'Admin Panel', active: activeTab === 'admin' },
+      { id: 'chatbot', icon: Bot, label: 'Chatbot', active: activeTab === 'chatbot' }
+    ] : [])
   ];
 
   const getSubscriptionStatus = () => {
@@ -424,7 +429,7 @@ const Dashboard = () => {
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }
-                ${item.id === 'admin' ? 'border border-amber-300' : ''}
+                ${(item.id === 'admin' || item.id === 'chatbot') ? 'border border-amber-300' : ''}
               `}
             >
               <item.icon className="h-5 w-5 mr-3" />
@@ -464,9 +469,13 @@ const Dashboard = () => {
                 {activeTab === 'dashboard' ? 'Dashboard' : 
                  activeTab === 'placeholder1' ? 'Placeholder Tab1' : 
                  activeTab === 'placeholder2' ? 'Placeholder Tab2' :
-                 activeTab === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                 activeTab === 'admin' ? 'Admin Panel' : 
+                 activeTab === 'chatbot' ? 'Chatbot' : 'Dashboard'}
                 {activeTab === 'admin' && (
                   <Shield className="h-5 w-5 ml-2 text-amber-600" />
+                )}
+                {activeTab === 'chatbot' && (
+                  <Bot className="h-5 w-5 ml-2 text-purple-600" />
                 )}
               </h2>
             </div>
@@ -500,6 +509,7 @@ const Dashboard = () => {
           {activeTab === 'placeholder1' && renderPlaceholder1Content()}
           {activeTab === 'placeholder2' && renderPlaceholder2Content()}
           {activeTab === 'admin' && isAdmin && <AdminPanel />}
+          {activeTab === 'chatbot' && isAdmin && <ChatbotPanel />}
         </main>
       </div>
     </div>
