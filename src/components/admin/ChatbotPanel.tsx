@@ -93,8 +93,6 @@ const ChatbotPanel = () => {
     uploading, 
     uploadDocument, 
     deleteDocument, 
-    reprocessDocument, 
-    getDocumentChunks, 
     refreshDocuments 
   } = useDocuments();
 
@@ -206,9 +204,7 @@ const ChatbotPanel = () => {
                     </div>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">Processed</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {documents.filter(d => d.processing_status === 'processed').length}
-                      </p>
+                      <p className="text-2xl font-bold text-gray-900">{documents.length}</p>
                     </div>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">Last Activity</p>
@@ -378,8 +374,6 @@ const ChatbotPanel = () => {
               documents={documents}
               loading={documentsLoading}
               deleteDocument={deleteDocument}
-              reprocessDocument={reprocessDocument}
-              getDocumentChunks={getDocumentChunks}
             />
           </ErrorBoundary>
         </TabsContent>
