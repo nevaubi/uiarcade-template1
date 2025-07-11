@@ -18,7 +18,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   setPostAuthCallback: (callback: PostAuthCallback | null) => void;
-  checkAdminStatus: () => Promise<void>;
+  checkAdminStatus: (userToCheck?: User | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,17 +39,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  const checkAdminStatus = async () => {
-    if (!user) {
+  const checkAdminStatus = async (userToCheck?: User | null) => {
+    const targetUser = userToCheck || user;
+    
+    console.log('Checking admin status for user:', targetUser?.email);
+    
+    if (!targetUser) {
+      console.log('No user found, setting isAdmin to false');
       setIsAdmin(false);
       return;
     }
 
     try {
+      console.log('Querying profiles table for user ID:', targetUser.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', user.id)
+        .eq('id', targetUser.id)
         .single();
 
       if (error) {
@@ -58,9 +64,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      setIsAdmin(data?.is_admin || false);
+      const adminStatus = data?.is_admin || false;
+      console.log('Admin status from database:', data?.is_admin, 'Setting isAdmin to:', adminStatus);
+      setIsAdmin(adminStatus);
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('Exception while checking admin status:', error);
       setIsAdmin(false);
     }
   };
@@ -70,14 +78,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
+        
+        // Update session and user state first
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in
+        // Then check admin status with the fresh user data
         if (session?.user) {
-          await checkAdminStatus();
+          console.log('User signed in, checking admin status...');
+          await checkAdminStatus(session.user); // Pass user directly to avoid race condition
         } else {
+          console.log('No user in session, setting isAdmin to false');
           setIsAdmin(false);
         }
 
@@ -115,9 +127,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session
+      // Check admin status for initial session with the session user
       if (session?.user) {
-        await checkAdminStatus();
+        console.log('Initial session has user, checking admin status...');
+        await checkAdminStatus(session.user); // Pass user directly
       }
     });
 
