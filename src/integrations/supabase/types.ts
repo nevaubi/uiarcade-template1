@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      chatbot_config: {
+        Row: {
+          chatbot_name: string | null
+          created_at: string
+          created_by: string | null
+          creativity_level: number | null
+          current_status: string | null
+          custom_instructions: string | null
+          description: string | null
+          fallback_response: string | null
+          id: string
+          include_citations: boolean | null
+          max_response_length: string | null
+          personality: string | null
+          response_style: string | null
+          role: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          chatbot_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          creativity_level?: number | null
+          current_status?: string | null
+          custom_instructions?: string | null
+          description?: string | null
+          fallback_response?: string | null
+          id?: string
+          include_citations?: boolean | null
+          max_response_length?: string | null
+          personality?: string | null
+          response_style?: string | null
+          role?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          chatbot_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          creativity_level?: number | null
+          current_status?: string | null
+          custom_instructions?: string | null
+          description?: string | null
+          fallback_response?: string | null
+          id?: string
+          include_citations?: boolean | null
+          max_response_length?: string | null
+          personality?: string | null
+          response_style?: string | null
+          role?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       document_chunks: {
         Row: {
           chunk_index: number
@@ -118,6 +175,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_chatbot_config: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          chatbot_name: string
+          description: string
+          personality: string
+          role: string
+          custom_instructions: string
+          response_style: string
+          max_response_length: string
+          creativity_level: number
+          fallback_response: string
+          current_status: string
+          include_citations: boolean
+          created_at: string
+          updated_at: string
+        }[]
+      }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

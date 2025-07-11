@@ -1,11 +1,16 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useChatbotConfig, ChatbotConfig } from '@/hooks/useChatbotConfig';
 
 interface ChatbotContextType {
   isActive: boolean;
   setIsActive: (active: boolean) => void;
   isWidgetOpen: boolean;
   setIsWidgetOpen: (open: boolean) => void;
+  config: ChatbotConfig | null;
+  updateConfig: (updates: Partial<ChatbotConfig>) => Promise<ChatbotConfig | undefined>;
+  configLoading: boolean;
+  configUpdating: boolean;
 }
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
@@ -23,8 +28,16 @@ interface ChatbotProviderProps {
 }
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) => {
-  const [isActive, setIsActive] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
+  const { config, loading: configLoading, updating: configUpdating, updateConfig } = useChatbotConfig();
+  
+  // Derive isActive from config current_status
+  const isActive = config?.current_status === 'active';
+
+  const setIsActive = async (active: boolean) => {
+    const newStatus = active ? 'active' : 'draft';
+    await updateConfig({ current_status: newStatus });
+  };
 
   return (
     <ChatbotContext.Provider
@@ -33,6 +46,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
         setIsActive,
         isWidgetOpen,
         setIsWidgetOpen,
+        config,
+        updateConfig,
+        configLoading,
+        configUpdating,
       }}
     >
       {children}
