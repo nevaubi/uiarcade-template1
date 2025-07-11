@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
+import WebsiteAnalytics from '@/components/WebsiteAnalytics';
+import WebsiteTools from '@/components/WebsiteTools';
 import { 
   LayoutDashboard, 
   CreditCard, 
@@ -21,16 +22,18 @@ import {
   TrendingUp,
   RefreshCw,
   Loader2,
-  File,
-  LayoutGrid
+  BarChart3,
+  Wrench,
+  Shield
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [adminViewMode, setAdminViewMode] = useState(false);
   const { toast } = useToast();
   const { 
     subscribed, 
@@ -86,11 +89,30 @@ const Dashboard = () => {
     }
   };
 
-  const sidebarItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
-    { id: 'placeholder1', icon: File, label: 'Placeholder Tab1', active: activeTab === 'placeholder1' },
-    { id: 'placeholder2', icon: LayoutGrid, label: 'Placeholder Tab2', active: activeTab === 'placeholder2' },
-  ];
+  const handleAdminViewToggle = (checked: boolean) => {
+    setAdminViewMode(checked);
+    // Reset to dashboard when switching views
+    setActiveTab('dashboard');
+  };
+
+  // Define sidebar items based on admin status and view mode
+  const getSidebarItems = () => {
+    const baseItems = [
+      { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
+    ];
+
+    if (isAdmin && adminViewMode) {
+      return [
+        ...baseItems,
+        { id: 'analytics', icon: BarChart3, label: 'Website Analytics', active: activeTab === 'analytics' },
+        { id: 'tools', icon: Wrench, label: 'Website Tools', active: activeTab === 'tools' },
+      ];
+    }
+
+    return baseItems;
+  };
+
+  const sidebarItems = getSidebarItems();
 
   const getSubscriptionStatus = () => {
     if (subscriptionLoading) return 'Loading...';
@@ -139,7 +161,10 @@ const Dashboard = () => {
           Welcome back, {user?.email?.split('@')[0] || 'User'}!
         </h3>
         <p className="text-sm lg:text-base text-gray-600">
-          Here's what's happening with your account today.
+          {isAdmin && adminViewMode 
+            ? "You're viewing the admin dashboard with full website management capabilities."
+            : "Here's what's happening with your account today."
+          }
         </p>
       </div>
 
@@ -256,91 +281,6 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderPlaceholder1Content = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
-          Placeholder Tab1
-        </h3>
-        <p className="text-sm lg:text-base text-gray-600">
-          This is a placeholder page for Tab1 functionality.
-        </p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Sample Content</CardTitle>
-          <CardDescription>
-            This is placeholder content for demonstration
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Feature 1</h4>
-              <p className="text-sm text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Feature 2</h4>
-              <p className="text-sm text-gray-600">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Feature 3</h4>
-              <p className="text-sm text-gray-600">Ut enim ad minim veniam, quis nostrud exercitation.</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  const renderPlaceholder2Content = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
-          Placeholder Tab2
-        </h3>
-        <p className="text-sm lg:text-base text-gray-600">
-          This is a placeholder page for Tab2 functionality.
-        </p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Configuration Options</CardTitle>
-          <CardDescription>
-            Sample configuration settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Setting 1</h4>
-                <p className="text-sm text-gray-600">Enable or disable this feature</p>
-              </div>
-              <Button variant="outline" size="sm">Toggle</Button>
-            </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Setting 2</h4>
-                <p className="text-sm text-gray-600">Configure this option</p>
-              </div>
-              <Button variant="outline" size="sm">Configure</Button>
-            </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <h4 className="font-medium">Setting 3</h4>
-                <p className="text-sm text-gray-600">Manage this preference</p>
-              </div>
-              <Button variant="outline" size="sm">Manage</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
   return (
     <div className="min-h-screen w-full max-w-full bg-gray-50 flex overflow-x-hidden">
       {/* Mobile sidebar overlay */}
@@ -384,9 +324,33 @@ const Dashboard = () => {
               </p>
               <p className="text-xs text-gray-500">
                 {subscribed ? `${subscription_tier} Member` : 'Free User'}
+                {isAdmin && (
+                  <span className="ml-1">
+                    <Shield className="h-3 w-3 inline text-purple-600" />
+                  </span>
+                )}
               </p>
             </div>
           </div>
+          
+          {/* Admin View Toggle */}
+          {isAdmin && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <label htmlFor="admin-toggle" className="text-xs font-medium text-gray-700">
+                  Admin View
+                </label>
+                <Switch
+                  id="admin-toggle"
+                  checked={adminViewMode}
+                  onCheckedChange={handleAdminViewToggle}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {adminViewMode ? 'Admin Dashboard' : 'User Dashboard'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -437,9 +401,9 @@ const Dashboard = () => {
                 <Menu className="h-6 w-6" />
               </Button>
               <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                {activeTab === 'dashboard' ? 'Dashboard' : 
-                 activeTab === 'placeholder1' ? 'Placeholder Tab1' : 
-                 'Placeholder Tab2'}
+                {activeTab === 'dashboard' ? (isAdmin && adminViewMode ? 'Admin Dashboard' : 'Dashboard') : 
+                 activeTab === 'analytics' ? 'Website Analytics' : 
+                 activeTab === 'tools' ? 'Website Tools' : 'Dashboard'}
               </h2>
             </div>
             <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
@@ -469,8 +433,8 @@ const Dashboard = () => {
         {/* Dashboard Content */}
         <main className="p-4 lg:p-6 w-full">
           {activeTab === 'dashboard' && renderDashboardContent()}
-          {activeTab === 'placeholder1' && renderPlaceholder1Content()}
-          {activeTab === 'placeholder2' && renderPlaceholder2Content()}
+          {activeTab === 'analytics' && <WebsiteAnalytics />}
+          {activeTab === 'tools' && <WebsiteTools />}
         </main>
       </div>
     </div>
