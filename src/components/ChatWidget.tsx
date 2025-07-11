@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +14,7 @@ import {
 } from 'lucide-react';
 
 const ChatWidget = () => {
-  const { isActive, isWidgetOpen, setIsWidgetOpen, chatbotName } = useChatbot();
+  const { shouldShowWidget, isWidgetOpen, setIsWidgetOpen, chatbotName } = useChatbot();
   const [message, setMessage] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -26,7 +25,8 @@ const ChatWidget = () => {
     { id: 3, type: 'bot', content: 'I\'m here to assist you with any questions you might have. What would you like to know?', timestamp: new Date() }
   ];
 
-  if (!isActive) return null;
+  // Only show widget for non-authenticated users when chatbot is active
+  if (!shouldShowWidget) return null;
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -74,11 +74,7 @@ const ChatWidget = () => {
                   onClick={() => setIsMinimized(!isMinimized)}
                   className="h-6 w-6 p-0 text-white hover:bg-white/20"
                 >
-                  {isMinimized ? (
-                    <Maximize2 className="h-3 w-3" />
-                  ) : (
-                    <Minimize2 className="h-3 w-3" />
-                  )}
+                  {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
                 </Button>
                 <Button
                   variant="ghost"
@@ -92,46 +88,43 @@ const ChatWidget = () => {
             </div>
           </CardHeader>
 
-          {/* Chat content - only show when not minimized */}
+          {/* Content */}
           {!isMinimized && (
-            <>
-              {/* Messages area */}
-              <CardContent className="p-0 flex-1">
-                <ScrollArea className="h-64 p-4">
-                  <div className="space-y-3">
-                    {mockMessages.map((msg) => (
+            <CardContent className="p-0 flex flex-col h-[calc(100%-3.5rem)]">
+              {/* Messages */}
+              <ScrollArea className="flex-1 p-4">
+                <div className="space-y-4">
+                  {mockMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
-                        key={msg.id}
-                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`max-w-[80%] p-3 rounded-lg text-sm ${
+                          msg.type === 'user'
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
                       >
-                        <div
-                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                            msg.type === 'user'
-                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
+                        {msg.content}
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
 
-              {/* Input area */}
-              <div className="p-3 border-t">
+              {/* Input */}
+              <div className="border-t p-3">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Type your message..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="flex-1 text-sm"
+                    placeholder="Type your message..."
+                    className="flex-1"
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!message.trim()}
                     size="sm"
                     className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   >
@@ -139,7 +132,7 @@ const ChatWidget = () => {
                   </Button>
                 </div>
               </div>
-            </>
+            </CardContent>
           )}
         </Card>
       )}
