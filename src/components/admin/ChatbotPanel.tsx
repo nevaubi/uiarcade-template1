@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,26 +8,24 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   Bot, 
-  Upload, 
   FileText, 
   MessageSquare, 
   Activity, 
   Settings, 
   Play, 
   Pause, 
-  Trash2,
-  Download,
   Send,
   Clock,
   Users,
   TrendingUp,
-  FileIcon,
   RotateCcw,
   AlertCircle
 } from 'lucide-react';
+import DocumentUpload from './DocumentUpload';
+import DocumentManager from './DocumentManager';
+import { useDocuments } from '@/hooks/useDocuments';
 
 interface Document {
   id: string;
@@ -72,7 +69,6 @@ const ChatbotPanel = () => {
   const [chatbotStatus, setChatbotStatus] = useState<'active' | 'draft' | 'training' | 'error'>('draft');
   const [testMessage, setTestMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [documents, setDocuments] = useState<Document[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [stats, setStats] = useState<ChatbotStats | null>(null);
   const [settings, setSettings] = useState<ChatbotSettings>({
@@ -89,6 +85,8 @@ const ChatbotPanel = () => {
     fallbackResponse: ''
   });
 
+  const { documents } = useDocuments();
+
   useEffect(() => {
     // Placeholder for data fetching
     const fetchData = async () => {
@@ -96,7 +94,6 @@ const ChatbotPanel = () => {
       try {
         // TODO: Fetch chatbot data from backend
         // const data = await fetchChatbotData();
-        // setDocuments(data.documents);
         // setConversations(data.conversations);
         // setStats(data.stats);
         // setSettings(data.settings);
@@ -137,15 +134,6 @@ const ChatbotPanel = () => {
     }
   };
 
-  const getFileStatusColor = (status: string) => {
-    switch (status) {
-      case 'processed': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div>
@@ -154,8 +142,9 @@ const ChatbotPanel = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="my-chatbot">My Chatbot</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -205,8 +194,10 @@ const ChatbotPanel = () => {
                       <p className="text-2xl font-bold text-gray-900">{documents.length}</p>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Conversations</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats?.totalChats || 0}</p>
+                      <p className="text-sm text-gray-600">Processed</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {documents.filter(d => d.processing_status === 'processed').length}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">Last Activity</p>
@@ -239,107 +230,6 @@ const ChatbotPanel = () => {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Document Library Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Document Library
-              </CardTitle>
-              <CardDescription>
-                Upload and manage documents for your chatbot's knowledge base
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6 text-center hover:border-gray-400 transition-colors">
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-medium text-gray-900 mb-2">Upload Documents</p>
-                <p className="text-sm text-gray-600 mb-4">
-                  Drag and drop files here or click to browse
-                </p>
-                <p className="text-xs text-gray-500 mb-4">
-                  Supported formats: PDF, DOCX, TXT, MD (Max 10MB per file)
-                </p>
-                <Button>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Files
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Uploaded Documents</h4>
-                  <Badge variant="outline">{documents.length} files</Badge>
-                </div>
-
-                {isLoading ? (
-                  <div className="space-y-3">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="flex items-center space-x-4">
-                        <Skeleton className="h-4 w-4" />
-                        <Skeleton className="h-4 flex-1" />
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-4 w-20" />
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-8 w-24" />
-                      </div>
-                    ))}
-                  </div>
-                ) : documents.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium mb-2">No documents uploaded</p>
-                    <p className="text-sm">Upload your first document to get started with your chatbot's knowledge base.</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Size</TableHead>
-                          <TableHead>Upload Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {documents.map((doc) => (
-                          <TableRow key={doc.id}>
-                            <TableCell className="flex items-center gap-2">
-                              <FileIcon className="h-4 w-4 text-gray-500" />
-                              {doc.name}
-                            </TableCell>
-                            <TableCell>{doc.size}</TableCell>
-                            <TableCell>{doc.uploadDate}</TableCell>
-                            <TableCell>
-                              <Badge className={getFileStatusColor(doc.status)}>
-                                {doc.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm">
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm">
-                                  <RotateCcw className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
 
@@ -465,6 +355,11 @@ const ChatbotPanel = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-6">
+          <DocumentUpload />
+          <DocumentManager />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
