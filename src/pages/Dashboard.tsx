@@ -33,7 +33,10 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [adminViewMode, setAdminViewMode] = useState(false);
+  
+  // Initialize adminViewMode based on isAdmin status
+  const [adminViewMode, setAdminViewMode] = useState(isAdmin);
+  
   const { toast } = useToast();
   const { 
     subscribed, 
@@ -46,6 +49,11 @@ const Dashboard = () => {
     checkSubscription,
     openCustomerPortal 
   } = useSubscription();
+
+  // Update adminViewMode when isAdmin changes
+  useEffect(() => {
+    setAdminViewMode(isAdmin);
+  }, [isAdmin]);
 
   useEffect(() => {
     // Handle success/cancel from Stripe checkout
