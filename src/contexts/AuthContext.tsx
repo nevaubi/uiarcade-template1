@@ -17,7 +17,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   setPostAuthCallback: (callback: PostAuthCallback | null) => void;
-  checkAdminStatus: () => Promise<void>;
+  checkAdminStatus: (user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,17 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  const checkAdminStatus = async () => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-
+  const checkAdminStatus = async (targetUser: User) => {
     try {
+      console.log('Checking admin status for user:', targetUser.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', user.id)
+        .eq('id', targetUser.id)
         .single();
 
       if (error) {
@@ -57,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      console.log('Admin status result:', data?.is_admin);
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -73,11 +70,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in - use setTimeout to ensure state is updated
+        // Check admin status when user signs in - pass session user directly
         if (session?.user) {
-          setTimeout(() => {
-            checkAdminStatus();
-          }, 0);
+          await checkAdminStatus(session.user);
         } else {
           setIsAdmin(false);
         }
@@ -116,11 +111,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session - use setTimeout to ensure state is updated
+      // Check admin status for initial session - pass session user directly
       if (session?.user) {
-        setTimeout(() => {
-          checkAdminStatus();
-        }, 0);
+        await checkAdminStatus(session.user);
       }
     });
 
