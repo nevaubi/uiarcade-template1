@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -25,13 +24,37 @@ serve(async (req) => {
 
   try {
     console.log('Chat with AI function called');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
     
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+      console.error('OpenAI API key not found in environment variables');
+      throw new Error('The chatbot is not properly configured. Please contact the administrator.');
     }
 
-    const { message, conversationHistory }: ChatRequest = await req.json();
+    // Parse and validate request
+    let requestData: ChatRequest;
+    try {
+      requestData = await req.json();
+    } catch (e) {
+      console.error('Failed to parse request JSON:', e);
+      throw new Error('Invalid request format');
+    }
+
+    const { message, conversationHistory } = requestData;
+    
+    // Request validation
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      console.error('Invalid message provided:', message);
+      throw new Error('Please provide a valid message');
+    }
+
+    if (message.length > 1000) {
+      console.error('Message too long:', message.length);
+      throw new Error('Message is too long. Please keep it under 1000 characters.');
+    }
+
     console.log('Received message:', message);
     console.log('Conversation history length:', conversationHistory?.length || 0);
 
@@ -48,11 +71,15 @@ serve(async (req) => {
 
     if (configError || !config || config.length === 0) {
       console.error('Error fetching config:', configError);
-      throw new Error('Failed to fetch chatbot configuration');
+      throw new Error('Unable to load chatbot configuration. Please try again later.');
     }
 
     const chatbotConfig = config[0];
-    console.log('Fetched config:', chatbotConfig.chatbot_name);
+    console.log('Fetched config successfully');
+    console.log('Chatbot name:', chatbotConfig.chatbot_name);
+    console.log('Response style:', chatbotConfig.response_style);
+    console.log('Max response length:', chatbotConfig.max_response_length);
+    console.log('Creativity level:', chatbotConfig.creativity_level);
 
     // Query vector database for relevant context
     console.log('Querying vector database...');
@@ -63,7 +90,7 @@ serve(async (req) => {
           action: 'query', 
           data: { 
             query: message, 
-            topK: 3 
+            topK: 5  // Increased from 3 to 5 for better context
           } 
         },
       });
@@ -71,59 +98,131 @@ serve(async (req) => {
       if (vectorError) {
         console.error('Vector query error:', vectorError);
       } else if (vectorData?.success && vectorData?.results?.length > 0) {
+        console.log('Vector results count:', vectorData.results.length);
+        
         relevantContext = vectorData.results
-          .map((result: any) => result.metadata?.content || '')
+          .map((result: any, index: number) => {
+            const content = result.metadata?.content || '';
+            const docName = result.metadata?.document_name || `Document ${index + 1}`;
+            const score = result.score || 0;
+            
+            console.log(`Vector result ${index + 1}: score=${score.toFixed(3)}, doc=${docName}`);
+            
+            return `<context>
+<document name="${docName}" relevance_score="${score.toFixed(3)}">
+${content}
+</document>
+</context>`;
+          })
           .filter((content: string) => content.length > 0)
           .join('\n\n');
-        console.log('Found relevant context, length:', relevantContext.length);
+          
+        console.log('Found relevant context, total length:', relevantContext.length);
+      } else {
+        console.log('No relevant vector results found');
       }
     } catch (vectorError) {
       console.error('Vector search failed:', vectorError);
       // Continue without context - don't fail the entire request
     }
 
-    // Build system prompt dynamically
-    const systemPrompt = `
+    // Build comprehensive system prompt
+    const systemPrompt = `You are <chatbot_name>${chatbotConfig.chatbot_name}</chatbot_name>. If you are not given a name, simply refer to yourself as a helpful chatbot, or an online AI assistant. Your general purpose is to be used as a landing/home page support chatbot for a SaaS website. Your specific nuanced role will vary, however your general task is to engage with non-users of a website and answer their questions or provide info as instructed. You will potentially receive custom instructions for more specific and nuanced roles. In the following description tags, there might be further information of your role and workflow, if there is any content in the following tags, understand and adhere to them:
+
+<description>${chatbotConfig.description || ''}</description>
+
+The same applies to the following role tags:
+
 <role>
-You are ${chatbotConfig.chatbot_name}, a ${chatbotConfig.role}.
+Your role: ${chatbotConfig.role || ''}
 </role>
 
+You are generally a friendly and helpful support bot that speaks in clear conversational but professional language, and focuses on providing support and information about your website. If there are additional information or instructions regarding your personality, they will be provided in the following personality tags:
+
 <personality>
-Your personality is: ${chatbotConfig.personality}
-Response style: ${chatbotConfig.response_style}
+Personality: ${chatbotConfig.personality || ''}
+You should embody this personality (if there is content included) in all interactions - be consistent with this character trait throughout the conversation.
 </personality>
 
-<instructions>
-${chatbotConfig.custom_instructions || 'Provide helpful and accurate responses.'}
+Your response style will generally be helpful, concise, authentic, and user friendly. If there are additional instructions regarding your response style, they will be included in the following response style tags:
 
-Response length should be: ${chatbotConfig.max_response_length}
-${chatbotConfig.include_citations ? 'Include citations when referencing specific information.' : ''}
-</instructions>
+<response_style>
+Communication style: ${chatbotConfig.response_style || ''}
+Adapt your language, tone, and formality to match this style.
+</response_style>
 
-${relevantContext ? `<context>
-Here is relevant information from the knowledge base:
+In general, you will provide concise, clearly communicated responses that either answer a user's query, or ask for more clarifying info in order to better service a user question or concern. Below you might find more specific length requirements, analyze them if any instructions are present in the following response_length tags:
 
+<response_length>
+Response length preference: ${chatbotConfig.max_response_length || 'medium'}
+- "short": Keep responses concise, 1-2 sentences when possible
+- "medium": Provide balanced responses, 2-4 sentences  
+- "long": Give comprehensive responses with full explanations
+</response_length>
+
+Below you might find even more additional and specific custom instructions, if there is content present, adhere to them:
+
+<custom_instructions>
+${chatbotConfig.custom_instructions || ''}
+</custom_instructions>
+
+You have access to a knowledge vector database filled with relevant information about your website. If necessary, a vector retrieval process will automatically populate information in the knowledge base tags below that are relevant to answer a user's query. If information is present, be sure to thoroughly analyze and understand it in order to relay it to the user as necessary:
+
+<knowledge_base>
+You have access to a knowledge base with relevant information. When answering questions, prioritize information from this knowledge base for accuracy. Never hallucinate information, always be honest about any potential limitations.
+${relevantContext ? `
 ${relevantContext}
-</context>` : ''}
+` : 'No specific documentation was found for this query. Use general knowledge about SaaS websites and common support topics while being honest that you don\'t have specific information about this particular topic.'}
+</knowledge_base>
 
-<conversation_guidelines>
-- Be helpful, accurate, and engaging
-- Stay in character based on your defined role and personality
-- Use the provided context when relevant to answer questions
-- If you don't know something, be honest about it
-- Fallback response if needed: "${chatbotConfig.fallback_response}"
-</conversation_guidelines>
-    `.trim();
+Below in the conversation history tags, you will be provided the most recent 20 messages (including the back and forth of both yours and the user's messages) for accurate short-term context. Be sure to read and analyze this thoroughly before drafting a response, in order to fully grasp the conversation up until this point. Use this history to maintain context, avoid repeating information already discussed, and provide more relevant and personalized responses:
+
+<conversation_history>
+Previous messages in this conversation:
+${conversationHistory.slice(-20).map(msg => 
+  `<message role="${msg.role}" timestamp="${new Date().toISOString()}">
+${msg.content}
+</message>`
+).join('\n')}
+</conversation_history>
+
+<behavioral_rules>
+1. Stay in character according to your defined personality and role
+2. If you cannot find relevant information in the knowledge base, be honest about limitations
+3. Never make up facts or provide false information
+4. If the knowledge base doesn't contain the answer, use a similar fallback sentence phrasing to the following: "${chatbotConfig.fallback_response}"
+5. Maintain consistency with previous messages in the conversation
+6. Be helpful and focused on addressing the user's needs
+7. Keep responses within the specified length preference
+8. Never go off topic and discuss unrelated information or topics not directly related to your current website
+9. Be polite and authentic, never disrespectful, always warm and friendly
+10. Use the conversation history to provide contextual and relevant responses
+</behavioral_rules>
+
+<output_format>
+Provide your response directly without any meta-commentary about your role or instructions. Speak naturally as the defined character.
+</output_format>`;
 
     // Prepare messages for OpenAI
     const messages = [
       { role: 'system', content: systemPrompt },
-      // Include last conversation history (limit to prevent token overflow)
-      ...conversationHistory.slice(-10),
+      // Include last 20 messages from conversation history
+      ...conversationHistory.slice(-20),
       { role: 'user', content: message }
     ];
 
-    console.log('Calling OpenAI API...');
+    // Calculate temperature from creativity level
+    const temperature = (chatbotConfig.creativity_level || 30) / 100;
+    console.log('Temperature setting:', temperature);
+
+    // Determine max tokens based on response length preference
+    const maxTokens = chatbotConfig.max_response_length === 'short' ? 100 : 
+                     chatbotConfig.max_response_length === 'long' ? 800 : 400;
+    console.log('Max tokens:', maxTokens);
+
+    console.log('Total conversation messages being sent:', messages.length);
+    console.log('Calling OpenAI API with model: gpt-4.1-nano-2025-04-14');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -131,24 +230,39 @@ ${relevantContext}
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-nano-2025-04-14',
         messages,
-        max_tokens: chatbotConfig.max_response_length === 'short' ? 150 : 
-                   chatbotConfig.max_response_length === 'long' ? 500 : 300,
-        temperature: (chatbotConfig.creativity_level || 30) / 100,
+        max_tokens: maxTokens,
+        temperature: temperature,
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
       console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
+      
+      // Handle specific OpenAI errors with user-friendly messages
+      if (error.error?.code === 'rate_limit_exceeded') {
+        throw new Error('The chatbot is currently experiencing high demand. Please try again in a moment.');
+      } else if (error.error?.code === 'model_not_found') {
+        throw new Error('The AI model is not available. Please contact support.');
+      } else if (error.error?.code === 'context_length_exceeded') {
+        throw new Error('The conversation has become too long. Please start a new conversation.');
+      } else {
+        throw new Error('I apologize, but I encountered an error. Please try again.');
+      }
     }
 
     const data = await response.json();
+    
+    if (!data.choices || data.choices.length === 0) {
+      console.error('No response choices from OpenAI');
+      throw new Error('No response generated. Please try again.');
+    }
+    
     const botResponse = data.choices[0].message.content;
-
     console.log('Generated response length:', botResponse.length);
+    console.log('Token usage:', data.usage);
 
     return new Response(
       JSON.stringify({ 
@@ -160,9 +274,22 @@ ${relevantContext}
 
   } catch (error) {
     console.error('Error in chat-with-ai function:', error);
+    
+    // Determine if it's a user-friendly error message or a generic one
+    const isUserFriendlyError = error.message && (
+      error.message.includes('Please') || 
+      error.message.includes('chatbot') ||
+      error.message.includes('administrator') ||
+      error.message.includes('try again')
+    );
+    
+    const errorMessage = isUserFriendlyError 
+      ? error.message 
+      : 'I apologize, but I encountered an unexpected error. Please try again or contact support if the issue persists.';
+    
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: errorMessage,
         success: false 
       }),
       { 
