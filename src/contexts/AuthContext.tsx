@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +17,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   setPostAuthCallback: (callback: PostAuthCallback | null) => void;
-  checkAdminStatus: (user?: User | null) => Promise<void>;
+  checkAdminStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,10 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  const checkAdminStatus = async (targetUser?: User | null) => {
-    const userToCheck = targetUser !== undefined ? targetUser : user;
-    
-    if (!userToCheck) {
+  const checkAdminStatus = async () => {
+    if (!user) {
       setIsAdmin(false);
       return;
     }
@@ -51,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', userToCheck.id)
+        .eq('id', user.id)
         .single();
 
       if (error) {
@@ -76,9 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in - pass session user directly
+        // Check admin status when user signs in - use setTimeout to ensure state is updated
         if (session?.user) {
-          await checkAdminStatus(session.user);
+          setTimeout(() => {
+            checkAdminStatus();
+          }, 0);
         } else {
           setIsAdmin(false);
         }
@@ -117,16 +116,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session - pass session user directly
+      // Check admin status for initial session - use setTimeout to ensure state is updated
       if (session?.user) {
-        await checkAdminStatus(session.user);
+        setTimeout(() => {
+          checkAdminStatus();
+        }, 0);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [postAuthCallback]);
 
-  // ... rest of existing code (handlePostAuthCheckout, signUp, signIn, signOut functions)
   const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {
       console.log('Starting post-auth checkout for:', callback);
