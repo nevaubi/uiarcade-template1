@@ -23,11 +23,14 @@ import {
   Users,
   TrendingUp,
   RotateCcw,
-  AlertCircle
+  AlertCircle,
+  MessageCircle,
+  Eye
 } from 'lucide-react';
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useChatbot } from '@/contexts/ChatbotContext';
 import ErrorBoundary from '../ErrorBoundary';
 
 interface Document {
@@ -87,6 +90,9 @@ const ChatbotPanel = () => {
     creativityLevel: 30,
     fallbackResponse: ''
   });
+
+  // Use chatbot context for global toggle state
+  const { isActive, setIsActive } = useChatbot();
 
   // Move useDocuments hook here - single source of truth
   const { 
@@ -148,6 +154,8 @@ const ChatbotPanel = () => {
   const toggleChatbotStatus = async () => {
     const newStatus = chatbotStatus === 'active' ? 'draft' : 'active';
     setChatbotStatus(newStatus);
+    // Update global chatbot activation state
+    setIsActive(newStatus === 'active');
     // TODO: Update status in backend
     // await updateChatbotStatus(newStatus);
   };
@@ -225,6 +233,43 @@ const ChatbotPanel = () => {
                     </div>
                   </>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Activation Notice */}
+          <Card className={`transition-all duration-300 ${isActive ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className={`h-5 w-5 ${isActive ? 'text-green-600' : 'text-blue-600'}`} />
+                Chatbot Widget
+              </CardTitle>
+              <CardDescription>
+                {isActive 
+                  ? 'Your chatbot is now active and visible to website visitors'
+                  : 'Activate your chatbot to make it available to website visitors'
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-start justify-between">
+                <div className="flex-1 space-y-2">
+                  <div className={`flex items-center gap-2 text-sm ${isActive ? 'text-green-700' : 'text-blue-700'}`}>
+                    <Eye className="h-4 w-4" />
+                    <span>
+                      {isActive 
+                        ? 'A floating chat icon is now visible in the bottom-right corner'
+                        : 'When activated, a floating chat icon will appear in the bottom-right corner'
+                      }
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Visitors can click the chat icon to interact with your AI assistant powered by your uploaded documents.
+                  </p>
+                </div>
+                <Badge className={`${isActive ? "bg-green-100 text-green-800 border-green-300" : "bg-blue-100 text-blue-800 border-blue-300"} ml-4`}>
+                  {isActive ? 'Live' : 'Inactive'}
+                </Badge>
               </div>
             </CardContent>
           </Card>
