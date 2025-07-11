@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,7 +62,7 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      // Prepare conversation history for API (exclude system message)
+      // Prepare conversation history for API
       const conversationHistory = messages
         .filter(msg => msg.type === 'user' || msg.type === 'bot')
         .map(msg => ({
@@ -85,22 +84,33 @@ const ChatWidget = () => {
       }
 
       if (!data.success) {
+        // Use the error message from the edge function
         throw new Error(data.error || 'Failed to get response');
       }
 
       // Add bot response to conversation
       addMessage('bot', data.response);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
+      
+      // Use the error message from the edge function if available
+      const errorMessage = error.message || 'Failed to send message. Please try again.';
+      
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       
-      // Add fallback message
-      addMessage('bot', "I'm sorry, I'm having trouble responding right now. Please try again in a moment.");
+      // Add appropriate fallback message
+      const fallbackMessage = errorMessage.includes('configuration') 
+        ? "I apologize, but the chatbot is not properly configured. Please contact the administrator."
+        : errorMessage.includes('demand')
+        ? "I'm experiencing high demand right now. Please try again in a moment."
+        : "I'm sorry, I'm having trouble responding right now. Please try again in a moment.";
+        
+      addMessage('bot', fallbackMessage);
     } finally {
       setIsLoading(false);
     }
@@ -159,40 +169,41 @@ const ChatWidget = () => {
             </div>
           </CardHeader>
 
-          {/* Content */}
+          {/* Chat content */}
           {!isMinimized && (
-            <CardContent className="p-0 flex flex-col h-[calc(100%-3.5rem)]">
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
+            <>
+              <CardContent className="p-0 flex-1 overflow-hidden">
+                <ScrollArea className="h-64 p-4">
+                  <div className="space-y-3">
+                    {messages.map((msg) => (
                       <div
-                        className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                          msg.type === 'user'
-                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
+                        key={msg.id}
+                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        {msg.content}
+                        <div
+                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                            msg.type === 'user'
+                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 text-gray-800 p-3 rounded-lg text-sm flex items-center gap-2">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        Thinking...
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-900 flex items-center gap-2">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Typing...
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
 
-              {/* Input */}
+              {/* Input area */}
               <div className="border-t p-3">
                 <div className="flex gap-2">
                   <Input
@@ -200,24 +211,20 @@ const ChatWidget = () => {
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message..."
-                    className="flex-1"
                     disabled={isLoading}
+                    className="flex-1 text-sm"
                   />
                   <Button
                     onClick={handleSendMessage}
+                    disabled={!message.trim() || isLoading}
                     size="sm"
-                    disabled={isLoading || !message.trim()}
                     className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
-            </CardContent>
+            </>
           )}
         </Card>
       )}
