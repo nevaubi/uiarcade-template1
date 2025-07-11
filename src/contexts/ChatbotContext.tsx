@@ -41,7 +41,9 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children }) =>
   const { status: publicStatus, loading: statusLoading } = useChatbotStatus();
   
   // Conditionally use config hook based on auth
-  const configHook = user ? useChatbotConfig() : { 
+  // Don't call the hook during auth transitions
+  const shouldFetchConfig = user && user.email && !user.email.includes('@');
+  const configHook = shouldFetchConfig ? useChatbotConfig() : { 
     config: null, 
     loading: false, 
     updating: false, 
