@@ -11,7 +11,6 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  is_admin: boolean;
   created_at: string;
 }
 
@@ -20,6 +19,7 @@ interface SubscriberInfo {
   subscribed: boolean;
   subscription_tier: string;
   subscription_end: string;
+  is_admin: boolean;
 }
 
 const AdminPanel: React.FC = () => {
@@ -36,7 +36,7 @@ const AdminPanel: React.FC = () => {
       // Fetch user profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, is_admin, created_at')
+        .select('id, email, full_name, created_at')
         .order('created_at', { ascending: false });
 
       if (profilesError) {
@@ -53,7 +53,7 @@ const AdminPanel: React.FC = () => {
       // Fetch subscriber information
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
-        .select('email, subscribed, subscription_tier, subscription_end')
+        .select('email, subscribed, subscription_tier, subscription_end, is_admin')
         .order('created_at', { ascending: false });
 
       if (subscribersError) {
@@ -86,7 +86,7 @@ const AdminPanel: React.FC = () => {
 
   const getStats = () => {
     const totalUsers = users.length;
-    const adminUsers = users.filter(user => user.is_admin).length;
+    const adminUsers = subscribers.filter(sub => sub.is_admin).length;
     const totalSubscribers = subscribers.filter(sub => sub.subscribed).length;
     const activeSubscriptions = subscribers.filter(sub => {
       if (!sub.subscription_end) return false;
@@ -185,26 +185,29 @@ const AdminPanel: React.FC = () => {
             {users.length === 0 ? (
               <p className="text-gray-500 text-center py-4">No users found</p>
             ) : (
-              users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <p className="font-medium">{user.full_name || 'No name'}</p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <p className="text-xs text-gray-500">
-                          Joined: {new Date(user.created_at).toLocaleDateString()}
-                        </p>
+              users.map((user) => {
+                const subscriber = subscribers.find(sub => sub.email === user.email);
+                return (
+                  <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div>
+                          <p className="font-medium">{user.full_name || 'No name'}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                          <p className="text-xs text-gray-500">
+                            Joined: {new Date(user.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={subscriber?.is_admin ? "destructive" : "secondary"}>
+                        {subscriber?.is_admin ? "Admin" : "User"}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={user.is_admin ? "destructive" : "secondary"}>
-                      {user.is_admin ? "Admin" : "User"}
-                    </Badge>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </CardContent>
@@ -236,9 +239,14 @@ const AdminPanel: React.FC = () => {
                       </p>
                     )}
                   </div>
-                  <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
-                    {subscriber.subscribed ? "Active" : "Inactive"}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
+                      {subscriber.subscribed ? "Active" : "Inactive"}
+                    </Badge>
+                    {subscriber.is_admin && (
+                      <Badge variant="destructive">Admin</Badge>
+                    )}
+                  </div>
                 </div>
               ))
             )}

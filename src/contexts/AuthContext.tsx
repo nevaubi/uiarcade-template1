@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,13 +12,11 @@ interface PostAuthCallback {
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isAdmin: boolean;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   setPostAuthCallback: (callback: PostAuthCallback | null) => void;
-  checkAdminStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,37 +32,9 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
-
-  const checkAdminStatus = async () => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-        return;
-      }
-
-      setIsAdmin(data?.is_admin || false);
-      console.log('Admin status checked:', data?.is_admin || false);
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      setIsAdmin(false);
-    }
-  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -73,16 +44,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-
-        // Check admin status after authentication
-        if (session?.user) {
-          // Small delay to ensure user state is set
-          setTimeout(() => {
-            checkAdminStatus();
-          }, 100);
-        } else {
-          setIsAdmin(false);
-        }
 
         // Handle successful sign in with post-auth callback
         if (event === 'SIGNED_IN' && session?.user) {
@@ -103,7 +64,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Handle sign out
         if (event === 'SIGNED_OUT') {
           console.log('User signed out');
-          setIsAdmin(false);
           if (window.location.pathname === '/dashboard') {
             window.location.href = '/';
           }
@@ -117,13 +77,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      // Check admin status for initial session
-      if (session?.user) {
-        setTimeout(() => {
-          checkAdminStatus();
-        }, 100);
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -271,13 +224,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     session,
-    isAdmin,
     loading,
     signUp,
     signIn,
     signOut,
     setPostAuthCallback,
-    checkAdminStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

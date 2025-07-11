@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +9,7 @@ interface SubscriptionData {
   subscribed: boolean;
   subscription_tier: string | null;
   subscription_end: string | null;
+  is_admin: boolean;
 }
 
 export const useSubscription = () => {
@@ -17,6 +19,7 @@ export const useSubscription = () => {
     subscribed: false,
     subscription_tier: null,
     subscription_end: null,
+    is_admin: false,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +35,7 @@ export const useSubscription = () => {
         subscribed: false,
         subscription_tier: null,
         subscription_end: null,
+        is_admin: false,
       });
       setLoading(false);
       setError(null);
@@ -50,6 +54,7 @@ export const useSubscription = () => {
             subscribed: cached.subscribed,
             subscription_tier: cached.subscription_tier,
             subscription_end: cached.subscription_end,
+            is_admin: cached.is_admin,
           });
           setLoading(false);
           return;
@@ -67,6 +72,7 @@ export const useSubscription = () => {
               subscribed: cachedAfterPending.subscribed,
               subscription_tier: cachedAfterPending.subscription_tier,
               subscription_end: cachedAfterPending.subscription_end,
+              is_admin: cachedAfterPending.is_admin,
             });
           }
           setLoading(false);
@@ -102,6 +108,7 @@ export const useSubscription = () => {
         subscribed: data.subscribed || false,
         subscription_tier: data.subscription_tier || null,
         subscription_end: data.subscription_end || null,
+        is_admin: data.is_admin || false,
       };
 
       // Update cache
@@ -225,6 +232,7 @@ export const useSubscription = () => {
           subscribed: false,
           subscription_tier: null,
           subscription_end: null,
+          is_admin: false,
         });
         setLoading(false);
         setError(null);

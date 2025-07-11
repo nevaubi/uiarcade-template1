@@ -49,6 +49,16 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
+    // Check if user has admin status from existing subscriber record
+    const { data: existingSubscriber } = await supabaseClient
+      .from("subscribers")
+      .select("is_admin")
+      .eq("email", user.email)
+      .single();
+    
+    const isAdmin = existingSubscriber?.is_admin || false;
+    logStep("Checked existing admin status", { isAdmin });
+    
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
       await supabaseClient.from("subscribers").upsert({
@@ -58,9 +68,13 @@ serve(async (req) => {
         subscribed: false,
         subscription_tier: null,
         subscription_end: null,
+        is_admin: isAdmin, // Preserve existing admin status
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ 
+        subscribed: false, 
+        is_admin: isAdmin 
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -110,14 +124,16 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
+      is_admin: isAdmin, // Preserve existing admin status
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier, isAdmin });
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      is_admin: isAdmin
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
