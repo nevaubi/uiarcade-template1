@@ -85,7 +85,17 @@ const ChatbotPanel = () => {
     fallbackResponse: ''
   });
 
-  const { documents } = useDocuments();
+  // Move useDocuments hook here - single source of truth
+  const { 
+    documents, 
+    loading: documentsLoading, 
+    uploading, 
+    uploadDocument, 
+    deleteDocument, 
+    reprocessDocument, 
+    getDocumentChunks, 
+    refreshDocuments 
+  } = useDocuments();
 
   useEffect(() => {
     // Placeholder for data fetching
@@ -358,8 +368,17 @@ const ChatbotPanel = () => {
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-6">
-          <DocumentUpload />
-          <DocumentManager />
+          <DocumentUpload 
+            uploading={uploading}
+            uploadDocument={uploadDocument}
+          />
+          <DocumentManager 
+            documents={documents}
+            loading={documentsLoading}
+            deleteDocument={deleteDocument}
+            reprocessDocument={reprocessDocument}
+            getDocumentChunks={getDocumentChunks}
+          />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">

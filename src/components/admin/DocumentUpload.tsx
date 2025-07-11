@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ import {
   X,
   File
 } from 'lucide-react';
-import { useDocuments } from '@/hooks/useDocuments';
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -23,8 +21,12 @@ interface FileWithPreview extends File {
   errorMessage?: string;
 }
 
-const DocumentUpload = () => {
-  const { uploadDocument, uploading } = useDocuments();
+interface DocumentUploadProps {
+  uploading: boolean;
+  uploadDocument: (file: File) => Promise<string | null>;
+}
+
+const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {

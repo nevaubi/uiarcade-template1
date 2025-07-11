@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,14 +15,48 @@ import {
   FileIcon,
   Eye
 } from 'lucide-react';
-import { useDocuments } from '@/hooks/useDocuments';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const DocumentManager = () => {
-  const { documents, loading, deleteDocument, reprocessDocument, getDocumentChunks } = useDocuments();
+interface Document {
+  id: string;
+  name: string;
+  original_name: string;
+  file_type: string;
+  file_size: number;
+  processing_status: 'pending' | 'processing' | 'processed' | 'error';
+  error_message?: string;
+  uploaded_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DocumentChunk {
+  id: string;
+  document_id: string;
+  chunk_index: number;
+  content: string;
+  word_count: number;
+  created_at: string;
+}
+
+interface DocumentManagerProps {
+  documents: Document[];
+  loading: boolean;
+  deleteDocument: (documentId: string) => Promise<void>;
+  reprocessDocument: (documentId: string) => Promise<void>;
+  getDocumentChunks: (documentId: string) => Promise<DocumentChunk[]>;
+}
+
+const DocumentManager = ({ 
+  documents, 
+  loading, 
+  deleteDocument, 
+  reprocessDocument, 
+  getDocumentChunks 
+}: DocumentManagerProps) => {
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
-  const [chunks, setChunks] = useState<any[]>([]);
+  const [chunks, setChunks] = useState<DocumentChunk[]>([]);
   const [chunksLoading, setChunksLoading] = useState(false);
 
   const getStatusIcon = (status: string) => {
