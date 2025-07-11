@@ -105,9 +105,9 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const getFileIcon = (file: FileWithStatus | File) => {
+  const getFileIcon = (file: FileWithStatus | File | null | undefined) => {
     // Add defensive checks
-    if (!file || !file.name) {
+    if (!file || typeof file !== 'object' || !file.name) {
       console.warn('Invalid file object passed to getFileIcon:', file);
       return <File className="h-8 w-8 text-gray-400" />;
     }
