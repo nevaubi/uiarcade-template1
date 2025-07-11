@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +18,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   setPostAuthCallback: (callback: PostAuthCallback | null) => void;
-  checkAdminStatus: (user: User) => Promise<void>;
+  checkAdminStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,13 +39,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [postAuthCallback, setPostAuthCallback] = useState<PostAuthCallback | null>(null);
   const { toast } = useToast();
 
-  const checkAdminStatus = async (targetUser: User) => {
+  const checkAdminStatus = async () => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
     try {
-      console.log('Checking admin status for user:', targetUser.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', targetUser.id)
+        .eq('id', user.id)
         .single();
 
       if (error) {
@@ -53,7 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      console.log('Admin status result:', data?.is_admin);
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -70,9 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Check admin status when user signs in - pass session user directly
+        // Check admin status when user signs in
         if (session?.user) {
-          await checkAdminStatus(session.user);
+          await checkAdminStatus();
         } else {
           setIsAdmin(false);
         }
@@ -111,15 +115,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Check admin status for initial session - pass session user directly
+      // Check admin status for initial session
       if (session?.user) {
-        await checkAdminStatus(session.user);
+        await checkAdminStatus();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [postAuthCallback]);
 
+  // ... rest of existing code (handlePostAuthCheckout, signUp, signIn, signOut functions)
   const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {
       console.log('Starting post-auth checkout for:', callback);
