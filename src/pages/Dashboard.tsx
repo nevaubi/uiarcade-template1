@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -37,6 +37,7 @@ const Dashboard = () => {
     subscribed, 
     subscription_tier, 
     subscription_end, 
+    is_admin: isAdmin,
     loading: subscriptionLoading,
     error: subscriptionError,
     checkoutLoading,
