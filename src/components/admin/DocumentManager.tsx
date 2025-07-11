@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,8 @@ import {
   CheckCircle,
   Loader2,
   FileIcon,
-  Eye
+  Eye,
+  File
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,34 +39,58 @@ const DocumentManager = ({
 }: DocumentManagerProps) => {
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [viewingChunks, setViewingChunks] = useState<any[]>([]);
+  const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
 
   const getFileIcon = (fileType: string) => {
+    if (!fileType) return <File className="h-4 w-4 text-gray-400" />;
+    
     switch (fileType.toLowerCase()) {
       case 'pdf':
-        return <FileIcon className="h-4 w-4 text-red-500" />;
+        return <File className="h-4 w-4 text-red-500" />;
       case 'docx':
-        return <FileIcon className="h-4 w-4 text-blue-500" />;
+        return <File className="h-4 w-4 text-blue-500" />;
       case 'txt':
       case 'md':
         return <FileText className="h-4 w-4 text-gray-500" />;
       default:
-        return <FileIcon className="h-4 w-4 text-gray-400" />;
+        return <File className="h-4 w-4 text-gray-400" />;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!dateString) return 'Unknown';
+    
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return 'Invalid date';
+    }
   };
 
   const handleViewContent = (doc: DocumentInfo) => {
+    if (!doc || !doc.chunks) return;
+    
     setSelectedDoc(doc.name);
-    setViewingChunks(doc.chunks.sort((a, b) => a.chunk_index - b.chunk_index));
+    setViewingChunks(doc.chunks.sort((a, b) => (a.chunk_index || 0) - (b.chunk_index || 0)));
+  };
+
+  const handleDelete = async (documentName: string) => {
+    if (!documentName || deletingDoc) return;
+    
+    try {
+      setDeletingDoc(documentName);
+      await deleteDocument(documentName);
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+    } finally {
+      setDeletingDoc(null);
+    }
   };
 
   if (loading) {
@@ -86,117 +110,126 @@ const DocumentManager = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Document Library
-        </CardTitle>
-        <CardDescription>
-          Manage processed documents and their content chunks
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {documents.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium mb-2">No documents processed</p>
-            <p className="text-sm">Upload your first document to get started with your chatbot's knowledge base.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Document</TableHead>
-                  <TableHead>Chunks</TableHead>
-                  <TableHead>Words</TableHead>
-                  <TableHead>Processed</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {documents.map((doc) => (
-                  <TableRow key={doc.name}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getFileIcon(doc.file_type)}
-                        <div>
-                          <p className="font-medium">{doc.name}</p>
-                          <p className="text-sm text-gray-500">{doc.file_type.toUpperCase()}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {doc.total_chunks} chunks
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-600">
-                        {doc.total_words.toLocaleString()} words
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="text-sm">{formatDate(doc.created_at)}</p>
-                        {doc.created_by && (
-                          <p className="text-xs text-gray-500">by {doc.created_by}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleViewContent(doc)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl max-h-[80vh]">
-                            <DialogHeader>
-                              <DialogTitle>Document Content: {selectedDoc}</DialogTitle>
-                              <DialogDescription>
-                                Processed content chunks from this document
-                              </DialogDescription>
-                            </DialogHeader>
-                            <ScrollArea className="h-[60vh] w-full">
-                              <div className="space-y-4">
-                                {viewingChunks.map((chunk, index) => (
-                                  <div key={chunk.id} className="border rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <Badge variant="outline">Chunk {chunk.chunk_index + 1}</Badge>
-                                      <span className="text-xs text-gray-500">{chunk.word_count} words</span>
-                                    </div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{chunk.content}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </ScrollArea>
-                          </DialogContent>
-                        </Dialog>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => deleteDocument(doc.name)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Document Library
+          </CardTitle>
+          <CardDescription>
+            Manage processed documents and their content chunks
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {documents.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No documents uploaded yet</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Upload documents above to build your knowledge base
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Document</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Chunks</TableHead>
+                    <TableHead>Words</TableHead>
+                    <TableHead>Uploaded</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                </TableHeader>
+                <TableBody>
+                  {documents.map((doc) => (
+                    <TableRow key={doc.name}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {getFileIcon(doc.file_type)}
+                          <span className="truncate max-w-[200px]">
+                            {doc.name || 'Unnamed document'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {doc.file_type?.toUpperCase() || 'Unknown'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{doc.total_chunks || 0}</TableCell>
+                      <TableCell>{doc.total_words?.toLocaleString() || 0}</TableCell>
+                      <TableCell className="text-sm text-gray-500">
+                        {formatDate(doc.created_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            onClick={() => handleViewContent(doc)}
+                            size="sm"
+                            variant="ghost"
+                            disabled={!doc.chunks || doc.chunks.length === 0}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleDelete(doc.name)}
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700"
+                            disabled={deletingDoc === doc.name}
+                          >
+                            {deletingDoc === doc.name ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* View Content Dialog */}
+      <Dialog open={!!selectedDoc && viewingChunks.length > 0} onOpenChange={() => {
+        setSelectedDoc(null);
+        setViewingChunks([]);
+      }}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Document Content: {selectedDoc}</DialogTitle>
+            <DialogDescription>
+              Viewing {viewingChunks.length} chunks
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[500px] w-full rounded-md border p-4">
+            {viewingChunks.map((chunk, index) => (
+              <div key={chunk.id || index} className="mb-4 pb-4 border-b last:border-b-0">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="secondary">
+                    Chunk {chunk.chunk_index !== undefined ? chunk.chunk_index + 1 : index + 1}
+                  </Badge>
+                  <span className="text-sm text-gray-500">
+                    {chunk.word_count || 0} words
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {chunk.content || 'No content available'}
+                </p>
+              </div>
+            ))}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
