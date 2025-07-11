@@ -27,6 +27,29 @@ interface DocumentChunk {
 
 const allowedTypes = ['pdf', 'docx', 'txt', 'md'];
 
+// Utility function to validate File objects
+const validateFileObject = (file: any): { isValid: boolean; error?: string } => {
+  console.log('Validating file object:', file);
+  
+  if (!file) {
+    return { isValid: false, error: 'File object is null or undefined' };
+  }
+  
+  if (!(file instanceof File)) {
+    return { isValid: false, error: 'Object is not a File instance' };
+  }
+  
+  if (!file.name || typeof file.name !== 'string') {
+    return { isValid: false, error: `File name is invalid: ${file.name}` };
+  }
+  
+  if (!file.size || typeof file.size !== 'number') {
+    return { isValid: false, error: `File size is invalid: ${file.size}` };
+  }
+  
+  return { isValid: true };
+};
+
 export const useDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +86,20 @@ export const useDocuments = () => {
   };
 
   const uploadDocument = async (file: File): Promise<string | null> => {
+    console.log('Starting upload process with file:', file);
+    
+    // Validate file object first
+    const validation = validateFileObject(file);
+    if (!validation.isValid) {
+      console.error('File validation failed:', validation.error);
+      toast({
+        title: "Error",
+        description: `Invalid file: ${validation.error}`,
+        variant: "destructive",
+      });
+      return null;
+    }
+
     if (!user?.email) {
       toast({
         title: "Error",
@@ -74,11 +111,22 @@ export const useDocuments = () => {
 
     setUploading(true);
     try {
-      // Validate file type and size with better error messages
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      // Safely extract file extension with null checks
+      let fileExtension: string | undefined;
+      try {
+        if (file.name && typeof file.name === 'string') {
+          const nameParts = file.name.split('.');
+          fileExtension = nameParts.length > 1 ? nameParts.pop()?.toLowerCase() : undefined;
+        }
+      } catch (splitError) {
+        console.error('Error splitting file name:', splitError, 'File name:', file.name);
+        throw new Error('Invalid file name format');
+      }
+
+      console.log('Extracted file extension:', fileExtension);
       
       if (!fileExtension || !allowedTypes.includes(fileExtension)) {
-        throw new Error(`Invalid file type: .${fileExtension}. Only PDF, DOCX, TXT, and MD files are allowed.`);
+        throw new Error(`Invalid file type: .${fileExtension || 'unknown'}. Only PDF, DOCX, TXT, and MD files are allowed.`);
       }
 
       if (file.size > 10 * 1024 * 1024) { // 10MB limit

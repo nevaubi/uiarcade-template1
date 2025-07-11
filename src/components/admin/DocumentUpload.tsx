@@ -26,16 +26,53 @@ interface DocumentUploadProps {
   uploadDocument: (file: File) => Promise<string | null>;
 }
 
+// Utility function to validate File objects
+const validateFileObject = (file: any): { isValid: boolean; error?: string } => {
+  console.log('DocumentUpload: Validating file object:', file);
+  
+  if (!file) {
+    return { isValid: false, error: 'File object is null or undefined' };
+  }
+  
+  if (!(file instanceof File)) {
+    return { isValid: false, error: 'Object is not a File instance' };
+  }
+  
+  if (!file.name || typeof file.name !== 'string') {
+    return { isValid: false, error: `File name is invalid: ${file.name}` };
+  }
+  
+  if (file.size === undefined || typeof file.size !== 'number') {
+    return { isValid: false, error: `File size is invalid: ${file.size}` };
+  }
+  
+  return { isValid: true };
+};
+
 const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
-      ...file,
-      uploadStatus: 'pending' as const,
-      uploadProgress: 0
-    }));
-    setFiles(prev => [...prev, ...newFiles]);
+    console.log('DocumentUpload: Files dropped:', acceptedFiles);
+    
+    // Validate each file before adding to state
+    const validFiles: FileWithPreview[] = [];
+    
+    acceptedFiles.forEach((file, index) => {
+      const validation = validateFileObject(file);
+      if (validation.isValid) {
+        validFiles.push({
+          ...file,
+          uploadStatus: 'pending' as const,
+          uploadProgress: 0
+        });
+      } else {
+        console.error(`Invalid file at index ${index}:`, validation.error);
+      }
+    });
+
+    console.log('DocumentUpload: Valid files to add:', validFiles);
+    setFiles(prev => [...prev, ...validFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -51,6 +88,22 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   });
 
   const handleUpload = async (file: FileWithPreview, index: number) => {
+    console.log('DocumentUpload: Starting upload for file:', file);
+    
+    // Validate file again before upload
+    const validation = validateFileObject(file);
+    if (!validation.isValid) {
+      console.error('File validation failed during upload:', validation.error);
+      setFiles(prev => prev.map((f, i) => 
+        i === index ? { 
+          ...f, 
+          uploadStatus: 'error', 
+          errorMessage: validation.error 
+        } : f
+      ));
+      return;
+    }
+
     setFiles(prev => prev.map((f, i) => 
       i === index ? { ...f, uploadStatus: 'uploading', uploadProgress: 0 } : f
     ));
@@ -72,7 +125,8 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
           i === index ? { ...f, uploadStatus: 'error', errorMessage: 'Upload failed' } : f
         ));
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Upload error in DocumentUpload:', error);
       setFiles(prev => prev.map((f, i) => 
         i === index ? { 
           ...f, 
@@ -98,7 +152,18 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   };
 
   const getFileIcon = (file: File) => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
+    // Safely get file extension
+    let extension: string | undefined;
+    try {
+      if (file.name && typeof file.name === 'string') {
+        const nameParts = file.name.split('.');
+        extension = nameParts.length > 1 ? nameParts.pop()?.toLowerCase() : undefined;
+      }
+    } catch (error) {
+      console.error('Error getting file extension:', error);
+      extension = undefined;
+    }
+
     switch (extension) {
       case 'pdf':
         return <File className="h-8 w-8 text-red-500" />;
@@ -211,10 +276,10 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
                   
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {file.name}
+                      {file.name || 'Unknown file'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {formatFileSize(file.size)}
+                      {formatFileSize(file.size || 0)}
                     </p>
                     
                     {file.uploadStatus === 'uploading' && (
