@@ -3,9 +3,12 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Shield, Database, Activity, Loader2, RefreshCw } from 'lucide-react';
+import { Users, Shield, Database, Activity, Loader2, RefreshCw, Calendar, Mail, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import UserSearchFilter from './UserSearchFilter';
 import DataExport from './DataExport';
 
@@ -61,7 +64,6 @@ const AdminPanel: React.FC = () => {
         });
       } else {
         console.log('AdminPanel: Successfully fetched profiles:', profilesData?.length || 0, 'profiles');
-        console.log('AdminPanel: Profile data:', profilesData);
         setUsers(profilesData || []);
       }
 
@@ -81,7 +83,6 @@ const AdminPanel: React.FC = () => {
         });
       } else {
         console.log('AdminPanel: Successfully fetched subscribers:', subscribersData?.length || 0, 'subscribers');
-        console.log('AdminPanel: Subscriber data:', subscribersData);
         setSubscribers(subscribersData || []);
       }
 
@@ -184,11 +185,69 @@ const AdminPanel: React.FC = () => {
 
   const stats = getStats();
 
+  const StatCard = ({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) => (
+    <Card className="transition-all duration-200 hover:shadow-md">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <Icon className={`h-4 w-4 ${color}`} />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
+  );
+
+  const UserTableSkeleton = () => (
+    <div className="space-y-3">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex items-center space-x-4 p-4">
+          <Skeleton className="h-4 w-4" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-8 w-8" />
+        </div>
+      ))}
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading admin data...</span>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-9 w-28" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-12" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent>
+            <UserTableSkeleton />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -198,73 +257,42 @@ const AdminPanel: React.FC = () => {
       {/* Admin Panel Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <Shield className="h-6 w-6 mr-2 text-amber-600" />
+          <h2 className="text-3xl font-bold text-foreground flex items-center">
+            <Shield className="h-7 w-7 mr-3 text-primary" />
             Admin Panel
           </h2>
-          <p className="text-gray-600">System administration and user management</p>
+          <p className="text-muted-foreground mt-1">System administration and user management</p>
         </div>
         <Button
           onClick={fetchAdminData}
           disabled={refreshing}
           variant="outline"
           size="sm"
+          className="transition-all duration-200"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh Data
         </Button>
       </div>
 
-      {/* Admin Stats */}
+      {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
-            <Shield className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.adminUsers}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Subscribers</CardTitle>
-            <Activity className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSubscribers}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Database Records</CardTitle>
-            <Database className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length + subscribers.length}</div>
-          </CardContent>
-        </Card>
+        <StatCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-600" />
+        <StatCard title="Admin Users" value={stats.adminUsers} icon={Shield} color="text-amber-600" />
+        <StatCard title="Active Subscribers" value={stats.totalSubscribers} icon={Activity} color="text-green-600" />
+        <StatCard title="Database Records" value={users.length + subscribers.length} icon={Database} color="text-purple-600" />
       </div>
 
       {/* Data Export Section */}
       <DataExport users={users} subscribers={subscribers} />
 
-      {/* Users Management */}
+      {/* Users Management with Data Table */}
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle className="flex items-center">
+            <Users className="h-5 w-5 mr-2" />
+            User Management
+          </CardTitle>
           <CardDescription>
             Search, filter, and manage user accounts ({users.length} total users found)
           </CardDescription>
@@ -284,39 +312,77 @@ const AdminPanel: React.FC = () => {
             totalCount={users.length}
           />
 
-          <div className="space-y-4">
-            {filteredUsers.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                {users.length === 0 ? 'No users found in database' : 'No users match your current filters'}
-              </p>
-            ) : (
-              filteredUsers.map((user) => {
-                const subscriber = subscribers.find(sub => sub.email === user.email);
-                return (
-                  <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <p className="font-medium">{user.full_name || 'No name'}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          <p className="text-xs text-gray-500">
-                            Joined: {new Date(user.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-gray-100 text-gray-800"}>
-                        {subscriber?.is_admin ? "Admin" : "User"}
-                      </Badge>
-                      <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
-                        {subscriber?.subscribed ? "Subscribed" : "Free"}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Subscription</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      {users.length === 0 ? 'No users found in database' : 'No users match your current filters'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => {
+                    const subscriber = subscribers.find(sub => sub.email === user.email);
+                    return (
+                      <TableRow key={user.id} className="transition-colors hover:bg-muted/50">
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium">{user.full_name || 'No name'}</div>
+                            <div className="text-sm text-muted-foreground flex items-center">
+                              <Mail className="h-3 w-3 mr-1" />
+                              {user.email}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={subscriber?.is_admin ? "default" : "secondary"}
+                            className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
+                          >
+                            {subscriber?.is_admin ? "Admin" : "User"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
+                            {subscriber?.subscribed ? "Active" : "Free"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-muted-foreground flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>View Details</DropdownMenuItem>
+                              <DropdownMenuItem>Send Email</DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">Suspend User</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
@@ -324,40 +390,66 @@ const AdminPanel: React.FC = () => {
       {/* Subscription Overview */}
       <Card>
         <CardHeader>
-          <CardTitle>Subscription Overview</CardTitle>
+          <CardTitle className="flex items-center">
+            <Activity className="h-5 w-5 mr-2" />
+            Subscription Overview
+          </CardTitle>
           <CardDescription>
             Monitor user subscriptions and billing ({subscribers.length} total subscribers found)
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {subscribers.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No subscription data found</p>
-            ) : (
-              subscribers.slice(0, 10).map((subscriber, index) => (
-                <div key={subscriber.email + index} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium">{subscriber.email}</p>
-                    <p className="text-sm text-gray-600">
-                      {subscriber.subscription_tier ? `${subscriber.subscription_tier} Plan` : 'No active plan'}
-                    </p>
-                    {subscriber.subscription_end && (
-                      <p className="text-xs text-gray-500">
-                        Expires: {new Date(subscriber.subscription_end).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
-                      {subscriber.subscribed ? "Active" : "Inactive"}
-                    </Badge>
-                    {subscriber.is_admin && (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-300">Admin</Badge>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Expires</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscribers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                      No subscription data found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  subscribers.slice(0, 10).map((subscriber, index) => (
+                    <TableRow key={subscriber.email + index} className="transition-colors hover:bg-muted/50">
+                      <TableCell className="font-medium">{subscriber.email}</TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {subscriber.subscription_tier ? `${subscriber.subscription_tier} Plan` : 'No active plan'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
+                            {subscriber.subscribed ? "Active" : "Inactive"}
+                          </Badge>
+                          {subscriber.is_admin && (
+                            <Badge className="bg-amber-100 text-amber-800 border-amber-300">Admin</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {subscriber.subscription_end ? (
+                          <div className="text-sm text-muted-foreground flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {new Date(subscriber.subscription_end).toLocaleDateString()}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
