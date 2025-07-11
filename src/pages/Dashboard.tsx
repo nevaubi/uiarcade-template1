@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
 import WebsiteAnalytics from '@/components/WebsiteAnalytics';
@@ -27,21 +27,13 @@ import {
   Shield
 } from 'lucide-react';
 
-// Define the sidebar item interface
-interface SidebarItem {
-  id: string;
-  icon: React.ComponentType<any>;
-  label: string;
-  active: boolean;
-  isAdmin?: boolean;
-}
-
 const Dashboard = () => {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [adminViewMode, setAdminViewMode] = useState(false);
   const { toast } = useToast();
   const { 
     subscribed, 
@@ -97,18 +89,24 @@ const Dashboard = () => {
     }
   };
 
-  // Define sidebar items - admin items are shown when user is admin
-  const getSidebarItems = (): SidebarItem[] => {
-    const baseItems: SidebarItem[] = [
+  const handleAdminViewToggle = (checked: boolean) => {
+    setAdminViewMode(checked);
+    // Reset to dashboard when switching views
+    setActiveTab('dashboard');
+  };
+
+  // Define sidebar items based on admin status and view mode
+  const getSidebarItems = () => {
+    const baseItems = [
       { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', active: activeTab === 'dashboard' },
     ];
 
-    // Add admin items if user is admin
-    if (isAdmin) {
-      baseItems.push(
-        { id: 'analytics', icon: BarChart3, label: 'Website Analytics', active: activeTab === 'analytics', isAdmin: true },
-        { id: 'tools', icon: Wrench, label: 'Website Tools', active: activeTab === 'tools', isAdmin: true }
-      );
+    if (isAdmin && adminViewMode) {
+      return [
+        ...baseItems,
+        { id: 'analytics', icon: BarChart3, label: 'Website Analytics', active: activeTab === 'analytics' },
+        { id: 'tools', icon: Wrench, label: 'Website Tools', active: activeTab === 'tools' },
+      ];
     }
 
     return baseItems;
@@ -159,41 +157,16 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <h3 className="text-base lg:text-lg font-medium text-gray-900">
-            Welcome back, {user?.email?.split('@')[0] || 'User'}!
-          </h3>
-          {isAdmin && (
-            <Badge variant="outline" className="text-purple-600 border-purple-600">
-              <Shield className="h-3 w-3 mr-1" />
-              Admin
-            </Badge>
-          )}
-        </div>
+        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+          Welcome back, {user?.email?.split('@')[0] || 'User'}!
+        </h3>
         <p className="text-sm lg:text-base text-gray-600">
-          {isAdmin 
-            ? "You have administrator access to manage website analytics and tools."
+          {isAdmin && adminViewMode 
+            ? "You're viewing the admin dashboard with full website management capabilities."
             : "Here's what's happening with your account today."
           }
         </p>
       </div>
-
-      {/* Admin Access Notification */}
-      {isAdmin && (
-        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-purple-800 flex items-center">
-              <Shield className="h-4 w-4 mr-2" />
-              Administrator Access
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm text-purple-700">
-              You have full access to website analytics and management tools. Use the sidebar to navigate to admin features.
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
@@ -349,76 +322,55 @@ const Dashboard = () => {
               <p className="text-sm font-medium text-gray-900 truncate">
                 {user?.email || 'User'}
               </p>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-500">
-                  {subscribed ? `${subscription_tier} Member` : 'Free User'}
-                </p>
+              <p className="text-xs text-gray-500">
+                {subscribed ? `${subscription_tier} Member` : 'Free User'}
                 {isAdmin && (
-                  <Badge variant="outline" className="text-xs px-1 py-0 text-purple-600 border-purple-600">
-                    <Shield className="h-2 w-2 mr-1" />
-                    Admin
-                  </Badge>
+                  <span className="ml-1">
+                    <Shield className="h-3 w-3 inline text-purple-600" />
+                  </span>
                 )}
-              </div>
+              </p>
             </div>
           </div>
+          
+          {/* Admin View Toggle */}
+          {isAdmin && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <label htmlFor="admin-toggle" className="text-xs font-medium text-gray-700">
+                  Admin View
+                </label>
+                <Switch
+                  id="admin-toggle"
+                  checked={adminViewMode}
+                  onCheckedChange={handleAdminViewToggle}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {adminViewMode ? 'Admin Dashboard' : 'User Dashboard'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {/* Regular menu items */}
-          <div className="space-y-1">
-            {sidebarItems.filter(item => !item.isAdmin).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`
-                  w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
-                  ${item.active 
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }
-                `}
-              >
-                <item.icon className="h-5 w-5 mr-3" />
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Admin section */}
-          {isAdmin && sidebarItems.some(item => item.isAdmin) && (
-            <>
-              <div className="pt-4">
-                <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Admin Panel
-                </p>
-                <div className="space-y-1">
-                  {sidebarItems.filter(item => item.isAdmin).map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className={`
-                        w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors
-                        ${item.active 
-                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center">
-                        <item.icon className="h-5 w-5 mr-3" />
-                        {item.label}
-                      </div>
-                      <Badge variant="outline" className="text-xs px-1 py-0 text-purple-600 border-purple-600 bg-white">
-                        Admin
-                      </Badge>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`
+                w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                ${item.active 
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }
+              `}
+            >
+              <item.icon className="h-5 w-5 mr-3" />
+              {item.label}
+            </button>
+          ))}
         </nav>
 
         {/* Logout Button */}
@@ -448,19 +400,11 @@ const Dashboard = () => {
               >
                 <Menu className="h-6 w-6" />
               </Button>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                  {activeTab === 'dashboard' ? 'Dashboard' : 
-                   activeTab === 'analytics' ? 'Website Analytics' : 
-                   activeTab === 'tools' ? 'Website Tools' : 'Dashboard'}
-                </h2>
-                {(activeTab === 'analytics' || activeTab === 'tools') && (
-                  <Badge variant="outline" className="text-purple-600 border-purple-600">
-                    <Shield className="h-3 w-3 mr-1" />
-                    Admin
-                  </Badge>
-                )}
-              </div>
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">
+                {activeTab === 'dashboard' ? (isAdmin && adminViewMode ? 'Admin Dashboard' : 'Dashboard') : 
+                 activeTab === 'analytics' ? 'Website Analytics' : 
+                 activeTab === 'tools' ? 'Website Tools' : 'Dashboard'}
+              </h2>
             </div>
             <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
               {subscriptionError && (
