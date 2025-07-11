@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,11 +31,14 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     console.log('Files dropped:', acceptedFiles);
     
-    const filesWithStatus: FileWithStatus[] = acceptedFiles.map(file => ({
-      ...file,
-      uploadStatus: 'pending' as const,
-      uploadProgress: 0
-    }));
+    const filesWithStatus: FileWithStatus[] = acceptedFiles.map(file => {
+      // Create a new file object that preserves all File properties
+      const fileWithStatus = Object.assign(file, {
+        uploadStatus: 'pending' as const,
+        uploadProgress: 0
+      });
+      return fileWithStatus;
+    });
 
     setFiles(prev => [...prev, ...filesWithStatus]);
   }, []);
@@ -103,8 +105,15 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const getFileIcon = (file: File) => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
+  const getFileIcon = (file: FileWithStatus | File) => {
+    // Add defensive checks
+    if (!file || !file.name) {
+      console.warn('Invalid file object passed to getFileIcon:', file);
+      return <File className="h-8 w-8 text-gray-400" />;
+    }
+
+    const nameParts = file.name.split('.');
+    const extension = nameParts.length > 1 ? nameParts.pop()?.toLowerCase() : undefined;
 
     switch (extension) {
       case 'pdf':
@@ -133,7 +142,7 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -193,70 +202,66 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
                       Processing...
                     </>
                   ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Process All
-                    </>
+                    'Process All'
                   )}
                 </Button>
                 <Button 
-                  variant="outline" 
-                  size="sm"
                   onClick={() => setFiles([])}
+                  variant="outline"
+                  size="sm"
                 >
                   Clear All
                 </Button>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {files.map((file, index) => (
-                <div key={`${file.name}-${index}`} className="flex items-center space-x-4 p-4 border rounded-lg">
+                <div 
+                  key={`${file.name}-${index}`}
+                  className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50"
+                >
                   <div className="flex-shrink-0">
                     {getFileIcon(file)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {file.name}
+                      {file.name || 'Unknown file'}
                     </p>
                     <p className="text-xs text-gray-500">
                       {formatFileSize(file.size)}
                     </p>
-                    
-                    {file.uploadStatus === 'uploading' && (
-                      <Progress value={file.uploadProgress || 0} className="mt-2" />
-                    )}
-                    
-                    {file.uploadStatus === 'error' && (
+                    {file.errorMessage && (
                       <p className="text-xs text-red-600 mt-1">
                         {file.errorMessage}
                       </p>
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Badge 
-                      variant={
-                        file.uploadStatus === 'success' ? 'default' :
-                        file.uploadStatus === 'error' ? 'destructive' :
-                        file.uploadStatus === 'uploading' ? 'secondary' :
-                        'outline'
-                      }
-                    >
-                      {file.uploadStatus === 'pending' && 'Ready'}
-                      {file.uploadStatus === 'uploading' && 'Processing'}
-                      {file.uploadStatus === 'success' && 'Success'}
-                      {file.uploadStatus === 'error' && 'Error'}
-                    </Badge>
+                  <div className="flex items-center gap-2">
+                    {file.uploadStatus === 'uploading' && (
+                      <Progress value={file.uploadProgress} className="w-24" />
+                    )}
                     
                     {getStatusIcon(file.uploadStatus)}
                     
+                    {file.uploadStatus === 'pending' && (
+                      <Button
+                        onClick={() => handleUpload(file, index)}
+                        size="sm"
+                        variant="outline"
+                        disabled={uploading}
+                      >
+                        Process
+                      </Button>
+                    )}
+                    
                     <Button
-                      variant="ghost"
-                      size="sm"
                       onClick={() => removeFile(index)}
-                      disabled={file.uploadStatus === 'uploading'}
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
                     >
                       <X className="h-4 w-4" />
                     </Button>
