@@ -134,7 +134,7 @@ export const useDocuments = () => {
       await fetchDocuments();
       return documentData.id;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         title: "Error",
@@ -179,7 +179,7 @@ export const useDocuments = () => {
       });
 
       await fetchDocuments();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete error:', error);
       toast({
         title: "Error",
@@ -226,7 +226,7 @@ export const useDocuments = () => {
       });
 
       await fetchDocuments();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Reprocess error:', error);
       toast({
         title: "Error",
