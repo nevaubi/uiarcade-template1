@@ -127,10 +127,16 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         
-        // Filter for TextItem objects only and extract text
+        // Extract text using type-safe approach
         const pageText = textContent.items
-          .filter(isTextItem)
-          .map((item) => item.str)
+          .map((item: any) => {
+            // Check if item has str property (TextItem)
+            if (item && typeof item === 'object' && 'str' in item && typeof item.str === 'string') {
+              return item.str;
+            }
+            return '';
+          })
+          .filter(text => text.length > 0)
           .join(' ');
         
         fullText += pageText + '\n';
