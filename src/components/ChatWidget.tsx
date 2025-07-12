@@ -21,17 +21,17 @@ interface Message {
   timestamp: Date;
 }
 
-// Custom cute robot icon component
+// Custom cute robot icon component - scaled up for better visibility
 const RobotIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="6" y="7" width="12" height="10" rx="2" fill="currentColor" opacity="0.9"/>
-    <circle cx="9" cy="11" r="1" fill="white"/>
-    <circle cx="15" cy="11" r="1" fill="white"/>
-    <rect x="10" y="13" width="4" height="1" rx="0.5" fill="white"/>
-    <rect x="11" y="4" width="2" height="3" fill="currentColor" opacity="0.7"/>
-    <circle cx="12" cy="3" r="1" fill="currentColor" opacity="0.7"/>
-    <rect x="4" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.7"/>
-    <rect x="18" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.7"/>
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="10" width="16" height="14" rx="3" fill="currentColor"/>
+    <circle cx="12" cy="15" r="2" fill="white"/>
+    <circle cx="20" cy="15" r="2" fill="white"/>
+    <rect x="13" y="19" width="6" height="2" rx="1" fill="white"/>
+    <rect x="14.5" y="5" width="3" height="5" fill="currentColor"/>
+    <circle cx="16" cy="4" r="2" fill="currentColor"/>
+    <rect x="5" y="14" width="3" height="6" rx="1.5" fill="currentColor"/>
+    <rect x="24" y="14" width="3" height="6" rx="1.5" fill="currentColor"/>
   </svg>
 );
 
@@ -148,37 +148,37 @@ const ChatWidget = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {/* Chat bubble trigger with enhanced animation */}
+      {/* Chat bubble trigger with iOS-style design */}
       {!isWidgetOpen && (
         <Button
           onClick={() => setIsWidgetOpen(true)}
-          className="h-16 w-16 rounded-full shadow-lg bg-gradient-to-br from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-110 hover:shadow-xl group"
+          className="h-14 w-14 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
           size="sm"
         >
-          <RobotIcon className="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300" />
+          <RobotIcon className="h-7 w-7 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
         </Button>
       )}
 
-      {/* Chat widget with enhanced styling */}
+      {/* Chat widget with iOS-style design */}
       {isWidgetOpen && (
-        <Card className={`shadow-2xl transition-all duration-300 ease-in-out border-0 overflow-hidden ${
+        <Card className={`shadow-xl transition-all duration-500 ease-out border border-gray-200/50 overflow-hidden backdrop-blur-xl bg-white/95 animate-in fade-in-0 zoom-in-95 ${
           isMinimized ? 'w-80 h-16' : 'w-96 h-[500px]'
         }`}>
-          {/* Header with improved gradient */}
-          <CardHeader className="bg-gradient-to-br from-violet-600 to-purple-600 text-white p-4 rounded-t-lg">
+          {/* Header with iOS-style design */}
+          <CardHeader className="bg-white/80 backdrop-blur-lg text-gray-900 p-4 border-b border-gray-200/50">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
-                  <RobotIcon className="h-5 w-5 text-white" />
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <div className="bg-gray-100/80 p-1.5 rounded-xl">
+                  <RobotIcon className="h-5 w-5 text-gray-700" />
                 </div>
-                <span className="font-semibold">{chatbotName}</span>
+                <span className="text-gray-900">{chatbotName}</span>
               </CardTitle>
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="h-8 w-8 p-0 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-all duration-200"
                 >
                   {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
                 </Button>
@@ -186,7 +186,7 @@ const ChatWidget = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsWidgetOpen(false)}
-                  className="h-8 w-8 p-0 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-all duration-200"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -194,28 +194,28 @@ const ChatWidget = () => {
             </div>
           </CardHeader>
 
-          {/* Chat content with improved styling */}
+          {/* Chat content with iOS-style design */}
           {!isMinimized && (
             <>
-              <CardContent className="p-0 flex-1 overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+              <CardContent className="p-0 flex-1 overflow-hidden bg-gray-50/50">
                 <ScrollArea ref={scrollAreaRef} className="h-[340px] p-4">
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {messages.map((msg, index) => (
                       <div
                         key={msg.id}
-                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-                        style={{ animationDelay: `${index * 50}ms` }}
+                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in-50 slide-in-from-bottom-1 duration-300`}
+                        style={{ animationDelay: `${index * 30}ms` }}
                       >
                         <div
-                          className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                          className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                             msg.type === 'user'
-                              ? 'bg-gradient-to-br from-violet-600 to-purple-600 text-white'
-                              : 'bg-white border border-gray-100 text-gray-800'
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'bg-white text-gray-800 shadow-sm border border-gray-100'
                           }`}
                         >
                           {msg.content}
-                          <div className={`text-xs mt-1 ${
-                            msg.type === 'user' ? 'text-white/70' : 'text-gray-400'
+                          <div className={`text-xs mt-0.5 ${
+                            msg.type === 'user' ? 'text-blue-100' : 'text-gray-400'
                           }`}>
                             {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
@@ -223,14 +223,13 @@ const ChatWidget = () => {
                       </div>
                     ))}
                     {isLoading && (
-                      <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="flex justify-start animate-in fade-in-50 slide-in-from-bottom-1 duration-300">
                         <div className="bg-white border border-gray-100 rounded-2xl px-4 py-2.5 text-sm text-gray-800 shadow-sm">
                           <div className="flex items-center gap-2">
-                            <Loader2 className="h-3 w-3 animate-spin text-violet-600" />
                             <div className="flex gap-1">
-                              <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></span>
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }}></span>
                             </div>
                           </div>
                         </div>
@@ -240,22 +239,22 @@ const ChatWidget = () => {
                 </ScrollArea>
               </CardContent>
 
-              {/* Input area with enhanced styling */}
-              <div className="border-t bg-white p-4">
+              {/* Input area with iOS-style design */}
+              <div className="border-t border-gray-200/50 bg-white/80 backdrop-blur-lg p-4">
                 <div className="flex gap-2">
                   <Input
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type your message..."
+                    placeholder="Type a message..."
                     disabled={isLoading}
-                    className="flex-1 text-sm border-gray-200 focus:border-violet-500 focus:ring-violet-500 transition-colors"
+                    className="flex-1 text-sm border-gray-300 bg-gray-50/50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 placeholder:text-gray-500"
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={!message.trim() || isLoading}
                     size="sm"
-                    className="bg-gradient-to-br from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="bg-blue-500 hover:bg-blue-600 text-white transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:hover:bg-blue-500"
                   >
                     {isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
