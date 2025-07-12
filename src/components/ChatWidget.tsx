@@ -162,8 +162,7 @@ const ChatWidget = () => {
       {!isWidgetOpen && (
         <Button
           onClick={() => setIsWidgetOpen(true)}
-          className="h-18 w-18 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
-          size="sm"
+          className="h-20 w-20 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
         >
           <RobotIcon className="h-16 w-16 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
         </Button>
