@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -165,7 +164,7 @@ const ChatWidget = () => {
           onClick={() => setIsWidgetOpen(true)}
           className="h-20 w-20 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
         >
-          <RobotIcon className="h-16 w-16 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
+          <RobotIcon className="h-18 w-18 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
         </Button>
       )}
 
