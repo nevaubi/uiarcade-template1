@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,7 +23,9 @@ import {
   Users,
   TrendingUp,
   RotateCcw,
-  AlertCircle
+  AlertCircle,
+  Power,
+  PowerOff
 } from 'lucide-react';
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
@@ -155,19 +156,23 @@ const ChatbotPanel = () => {
                 </CardTitle>
                 <Button 
                   onClick={toggleChatbotStatus}
-                  variant={config?.current_status === 'active' ? 'default' : 'outline'}
+                  variant={config?.current_status === 'active' ? 'destructive' : 'default'}
                   size="sm"
                   disabled={configLoading}
+                  className={config?.current_status === 'active' 
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                  }
                 >
                   {config?.current_status === 'active' ? (
                     <>
-                      <Pause className="h-4 w-4 mr-2" />
-                      Active
+                      <PowerOff className="h-4 w-4 mr-2" />
+                      Deactivate
                     </>
                   ) : (
                     <>
-                      <Play className="h-4 w-4 mr-2" />
-                      Draft
+                      <Power className="h-4 w-4 mr-2" />
+                      Activate
                     </>
                   )}
                 </Button>
@@ -236,44 +241,6 @@ const ChatbotPanel = () => {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Conversations */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Recent Conversations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="space-y-2">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-3 w-full" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                  ))}
-                </div>
-              ) : conversations.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p>No conversations yet</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {conversations.map((conv) => (
-                    <div key={conv.id} className="border-b pb-2 last:border-b-0">
-                      <p className="text-sm font-medium">{conv.user}</p>
-                      <p className="text-xs text-gray-600 truncate">{conv.message}</p>
-                      <p className="text-xs text-gray-500">{conv.time}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
