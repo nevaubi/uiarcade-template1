@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,17 +22,17 @@ interface Message {
   timestamp: Date;
 }
 
-// Custom cute robot icon component - scaled up robot within the viewBox
+// Custom robot icon component with new design
 const RobotIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="6" width="24" height="20" rx="4" fill="currentColor"/>
-    <circle cx="10" cy="13" r="3" fill="white"/>
-    <circle cx="22" cy="13" r="3" fill="white"/>
-    <rect x="11" y="20" width="10" height="3" rx="1.5" fill="white"/>
-    <rect x="13.5" y="2" width="5" height="6" fill="currentColor"/>
-    <circle cx="16" cy="1" r="3" fill="currentColor"/>
-    <rect x="1" y="12" width="4" height="8" rx="2" fill="currentColor"/>
-    <rect x="27" y="12" width="4" height="8" rx="2" fill="currentColor"/>
+  <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="9" y="18" width="30" height="24" rx="2" fill="currentColor" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="17" cy="26" r="2" fill="white"/>
+    <circle cx="31" cy="26" r="2" fill="white"/>
+    <path d="M20 32C18.8954 32 18 32.8954 18 34C18 35.1046 18.8954 36 20 36V32ZM28 36C29.1046 36 30 35.1046 30 34C30 32.8954 29.1046 32 28 32V36ZM20 36H28V32H20V36Z" fill="white"/>
+    <path d="M24 10V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 26V34" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M44 26V34" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="24" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor"/>
   </svg>
 );
 
