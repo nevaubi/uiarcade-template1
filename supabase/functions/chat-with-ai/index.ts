@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { RateLimiter, getRateLimitHeaders, getIdentifier } from '../_shared/rateLimiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,15 +23,65 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const rateLimiter = new RateLimiter();
+  let userId: string | undefined;
+
   try {
     console.log('Chat with AI function called');
     console.log('Request method:', req.method);
-    console.log('Request headers:', req.headers);
     
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       console.error('OpenAI API key not found in environment variables');
       throw new Error('The chatbot is not properly configured. Please contact the administrator.');
+    }
+
+    // Initialize Supabase client for auth check
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Get user ID for authenticated users
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { data } = await supabaseClient.auth.getUser(token);
+        if (data.user) {
+          userId = data.user.id;
+        }
+      } catch (authError) {
+        console.log('Auth check failed, proceeding with IP-based rate limiting');
+      }
+    }
+
+    // Apply rate limiting
+    const identifier = getIdentifier(req, userId);
+    const rateLimit = await rateLimiter.checkRateLimit({
+      maxRequests: userId ? 10 : 5, // 10 req/min for authenticated users, 5 for anonymous
+      windowMinutes: 1,
+      identifier,
+      endpoint: 'chat-with-ai'
+    });
+
+    const rateLimitHeaders = getRateLimitHeaders(rateLimit);
+
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: rateLimit.message || 'Rate limit exceeded. Please try again later.',
+          success: false 
+        }),
+        { 
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
 
     // Parse and validate request
@@ -58,12 +109,6 @@ serve(async (req) => {
     console.log('Received message:', message);
     console.log('Conversation history length:', conversationHistory?.length || 0);
 
-    // Initialize Supabase client for fetching config and querying vectors
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     // Fetch chatbot configuration
     console.log('Fetching chatbot config...');
     const { data: config, error: configError } = await supabaseClient
@@ -76,10 +121,6 @@ serve(async (req) => {
 
     const chatbotConfig = config[0];
     console.log('Fetched config successfully');
-    console.log('Chatbot name:', chatbotConfig.chatbot_name);
-    console.log('Response style:', chatbotConfig.response_style);
-    console.log('Max response length:', chatbotConfig.max_response_length);
-    console.log('Creativity level:', chatbotConfig.creativity_level);
 
     // Query vector database for relevant context
     console.log('Querying vector database...');
@@ -90,7 +131,7 @@ serve(async (req) => {
           action: 'query', 
           data: { 
             query: message, 
-            topK: 5  // Increased from 3 to 5 for better context
+            topK: 5
           } 
         },
       });
@@ -257,7 +298,7 @@ FINAL CHECK: Is your response within the required length limit? ${chatbotConfig.
     const temperature = (chatbotConfig.creativity_level || 30) / 100;
     console.log('Temperature setting:', temperature);
 
-    // Determine max tokens based on response length preference - reduced for better adherence
+    // Determine max tokens based on response length preference
     const maxTokens = chatbotConfig.max_response_length === 'short' ? 60 : 
                      chatbotConfig.max_response_length === 'long' ? 800 : 300;
     console.log('Max tokens:', maxTokens);
@@ -306,12 +347,23 @@ FINAL CHECK: Is your response within the required length limit? ${chatbotConfig.
     console.log('Generated response length:', botResponse.length);
     console.log('Token usage:', data.usage);
 
+    // Cleanup old rate limit records periodically (1% chance)
+    if (Math.random() < 0.01) {
+      rateLimiter.cleanup().catch(console.error);
+    }
+
     return new Response(
       JSON.stringify({ 
         response: botResponse,
         success: true 
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          ...rateLimitHeaders,
+          'Content-Type': 'application/json' 
+        } 
+      }
     );
 
   } catch (error) {

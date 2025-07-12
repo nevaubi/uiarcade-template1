@@ -1,152 +1,189 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Upload, 
-  FileText, 
-  AlertCircle, 
-  CheckCircle, 
-  Loader2,
-  X,
-  File
-} from 'lucide-react';
+import { Upload, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useRateLimit } from '@/hooks/useRateLimit';
 
-interface FileWithStatus extends File {
-  uploadStatus?: 'pending' | 'uploading' | 'success' | 'error';
-  uploadProgress?: number;
-  errorMessage?: string;
+interface UploadFile {
+  id: string;
+  file: File;
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  progress: number;
+  error?: string;
 }
 
-interface DocumentUploadProps {
-  uploading: boolean;
-  uploadDocument: (file: File) => Promise<string | null>;
-}
+const DocumentUpload = ({ onUploadComplete }: { onUploadComplete?: () => void }) => {
+  const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
+  const { toast } = useToast();
+  const { handleRateLimitResponse, isRateLimited, timeUntilReset } = useRateLimit();
 
-const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
-  const [files, setFiles] = useState<FileWithStatus[]>([]);
+  const validateFile = (file: File): string | null => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown'];
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log('Files dropped:', acceptedFiles);
-    
-    const filesWithStatus: FileWithStatus[] = acceptedFiles.map(file => {
-      // Create a new file object that preserves all File properties
-      const fileWithStatus = Object.assign(file, {
-        uploadStatus: 'pending' as const,
-        uploadProgress: 0
+    if (file.size > maxSize) {
+      return 'File size exceeds 10MB';
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      return 'Invalid file type. Only TXT, PDF, DOCX, and MD files are supported.';
+    }
+
+    return null;
+  };
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (isRateLimited) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: `Please wait ${timeUntilReset} seconds before uploading more documents.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newFiles: UploadFile[] = acceptedFiles.map(file => ({
+        id: Date.now().toString() + '-' + file.name,
+        file: file,
+        status: 'uploading',
+        progress: 0,
+        error: validateFile(file) || undefined,
+      }));
+
+      setUploadFiles(prev => [...newFiles, ...prev]);
+
+      newFiles.forEach(async (uploadFile) => {
+        if (uploadFile.error) {
+          toast({
+            title: "Upload Failed",
+            description: uploadFile.error,
+            variant: "destructive",
+          });
+          setUploadFiles(prev => prev.map(f =>
+            f.id === uploadFile.id ? { ...f, status: 'error' } : f
+          ));
+          return;
+        }
+
+        try {
+          const { data, error } = await supabase.storage
+            .from('chatbot-documents')
+            .upload(`admin/${uploadFile.file.name}`, uploadFile.file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          console.log('Upload complete:', data);
+
+          setUploadFiles(prev => prev.map(f =>
+            f.id === uploadFile.id ? { ...f, progress: 100 } : f
+          ));
+
+          const fileName = uploadFile.file.name;
+          const fileType = uploadFile.file.name.split('.').pop() || 'txt';
+          await processDocument(uploadFile.id, fileName, fileType);
+
+        } catch (uploadError) {
+          console.error('File upload error:', uploadError);
+          setUploadFiles(prev => prev.map(f =>
+            f.id === uploadFile.id ? { ...f, status: 'error', error: uploadError.message } : f
+          ));
+          toast({
+            title: "Upload Failed",
+            description: uploadError.message,
+            variant: "destructive",
+          });
+        }
       });
-      return fileWithStatus;
-    });
+    },
+    [supabase, toast, isRateLimited, timeUntilReset]
+  );
 
-    setFiles(prev => [...prev, ...filesWithStatus]);
-  }, []);
+  const processDocument = async (uploadId: string, fileName: string, fileType: string) => {
+    try {
+      const response = await fetch(`https://xqhpquybkvyaaruedfkj.supabase.co/functions/v1/process-document`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentId: uploadId,
+          fileName: fileName,
+          fileType: fileType,
+        }),
+      });
+
+      // Handle rate limiting
+      handleRateLimitResponse(response);
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error(result.error || 'Too many document processing requests. Please try again later.');
+        }
+        throw new Error(result.error || 'Failed to process document');
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || 'Document processing failed');
+      }
+
+      console.log('Document processed successfully:', result);
+      
+      setUploadFiles(prev => prev.map(f => 
+        f.id === uploadId 
+          ? { ...f, status: 'completed', progress: 100 }
+          : f
+      ));
+
+      toast({
+        title: "Document Processed",
+        description: `${fileName} has been processed and added to the knowledge base.`,
+      });
+
+    } catch (error) {
+      console.error('Document processing error:', error);
+      
+      setUploadFiles(prev => prev.map(f => 
+        f.id === uploadId 
+          ? { ...f, status: 'error', error: error.message }
+          : f
+      ));
+
+      toast({
+        title: "Processing Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
+      'text/plain': ['.txt'],
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt'],
-      'text/markdown': ['.md']
+      'text/markdown': ['.md'],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
-    multiple: true
+    multiple: true,
+    disabled: isRateLimited,
   });
 
-  const handleUpload = async (file: FileWithStatus, index: number) => {
-    console.log('Starting upload for file:', file.name);
-    
-    setFiles(prev => prev.map((f, i) => 
-      i === index ? { ...f, uploadStatus: 'uploading', uploadProgress: 50 } : f
-    ));
-
-    try {
-      const result = await uploadDocument(file);
-      
-      if (result) {
-        setFiles(prev => prev.map((f, i) => 
-          i === index ? { ...f, uploadStatus: 'success', uploadProgress: 100 } : f
-        ));
-        
-        // Remove successful upload after 2 seconds
-        setTimeout(() => {
-          setFiles(prev => prev.filter((_, i) => i !== index));
-        }, 2000);
-      } else {
-        setFiles(prev => prev.map((f, i) => 
-          i === index ? { ...f, uploadStatus: 'error', errorMessage: 'Processing failed' } : f
-        ));
-      }
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      setFiles(prev => prev.map((f, i) => 
-        i === index ? { 
-          ...f, 
-          uploadStatus: 'error', 
-          errorMessage: error.message || 'Processing failed' 
-        } : f
-      ));
-    }
-  };
-
-  const handleUploadAll = async () => {
-    const pendingFiles = files.filter(f => f.uploadStatus === 'pending');
-    
-    for (let i = 0; i < files.length; i++) {
-      if (files[i].uploadStatus === 'pending') {
-        await handleUpload(files[i], i);
-      }
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const getFileIcon = (file: FileWithStatus | File | null | undefined) => {
-    // Add defensive checks
-    if (!file || typeof file !== 'object' || !file.name) {
-      console.warn('Invalid file object passed to getFileIcon:', file);
-      return <File className="h-8 w-8 text-gray-400" />;
-    }
-
-    const nameParts = file.name.split('.');
-    const extension = nameParts.length > 1 ? nameParts.pop()?.toLowerCase() : undefined;
-
-    switch (extension) {
-      case 'pdf':
-        return <File className="h-8 w-8 text-red-500" />;
-      case 'docx':
-        return <File className="h-8 w-8 text-blue-500" />;
-      case 'txt':
-      case 'md':
-        return <FileText className="h-8 w-8 text-gray-500" />;
-      default:
-        return <File className="h-8 w-8 text-gray-400" />;
-    }
-  };
-
-  const getStatusIcon = (status?: string) => {
-    switch (status) {
-      case 'uploading':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (!bytes || bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const removeFile = (id: string) => {
+    setUploadFiles(prev => prev.filter(f => f.id !== id));
   };
 
   return (
@@ -157,120 +194,67 @@ const DocumentUpload = ({ uploading, uploadDocument }: DocumentUploadProps) => {
           Upload Documents
         </CardTitle>
         <CardDescription>
-          Upload documents to build your chatbot's knowledge base. Files are processed instantly in your browser! Supported formats: PDF, DOCX, TXT, MD (Max 10MB per file)
+          Upload documents to add to your chatbot's knowledge base. Supported formats: TXT, PDF, DOCX, MD
+          {isRateLimited && (
+            <span className="block text-red-500 text-sm mt-1">
+              Rate limit reached. Please wait {timeUntilReset} seconds before uploading more documents.
+            </span>
+          )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Drop Zone */}
+      
+      <CardContent className="space-y-4">
         <div
           {...getRootProps()}
-          className={`
-            border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-            ${isDragActive 
-              ? 'border-blue-500 bg-blue-50' 
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragActive 
+              ? 'border-blue-400 bg-blue-50' 
+              : isRateLimited
+              ? 'border-gray-200 bg-gray-50'
               : 'border-gray-300 hover:border-gray-400'
-            }
-          `}
+          } ${isRateLimited ? 'cursor-not-allowed' : 'cursor-pointer'}`}
         >
-          <input {...getInputProps()} />
-          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900 mb-2">
-            {isDragActive ? 'Drop files here' : 'Drag and drop files here'}
-          </p>
-          <p className="text-sm text-gray-600 mb-4">
-            or click to browse your computer
-          </p>
-          <Button variant="outline">
-            Choose Files
-          </Button>
+          <input {...getInputProps()} disabled={isRateLimited} />
+          
+          <div className="flex flex-col items-center gap-2">
+            <Upload className={`h-12 w-12 ${isRateLimited ? 'text-gray-400' : 'text-gray-400'}`} />
+            <p className={`text-lg font-medium ${isRateLimited ? 'text-gray-400' : 'text-gray-600'}`}>
+              {isRateLimited 
+                ? `Rate limited - wait ${timeUntilReset}s`
+                : isDragActive 
+                ? 'Drop files here...' 
+                : 'Drag & drop files or click to browse'
+              }
+            </p>
+            <p className="text-sm text-gray-500">
+              Supports TXT, PDF, DOCX, and MD files up to 10MB each
+            </p>
+          </div>
         </div>
 
-        {/* File List */}
-        {files.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium">Files to Process</h4>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleUploadAll}
-                  disabled={uploading || files.every(f => f.uploadStatus !== 'pending')}
-                  size="sm"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    'Process All'
-                  )}
-                </Button>
-                <Button 
-                  onClick={() => setFiles([])}
-                  variant="outline"
-                  size="sm"
-                >
-                  Clear All
-                </Button>
-              </div>
+        {uploadFiles.map((uploadFile) => (
+          <div key={uploadFile.id} className="flex items-center justify-between border rounded-md p-2">
+            <div className="flex items-center space-x-2">
+              {uploadFile.status === 'uploading' && <Upload className="h-4 w-4 animate-spin text-gray-500" />}
+              {uploadFile.status === 'processing' && <FileText className="h-4 w-4 animate-spin text-gray-500" />}
+              {uploadFile.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
+              {uploadFile.status === 'error' && <AlertCircle className="h-4 w-4 text-red-500" />}
+              
+              <span className="text-sm font-medium">{uploadFile.file.name}</span>
+              {uploadFile.error && <span className="text-xs text-red-500">({uploadFile.error})</span>}
             </div>
 
-            <div className="space-y-2">
-              {files.map((file, index) => (
-                <div 
-                  key={`${file.name}-${index}`}
-                  className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50"
-                >
-                  <div className="flex-shrink-0">
-                    {getFileIcon(file)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {file.name || 'Unknown file'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatFileSize(file.size)}
-                    </p>
-                    {file.errorMessage && (
-                      <p className="text-xs text-red-600 mt-1">
-                        {file.errorMessage}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {file.uploadStatus === 'uploading' && (
-                      <Progress value={file.uploadProgress} className="w-24" />
-                    )}
-                    
-                    {getStatusIcon(file.uploadStatus)}
-                    
-                    {file.uploadStatus === 'pending' && (
-                      <Button
-                        onClick={() => handleUpload(file, index)}
-                        size="sm"
-                        variant="outline"
-                        disabled={uploading}
-                      >
-                        Process
-                      </Button>
-                    )}
-                    
-                    <Button
-                      onClick={() => removeFile(index)}
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center space-x-2">
+              {uploadFile.status === 'uploading' && (
+                <Progress value={uploadFile.progress} className="w-24" />
+              )}
+              
+              <Button variant="ghost" size="icon" onClick={() => removeFile(uploadFile.id)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        )}
+        ))}
       </CardContent>
     </Card>
   );

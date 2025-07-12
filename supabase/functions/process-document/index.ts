@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { RateLimiter, getRateLimitHeaders, getIdentifier } from '../_shared/rateLimiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,13 +19,57 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const rateLimiter = new RateLimiter();
   let requestBody: DocumentProcessingRequest | null = null;
+  let userId: string | undefined;
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // Get user ID for rate limiting
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { data } = await supabaseClient.auth.getUser(token);
+        if (data.user) {
+          userId = data.user.id;
+        }
+      } catch (authError) {
+        console.log('Auth check failed for rate limiting');
+      }
+    }
+
+    // Apply rate limiting - conservative for document processing
+    const identifier = getIdentifier(req, userId);
+    const rateLimit = await rateLimiter.checkRateLimit({
+      maxRequests: 3, // 3 document uploads per minute
+      windowMinutes: 1,
+      identifier,
+      endpoint: 'process-document'
+    });
+
+    const rateLimitHeaders = getRateLimitHeaders(rateLimit);
+
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: rateLimit.message || 'Too many document processing requests. Please try again later.',
+        }),
+        { 
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
 
     requestBody = await req.json()
     const { documentId, fileName, fileType } = requestBody
@@ -134,7 +179,11 @@ serve(async (req) => {
         extractedLength: extractedText.length
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          ...rateLimitHeaders,
+          'Content-Type': 'application/json' 
+        },
         status: 200 
       }
     )
