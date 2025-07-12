@@ -21,17 +21,17 @@ interface Message {
   timestamp: Date;
 }
 
-// Custom cute robot icon component - scaled up for better visibility
+// Custom cute robot icon component - scaled up robot within the viewBox
 const RobotIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="10" width="16" height="14" rx="3" fill="currentColor"/>
-    <circle cx="12" cy="15" r="2" fill="white"/>
-    <circle cx="20" cy="15" r="2" fill="white"/>
-    <rect x="13" y="19" width="6" height="2" rx="1" fill="white"/>
-    <rect x="14.5" y="5" width="3" height="5" fill="currentColor"/>
-    <circle cx="16" cy="4" r="2" fill="currentColor"/>
-    <rect x="5" y="14" width="3" height="6" rx="1.5" fill="currentColor"/>
-    <rect x="24" y="14" width="3" height="6" rx="1.5" fill="currentColor"/>
+    <rect x="4" y="6" width="24" height="20" rx="4" fill="currentColor"/>
+    <circle cx="10" cy="13" r="3" fill="white"/>
+    <circle cx="22" cy="13" r="3" fill="white"/>
+    <rect x="11" y="20" width="10" height="3" rx="1.5" fill="white"/>
+    <rect x="13.5" y="2" width="5" height="6" fill="currentColor"/>
+    <circle cx="16" cy="1" r="3" fill="currentColor"/>
+    <rect x="1" y="12" width="4" height="8" rx="2" fill="currentColor"/>
+    <rect x="27" y="12" width="4" height="8" rx="2" fill="currentColor"/>
   </svg>
 );
 
