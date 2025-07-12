@@ -21,6 +21,7 @@ const ChatWidget = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { status, loading } = useChatbotStatus();
   const { handleRateLimitResponse, isRateLimited, timeUntilReset } = useRateLimit();
 
@@ -34,12 +35,21 @@ const ChatWidget = () => {
     }
   }, [messages]);
 
+  // Auto-focus input when widget opens
+  useEffect(() => {
+    if (isWidgetOpen && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isWidgetOpen]);
+
   // Add welcome message when widget opens for the first time
   useEffect(() => {
     if (isWidgetOpen && messages.length === 0 && status) {
       const welcomeMessage: Message = {
         id: Date.now().toString(),
-        content: `Hello! I'm ${status.chatbot_name}. ${status.description} How can I help you today?`,
+        content: `Hello! I'm ${status.chatbot_name}. How can I help you today?`,
         isBot: true,
         timestamp: new Date(),
       };
@@ -69,7 +79,7 @@ const ChatWidget = () => {
 
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
         body: { 
-          message: inputMessage.trim(),
+          message: userMessage.content,
           conversationHistory 
         },
       });
@@ -136,31 +146,31 @@ const ChatWidget = () => {
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isWidgetOpen ? (
-        <Card className="w-80 h-96 flex flex-col shadow-xl border-gray-200/50 bg-white/95 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
-            <CardTitle className="text-sm font-medium text-gray-800">
+        <Card className="w-96 h-[500px] shadow-xl border-gray-200/50 bg-white/95 backdrop-blur-sm overflow-hidden flex flex-col">
+          <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+            <CardTitle className="text-base font-medium text-gray-800">
               {status.chatbot_name}
             </CardTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsWidgetOpen(false)}
-              className="h-6 w-6 text-gray-500 hover:text-gray-700"
+              className="h-8 w-8 text-gray-500 hover:text-gray-700"
             >
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
           
-          <CardContent className="flex-1 flex flex-col p-0">
-            <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-              <div className="space-y-3">
+          <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
+            <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-3">
+              <div className="space-y-4">
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
                   >
                     <div
-                      className={`max-w-[80%] p-2 rounded-lg text-sm ${
+                      className={`max-w-[75%] px-3 py-2 rounded-lg text-sm break-words ${
                         message.isBot
                           ? 'bg-gray-100 text-gray-800 border border-gray-200'
                           : 'bg-blue-500 text-white'
@@ -172,7 +182,7 @@ const ChatWidget = () => {
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 text-gray-800 border border-gray-200 p-2 rounded-lg text-sm flex items-center space-x-2">
+                    <div className="bg-gray-100 text-gray-800 border border-gray-200 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       <span>Thinking...</span>
                     </div>
@@ -181,9 +191,10 @@ const ChatWidget = () => {
               </div>
             </ScrollArea>
             
-            <div className="p-4 border-t border-gray-200/50">
-              <div className="flex space-x-2">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200/50 bg-white">
+              <div className="flex gap-2">
                 <Input
+                  ref={inputRef}
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -195,7 +206,7 @@ const ChatWidget = () => {
                   onClick={sendMessage}
                   size="icon"
                   disabled={isLoading || !inputMessage.trim() || isRateLimited}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  className="bg-blue-500 hover:bg-blue-600 text-white flex-shrink-0"
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
