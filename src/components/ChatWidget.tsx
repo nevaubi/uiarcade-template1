@@ -1,235 +1,222 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useChatbot } from '@/contexts/ChatbotContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
-  Bot,
-  Minimize2,
-  Maximize2,
-  Loader2
-} from 'lucide-react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
+import { supabase } from '../integrations/supabase/client';
+import { useChatbot } from '../contexts/ChatbotContext';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Send, Bot, User, X, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Toaster, toast } from 'sonner';
 
+// Define the Message interface
 interface Message {
-  id: string;
-  type: 'bot' | 'user';
-  content: string;
-  timestamp: Date;
+  text: string;
+  sender: 'user' | 'bot';
 }
 
-const ChatWidget = () => {
-  const { shouldShowWidget, isWidgetOpen, setIsWidgetOpen, chatbotName } = useChatbot();
-  const [message, setMessage] = useState('');
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'bot',
-      content: 'Hello! How can I help you today?',
-      timestamp: new Date()
-    }
-  ]);
+export function ChatWidget() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { chatbotName, chatbotAvatar, initialMessage } = useChatbot();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Only show widget for non-authenticated users when chatbot is active
-  if (!shouldShowWidget) return null;
+  useEffect(() => {
+    if (isOpen && initialMessage && messages.length === 0) {
+      setMessages([{ text: initialMessage, sender: 'bot' }]);
+    }
+  }, [isOpen, initialMessage, messages.length]);
 
-  const addMessage = (type: 'bot' | 'user', content: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      type,
-      content,
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, newMessage]);
-  };
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || isLoading) return;
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
 
-    const userMessage = message.trim();
-    setMessage('');
-    
-    // Add user message to conversation
-    addMessage('user', userMessage);
+    const newMessages: Message[] = [...messages, { text: input, sender: 'user' }];
+    setMessages(newMessages);
+    setInput('');
     setIsLoading(true);
 
     try {
-      // Prepare conversation history for API
-      const conversationHistory = messages
-        .filter(msg => msg.type === 'user' || msg.type === 'bot')
-        .map(msg => ({
-          role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
-          content: msg.content
-        }));
-
-      console.log('Sending message to chat API...');
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
         body: {
-          message: userMessage,
-          conversationHistory
-        }
+          query: input,
+          history: messages.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            parts: [{ text: msg.text }],
+          })),
+        },
       });
 
       if (error) {
-        console.error('Supabase function error:', error);
         throw error;
       }
 
-      if (!data.success) {
-        // Use the error message from the edge function
-        throw new Error(data.error || 'Failed to get response');
+      if (data && data.response) {
+        setMessages([...newMessages, { text: data.response, sender: 'bot' }]);
+      } else {
+        setMessages([...newMessages, { text: "I'm sorry, I couldn't get a response.", sender: 'bot' }]);
       }
-
-      // Add bot response to conversation
-      addMessage('bot', data.response);
-
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      
-      // Use the error message from the edge function if available
-      const errorMessage = error.message || 'Failed to send message. Please try again.';
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      // Add appropriate fallback message
-      const fallbackMessage = errorMessage.includes('configuration') 
-        ? "I apologize, but the chatbot is not properly configured. Please contact the administrator."
-        : errorMessage.includes('demand')
-        ? "I'm experiencing high demand right now. Please try again in a moment."
-        : "I'm sorry, I'm having trouble responding right now. Please try again in a moment.";
-        
-      addMessage('bot', fallbackMessage);
+    } catch (error) {
+      console.error('Error chatting with AI:', error);
+      const errorMessage = (error as Error).message || 'An unknown error occurred';
+      toast.error(`Error: ${errorMessage}`);
+      setMessages([...newMessages, { text: "Sorry, something went wrong. Please try again.", sender: 'bot' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const toggleOpen = () => {
+    setIsOpen(prev => !prev);
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Chat bubble trigger */}
-      {!isWidgetOpen && (
-        <Button
-          onClick={() => setIsWidgetOpen(true)}
-          className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-300 hover:scale-110"
-          size="sm"
+    <>
+      <Toaster position="top-center" />
+      <div className="fixed bottom-4 right-4 z-50">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <MessageCircle className="h-6 w-6 text-white" />
-        </Button>
-      )}
-
-      {/* Chat widget */}
-      {isWidgetOpen && (
-        <Card className={`shadow-2xl transition-all duration-300 ${
-          isMinimized ? 'w-80 h-16' : 'w-80 h-96'
-        }`}>
-          {/* Header */}
-          <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 rounded-t-lg">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Bot className="h-4 w-4" />
-                {chatbotName}
-              </CardTitle>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+          <Button
+            onClick={toggleOpen}
+            className="rounded-full w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg hover:scale-110 transition-transform duration-300 flex items-center justify-center"
+          >
+            <AnimatePresence>
+              {isOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -180, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  exit={{ rotate: 180, scale: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsWidgetOpen(false)}
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  <X size={32} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="open"
+                  initial={{ rotate: 180, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  exit={{ rotate: -180, scale: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
+                  <Bot size={32} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Button>
+        </motion.div>
 
-          {/* Chat content */}
-          {!isMinimized && (
-            <>
-              <CardContent className="p-0 flex-1 overflow-hidden">
-                <ScrollArea className="h-64 p-4">
-                  <div className="space-y-3">
-                    {messages.map((msg) => (
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="fixed bottom-24 right-4 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col h-[600px] overflow-hidden"
+            >
+              <header className="bg-gray-50 p-4 border-b border-gray-200 flex items-center space-x-4">
+                <Avatar>
+                  <AvatarImage src={chatbotAvatar || 'https://placehold.co/40x40/7c3aed/ffffff?text=B'} alt="Chatbot Avatar" />
+                  <AvatarFallback>{chatbotName ? chatbotName.charAt(0) : 'B'}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">{chatbotName || 'Chatbot'}</h3>
+                  <p className="text-sm text-green-500 flex items-center">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    Online
+                  </p>
+                </div>
+              </header>
+
+              <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+                <div className="space-y-6">
+                  {messages.map((message, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className={`flex items-start gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}
+                    >
+                      {message.sender === 'bot' && (
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={chatbotAvatar || 'https://placehold.co/32x32/7c3aed/ffffff?text=B'} alt="Bot" />
+                          <AvatarFallback>{chatbotName ? chatbotName.charAt(0) : 'B'}</AvatarFallback>
+                        </Avatar>
+                      )}
                       <div
-                        key={msg.id}
-                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`max-w-xs md:max-w-md p-3 rounded-2xl ${
+                          message.sender === 'user'
+                            ? 'bg-indigo-600 text-white rounded-br-none'
+                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                        }`}
                       >
-                        <div
-                          className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                            msg.type === 'user'
-                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
+                        <p className="text-sm">{message.text}</p>
                       </div>
-                    ))}
-                    {isLoading && (
-                      <div className="flex justify-start">
-                        <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-900 flex items-center gap-2">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Typing...
-                        </div>
+                      {message.sender === 'user' && (
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback><User size={18} /></AvatarFallback>
+                        </Avatar>
+                      )}
+                    </motion.div>
+                  ))}
+                  {isLoading && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-start gap-3"
+                    >
+                      <Avatar className="w-8 h-8">
+                         <AvatarImage src={chatbotAvatar || 'https://placehold.co/32x32/7c3aed/ffffff?text=B'} alt="Bot" />
+                         <AvatarFallback>{chatbotName ? chatbotName.charAt(0) : 'B'}</AvatarFallback>
+                      </Avatar>
+                      <div className="bg-gray-100 p-3 rounded-2xl rounded-bl-none">
+                        <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
                       </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </CardContent>
+                    </motion.div>
+                  )}
+                </div>
+              </ScrollArea>
 
-              {/* Input area */}
-              <div className="border-t p-3">
-                <div className="flex gap-2">
+              <footer className="p-4 border-t border-gray-200 bg-white">
+                <form onSubmit={handleSubmit} className="flex items-center gap-2">
                   <Input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type your message..."
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 rounded-full focus-visible:ring-2 focus-visible:ring-indigo-400"
                     disabled={isLoading}
-                    className="flex-1 text-sm"
                   />
                   <Button
-                    onClick={handleSendMessage}
-                    disabled={!message.trim() || isLoading}
-                    size="sm"
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    type="submit"
+                    className="rounded-full w-10 h-10 p-0 bg-indigo-600 hover:bg-indigo-700"
+                    disabled={isLoading || !input.trim()}
                   >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    <Send size={20} />
                   </Button>
-                </div>
-              </div>
-            </>
+                </form>
+              </footer>
+            </motion.div>
           )}
-        </Card>
-      )}
-    </div>
+        </AnimatePresence>
+      </div>
+    </>
   );
-};
-
-export default ChatWidget;
+}
