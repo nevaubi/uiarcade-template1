@@ -50,6 +50,7 @@ const ChatWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -60,6 +61,15 @@ const ChatWidget = () => {
       }
     }
   }, [messages]);
+
+  // Auto-focus input when chat opens or un-minimizes
+  useEffect(() => {
+    if (isWidgetOpen && !isMinimized && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isWidgetOpen, isMinimized]);
 
   // Only show widget for non-authenticated users when chatbot is active
   if (!shouldShowWidget) return null;
@@ -155,7 +165,7 @@ const ChatWidget = () => {
           className="h-14 w-14 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
           size="sm"
         >
-          <RobotIcon className="h-7 w-7 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
+          <RobotIcon className="h-10 w-10 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
         </Button>
       )}
 
@@ -243,12 +253,14 @@ const ChatWidget = () => {
               <div className="border-t border-gray-200/50 bg-white/80 backdrop-blur-lg p-4">
                 <div className="flex gap-2">
                   <Input
+                    ref={inputRef}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type a message..."
                     disabled={isLoading}
                     className="flex-1 text-sm border-gray-300 bg-gray-50/50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 placeholder:text-gray-500"
+                    autoFocus
                   />
                   <Button
                     onClick={handleSendMessage}
