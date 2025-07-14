@@ -111,6 +111,9 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          status: string | null
+          suspended_at: string | null
+          suspended_by: string | null
           updated_at: string
         }
         Insert: {
@@ -119,6 +122,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          status?: string | null
+          suspended_at?: string | null
+          suspended_by?: string | null
           updated_at?: string
         }
         Update: {
@@ -127,6 +133,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          status?: string | null
+          suspended_at?: string | null
+          suspended_by?: string | null
           updated_at?: string
         }
         Relationships: []

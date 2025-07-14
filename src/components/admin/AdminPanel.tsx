@@ -12,12 +12,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import UserSearchFilter from './UserSearchFilter';
 import DataExport from './DataExport';
 import VisualAnalytics from './VisualAnalytics';
+import UserDetailsModal from './UserDetailsModal';
+import SuspendUserModal from './SuspendUserModal';
 
 interface UserProfile {
   id: string;
   email: string | null;
   full_name: string | null;
   created_at: string;
+  status?: string | null;
 }
 
 interface SubscriberInfo {
@@ -42,6 +45,11 @@ const AdminPanel: React.FC = () => {
   const [subscriptionFilter, setSubscriptionFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   
+  // Modal states
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [userDetailsOpen, setUserDetailsOpen] = useState(false);
+  const [suspendUserOpen, setSuspendUserOpen] = useState(false);
+  
   const { toast } = useToast();
 
   const fetchAdminData = async () => {
@@ -53,7 +61,7 @@ const AdminPanel: React.FC = () => {
       console.log('AdminPanel: Fetching user profiles...');
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, created_at')
+        .select('id, email, full_name, created_at, status')
         .order('created_at', { ascending: false });
 
       if (profilesError) {
@@ -361,12 +369,19 @@ const AdminPanel: React.FC = () => {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge 
-                                variant={subscriber?.is_admin ? "default" : "secondary"}
-                                className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
-                              >
-                                {subscriber?.is_admin ? "Admin" : "User"}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge 
+                                  variant={subscriber?.is_admin ? "default" : "secondary"}
+                                  className={subscriber?.is_admin ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
+                                >
+                                  {subscriber?.is_admin ? "Admin" : "User"}
+                                </Badge>
+                                {user.status === 'suspended' && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    Suspended
+                                  </Badge>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
@@ -387,9 +402,21 @@ const AdminPanel: React.FC = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>View Details</DropdownMenuItem>
-                                  <DropdownMenuItem>Send Email</DropdownMenuItem>
-                                  <DropdownMenuItem className="text-destructive">Suspend User</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => {
+                                    setSelectedUser(user);
+                                    setUserDetailsOpen(true);
+                                  }}>
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    className={user.status === 'suspended' ? "text-green-600" : "text-destructive"}
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setSuspendUserOpen(true);
+                                    }}
+                                  >
+                                    {user.status === 'suspended' ? 'Reactivate User' : 'Suspend User'}
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
@@ -475,6 +502,32 @@ const AdminPanel: React.FC = () => {
           <VisualAnalytics users={users} subscribers={subscribers} loading={loading} />
         </TabsContent>
       </Tabs>
+
+      {/* Modals */}
+      <UserDetailsModal
+        user={selectedUser}
+        subscriber={selectedUser ? subscribers.find(sub => sub.email === selectedUser.email) || null : null}
+        isOpen={userDetailsOpen}
+        onClose={() => {
+          setUserDetailsOpen(false);
+          setSelectedUser(null);
+        }}
+        onUserUpdated={() => {
+          fetchAdminData();
+        }}
+      />
+
+      <SuspendUserModal
+        user={selectedUser}
+        isOpen={suspendUserOpen}
+        onClose={() => {
+          setSuspendUserOpen(false);
+          setSelectedUser(null);
+        }}
+        onUserUpdated={() => {
+          fetchAdminData();
+        }}
+      />
     </div>
   );
 };
