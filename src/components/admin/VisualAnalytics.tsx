@@ -256,12 +256,12 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       }
     
     return (
-      <div className="flex flex-col gap-3 pt-4">
-        <div className="flex items-center justify-center gap-4">
+      <div className="flex flex-col gap-3 pt-2 px-2">
+        <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-center gap-4'}`}>
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm">
               <div 
-                className="h-3 w-3 rounded-sm" 
+                className="h-3 w-3 rounded-sm flex-shrink-0" 
                 style={{ backgroundColor: entry.color }}
               />
               <span className="font-medium text-foreground">
@@ -270,27 +270,27 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
             </div>
           ))}
         </div>
-        <div className={`grid ${isMobile ? 'grid-cols-1 gap-2' : 'grid-cols-3 gap-4'} text-center text-xs text-muted-foreground`}>
-          <div className="flex flex-col">
-            <span className="font-semibold text-foreground">{totalUsers}</span>
-            <span>Total Registrations</span>
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-3 gap-4'} text-center`}>
+          <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
+            <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Total Registrations</span>
+            <span className={`font-semibold text-foreground ${isMobile ? 'text-base' : 'text-sm'}`}>{totalUsers}</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-foreground">{avgUsers}</span>
-            <span>Avg per Month</span>
+          <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
+            <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Avg per Month</span>
+            <span className={`font-semibold text-foreground ${isMobile ? 'text-base' : 'text-sm'}`}>{avgUsers}</span>
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center justify-center gap-1">
+          <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
+            <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Growth Rate</span>
+            <div className="flex items-center gap-1">
               {growthRate >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-600" />
               ) : (
                 <TrendingDown className="h-3 w-3 text-red-600" />
               )}
-              <span className={`font-semibold ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`font-semibold ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'} ${isMobile ? 'text-base' : 'text-sm'}`}>
                 {growthRate}%
               </span>
             </div>
-            <span>Growth Rate</span>
           </div>
         </div>
       </div>
@@ -322,12 +322,12 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       }
     
     return (
-      <div className="flex flex-col gap-3 pt-4">
-        <div className="flex items-center justify-center gap-4">
+      <div className="flex flex-col gap-3 pt-2 px-2">
+        <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-center gap-4'}`}>
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm">
               <div 
-                className="h-3 w-3 rounded-sm" 
+                className="h-3 w-3 rounded-sm flex-shrink-0" 
                 style={{ backgroundColor: entry.color }}
               />
               <span className="font-medium text-foreground">
@@ -336,27 +336,27 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
             </div>
           ))}
         </div>
-        <div className={`grid ${isMobile ? 'grid-cols-1 gap-2' : 'grid-cols-3 gap-4'} text-center text-xs text-muted-foreground`}>
-          <div className="flex flex-col">
-            <span className="font-semibold text-foreground">${totalRevenue.toFixed(2)}</span>
-            <span>Total Revenue</span>
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-3 gap-4'} text-center`}>
+          <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
+            <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Total Revenue</span>
+            <span className={`font-semibold text-foreground ${isMobile ? 'text-base' : 'text-sm'}`}>${totalRevenue.toFixed(2)}</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-foreground">${avgRevenue.toFixed(2)}</span>
-            <span>Avg per Month</span>
+          <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
+            <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Avg per Month</span>
+            <span className={`font-semibold text-foreground ${isMobile ? 'text-base' : 'text-sm'}`}>${avgRevenue.toFixed(2)}</span>
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center justify-center gap-1">
+          <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
+            <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Growth Rate</span>
+            <div className="flex items-center gap-1">
               {revenueGrowth >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-600" />
               ) : (
                 <TrendingDown className="h-3 w-3 text-red-600" />
               )}
-              <span className={`font-semibold ${revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`font-semibold ${revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'} ${isMobile ? 'text-base' : 'text-sm'}`}>
                 {revenueGrowth}%
               </span>
             </div>
-            <span>Growth Rate</span>
           </div>
         </div>
       </div>
@@ -373,16 +373,23 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
     
     try {
       return (
-        <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-wrap'} items-center justify-center gap-4 pt-4`}>
+        <div className={`flex ${isMobile ? 'flex-col gap-2 px-2' : 'flex-wrap'} items-center justify-center gap-3 pt-2`}>
           {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <div 
-                className="h-3 w-3 rounded-sm" 
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="font-medium text-foreground">
-                {entry.payload.label}
-              </span>
+            <div key={index} className={`flex items-center gap-2 ${isMobile ? 'justify-between px-2 py-1 bg-muted/20 rounded-md' : ''}`}>
+              <div className="flex items-center gap-2">
+                <div 
+                  className="h-3 w-3 rounded-sm flex-shrink-0" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className={`font-medium text-foreground ${isMobile ? 'text-sm' : 'text-sm'}`}>
+                  {entry.payload.name}
+                </span>
+              </div>
+              {isMobile && (
+                <span className="text-sm font-semibold">
+                  {entry.payload.value} ({entry.payload.percentage}%)
+                </span>
+              )}
             </div>
           ))}
         </div>
@@ -395,29 +402,29 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
   // Responsive chart margins
   const getChartMargins = () => ({
-    top: isMobile ? 10 : 20,
-    right: isMobile ? 15 : 30,
-    left: isMobile ? 10 : 20,
-    bottom: isMobile ? 5 : 5
+    top: isMobile ? 20 : 20,
+    right: isMobile ? 20 : 30,
+    left: isMobile ? 20 : 20,
+    bottom: isMobile ? 10 : 10
   });
 
   // Responsive pie chart dimensions
   const getPieChartDimensions = () => ({
-    outerRadius: isMobile ? 80 : 100,
-    innerRadius: isMobile ? 30 : 40
+    outerRadius: isMobile ? 70 : 100,
+    innerRadius: isMobile ? 25 : 40
   });
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4 xl:gap-6">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="h-5 bg-muted rounded-md animate-pulse" />
               <div className="h-4 bg-muted rounded-md animate-pulse w-2/3 mt-2" />
             </CardHeader>
             <CardContent>
-              <div className="h-64 sm:h-72 lg:h-80 bg-muted rounded-lg animate-pulse" />
+              <div className="bg-muted rounded-lg animate-pulse" style={{ minHeight: isMobile ? '280px' : '320px' }} />
             </CardContent>
           </Card>
         ))}
@@ -426,9 +433,9 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-4 sm:space-y-6">
       {/* Enhanced Key Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Users</CardTitle>
@@ -493,12 +500,12 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       </div>
 
       {/* Enhanced Charts Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4 xl:gap-6">
         {/* User Registration Timeline - Bar Chart with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl font-semibold">User Registration Timeline</CardTitle>
-            <CardDescription className="text-sm sm:text-base">New user registrations over the last 6 months</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold`}>User Registration Timeline</CardTitle>
+            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>New user registrations over the last 6 months</CardDescription>
           </CardHeader>
           <CardContent>
             {userGrowthData.length === 0 ? (
@@ -507,7 +514,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                 description="No user registration data available for the selected period." 
               />
             ) : (
-              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+              <ChartContainer config={chartConfig} style={{ minHeight: isMobile ? '280px' : '320px' }}>
                 <BarChart data={userGrowthData} margin={getChartMargins()}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
@@ -533,6 +540,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                     fill="var(--color-users)"
                     radius={[4, 4, 0, 0]}
                     name="New Users"
+                    maxBarSize={isMobile ? 40 : 60}
                   />
                 </BarChart>
               </ChartContainer>
@@ -542,9 +550,9 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
         {/* Subscription Distribution with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl font-semibold">Subscription Distribution</CardTitle>
-            <CardDescription className="text-sm sm:text-base">Distribution of users across subscription tiers</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold`}>Subscription Distribution</CardTitle>
+            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>Distribution of users across subscription tiers</CardDescription>
           </CardHeader>
           <CardContent>
             {subscriptionData.length === 0 ? (
@@ -553,7 +561,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                 description="No subscription distribution data available." 
               />
             ) : (
-              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+              <ChartContainer config={chartConfig} style={{ minHeight: isMobile ? '280px' : '320px' }}>
                 <PieChart margin={getChartMargins()}>
                   <Pie
                     data={subscriptionData}
@@ -561,7 +569,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                     cy="50%"
                     outerRadius={getPieChartDimensions().outerRadius}
                     innerRadius={getPieChartDimensions().innerRadius}
-                    paddingAngle={2}
+                    paddingAngle={isMobile ? 1 : 2}
                     dataKey="value"
                   >
                     {subscriptionData.map((entry, index) => (
@@ -599,9 +607,9 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
         {/* Monthly Revenue Trend - Bar Chart with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl font-semibold">Monthly Revenue Trend</CardTitle>
-            <CardDescription className="text-sm sm:text-base">Estimated monthly recurring revenue</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold`}>Monthly Revenue Trend</CardTitle>
+            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>Estimated monthly recurring revenue</CardDescription>
           </CardHeader>
           <CardContent>
             {revenueData.length === 0 ? (
@@ -610,7 +618,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                 description="No revenue data available for the selected period." 
               />
             ) : (
-              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+              <ChartContainer config={chartConfig} style={{ minHeight: isMobile ? '280px' : '320px' }}>
                 <BarChart data={revenueData} margin={getChartMargins()}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
@@ -636,6 +644,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                     fill="var(--color-revenue)"
                     radius={[4, 4, 0, 0]}
                     name="Revenue ($)"
+                    maxBarSize={isMobile ? 40 : 60}
                   />
                 </BarChart>
               </ChartContainer>
@@ -645,9 +654,9 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
         {/* User Roles Distribution with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl font-semibold">User Roles Distribution</CardTitle>
-            <CardDescription className="text-sm sm:text-base">Admin vs regular users breakdown</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold`}>User Roles Distribution</CardTitle>
+            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>Admin vs regular users breakdown</CardDescription>
           </CardHeader>
           <CardContent>
             {roleData.length === 0 ? (
@@ -656,15 +665,15 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                 description="No user role distribution data available." 
               />
             ) : (
-              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+              <ChartContainer config={chartConfig} style={{ minHeight: isMobile ? '280px' : '320px' }}>
                 <PieChart margin={getChartMargins()}>
                   <Pie
                     data={roleData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={getPieChartDimensions().innerRadius + 10}
+                    innerRadius={getPieChartDimensions().innerRadius + (isMobile ? 5 : 10)}
                     outerRadius={getPieChartDimensions().outerRadius}
-                    paddingAngle={4}
+                    paddingAngle={isMobile ? 2 : 4}
                     dataKey="value"
                   >
                     {roleData.map((entry, index) => (
