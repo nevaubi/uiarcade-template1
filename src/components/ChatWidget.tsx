@@ -144,18 +144,18 @@ const ChatWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 mx-4 sm:mx-0">
+    <div className="fixed bottom-4 right-4 z-50">
       {isWidgetOpen ? (
-        <Card className="w-full max-w-sm h-[500px] max-h-[80vh] shadow-xl border-navy-200/50 bg-white/95 backdrop-blur-sm overflow-hidden flex flex-col animate-scale-in">
-          <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 p-4 bg-gradient-to-r from-navy-600 to-navy-700 border-b border-navy-200/20">
-            <CardTitle className="text-lg font-semibold text-white">
+        <Card className="w-96 h-[500px] shadow-xl border-gray-200/50 bg-white/95 backdrop-blur-sm overflow-hidden flex flex-col">
+          <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+            <CardTitle className="text-base font-medium text-gray-800">
               {status.chatbot_name}
             </CardTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsWidgetOpen(false)}
-              className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              className="h-8 w-8 text-gray-500 hover:text-gray-700"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -170,10 +170,10 @@ const ChatWidget = () => {
                     className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
                   >
                     <div
-                      className={`max-w-[80%] px-3 py-2 rounded-lg text-sm break-words ${
+                      className={`max-w-[75%] px-3 py-2 rounded-lg text-sm break-words ${
                         message.isBot
-                          ? 'bg-navy-50 text-navy-900 border border-navy-200/50'
-                          : 'bg-navy-600 text-white hover:bg-navy-700 transition-colors'
+                          ? 'bg-gray-100 text-gray-800 border border-gray-200'
+                          : 'bg-blue-500 text-white'
                       }`}
                     >
                       {message.content}
@@ -182,7 +182,7 @@ const ChatWidget = () => {
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-navy-50 text-navy-700 border border-navy-200/50 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+                    <div className="bg-gray-100 text-gray-800 border border-gray-200 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       <span>Thinking...</span>
                     </div>
@@ -191,7 +191,7 @@ const ChatWidget = () => {
               </div>
             </ScrollArea>
             
-            <div className="flex-shrink-0 p-4 border-t border-navy-200/30 bg-white">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200/50 bg-white">
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}
@@ -200,13 +200,13 @@ const ChatWidget = () => {
                   onKeyPress={handleKeyPress}
                   placeholder={isRateLimited ? `Wait ${timeUntilReset}s...` : "Type your message..."}
                   disabled={isLoading || isRateLimited}
-                  className="flex-1 text-sm border-navy-300 focus:border-navy-500 focus:ring-navy-500"
+                  className="flex-1 text-sm border-gray-300 focus:border-blue-400"
                 />
                 <Button
                   onClick={sendMessage}
                   size="icon"
                   disabled={isLoading || !inputMessage.trim() || isRateLimited}
-                  className="bg-navy-600 hover:bg-navy-700 text-white flex-shrink-0 transition-colors min-w-[44px] min-h-[44px]"
+                  className="bg-blue-500 hover:bg-blue-600 text-white flex-shrink-0"
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -216,7 +216,7 @@ const ChatWidget = () => {
                 </Button>
               </div>
               {isRateLimited && (
-                <p className="text-xs text-red-600 mt-2 font-medium">
+                <p className="text-xs text-red-500 mt-1">
                   Rate limit reached. Please wait {timeUntilReset} seconds.
                 </p>
               )}
@@ -226,9 +226,9 @@ const ChatWidget = () => {
       ) : (
         <Button
           onClick={() => setIsWidgetOpen(true)}
-          className="h-20 w-20 rounded-full shadow-lg bg-gradient-to-r from-navy-600 to-navy-700 hover:from-navy-700 hover:to-navy-800 transition-all duration-300 hover:scale-105 hover:shadow-xl group border border-navy-500/20"
+          className="h-20 w-20 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
         >
-          <Bot className="h-12 w-12 text-white group-hover:scale-110 transition-transform duration-300" />
+          <Bot className="h-16 w-16 text-gray-700 group-hover:text-gray-900 transition-colors duration-300" />
         </Button>
       )}
     </div>
