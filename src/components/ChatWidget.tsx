@@ -144,9 +144,9 @@ const ChatWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 z-50">
       {isWidgetOpen ? (
-        <Card className="w-96 h-[500px] shadow-xl border-gray-200/50 bg-white/95 backdrop-blur-sm overflow-hidden flex flex-col">
+        <Card className="w-[90vw] max-w-sm sm:w-96 h-[80vh] sm:h-[500px] shadow-xl border-gray-200/50 bg-white/95 backdrop-blur-sm overflow-hidden flex flex-col">
           <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
             <CardTitle className="text-base font-medium text-gray-800">
               {status.chatbot_name}
@@ -226,11 +226,11 @@ const ChatWidget = () => {
       ) : (
         <Button
           onClick={() => setIsWidgetOpen(true)}
-          className="h-20 w-20 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
+          className="h-16 w-16 sm:h-20 sm:w-20 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
         >
           <Bot 
             className="text-gray-700 group-hover:text-gray-900 transition-colors duration-300" 
-            style={{ width: '72px', height: '72px' }}
+            style={{ width: '60px', height: '60px' }}
           />
         </Button>
       )}
