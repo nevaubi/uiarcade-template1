@@ -170,8 +170,6 @@ serve(async (req) => {
       case 'embed_document': {
         const { documentName, chunks } = data;
         
-        console.log(`Embedding ${chunks.length} chunks for document: ${documentName}`);
-        
         const BATCH_SIZE = 10;
         const results = [];
         
@@ -193,7 +191,6 @@ serve(async (req) => {
           
           await vectorClient.upsert(vectors);
           results.push(...vectors.map(v => v.id));
-          console.log(`Processed batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(chunks.length / BATCH_SIZE)}`);
         }
         
         return new Response(

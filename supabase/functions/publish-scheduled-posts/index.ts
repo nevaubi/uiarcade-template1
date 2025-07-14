@@ -17,8 +17,6 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log('Starting scheduled posts publishing check...')
-
     // Find all posts that should be published (publish_date <= now() and is_published = false)
     const { data: postsToPublish, error: fetchError } = await supabase
       .from('blog_posts')
@@ -31,8 +29,6 @@ Deno.serve(async (req) => {
       console.error('Error fetching scheduled posts:', fetchError)
       throw fetchError
     }
-
-    console.log(`Found ${postsToPublish?.length || 0} posts to publish`)
 
     if (!postsToPublish || postsToPublish.length === 0) {
       return new Response(
@@ -63,9 +59,6 @@ Deno.serve(async (req) => {
       console.error('Error updating posts:', updateError)
       throw updateError
     }
-
-    console.log(`Successfully published ${updatedPosts?.length || 0} posts:`, 
-      updatedPosts?.map(p => p.title))
 
     return new Response(
       JSON.stringify({ 

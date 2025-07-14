@@ -39,7 +39,7 @@ serve(async (req) => {
           userId = data.user.id;
         }
       } catch (authError) {
-        console.log('Auth check failed for rate limiting');
+        // Auth check failed for rate limiting
       }
     }
 
@@ -74,8 +74,6 @@ serve(async (req) => {
     requestBody = await req.json()
     const { documentId, fileName, fileType } = requestBody
     
-    console.log(`Processing document: ${documentId}, file: ${fileName}, type: ${fileType}`)
-
     // Update status to processing
     await supabaseClient
       .from('documents')
@@ -100,7 +98,6 @@ serve(async (req) => {
       case 'md':
         try {
           extractedText = new TextDecoder().decode(fileBuffer)
-          console.log(`Extracted ${extractedText.length} characters from ${fileType} file`)
         } catch (decodeError) {
           console.error('Text decoding error:', decodeError)
           throw new Error(`Failed to decode ${fileType} file: ${decodeError.message}`)
@@ -110,13 +107,11 @@ serve(async (req) => {
       case 'pdf':
         // For now, we'll add a meaningful fallback for PDF files
         extractedText = `This is a PDF document named "${fileName}". PDF text extraction is being processed. The document has been uploaded successfully and will be available for reference.`
-        console.log('PDF processing: Using fallback text for now')
         break
       
       case 'docx':
         // For now, we'll add a meaningful fallback for DOCX files
         extractedText = `This is a DOCX document named "${fileName}". Word document text extraction is being processed. The document has been uploaded successfully and will be available for reference.`
-        console.log('DOCX processing: Using fallback text for now')
         break
       
       default:
@@ -126,14 +121,10 @@ serve(async (req) => {
     // Validate extracted text
     if (!extractedText || extractedText.trim().length === 0) {
       extractedText = `Document "${fileName}" was uploaded successfully but appears to be empty or could not be processed for text extraction.`
-      console.log('Empty or invalid text detected, using fallback')
     }
-
-    console.log(`Text validation passed: ${extractedText.length} characters`)
 
     // Chunk the text (split into ~500 word chunks)
     const chunks = chunkText(extractedText, 500)
-    console.log(`Created ${chunks.length} chunks from extracted text`)
     
     // Store chunks in database with better error handling
     const chunkPromises = chunks.map((chunk, index) => {
@@ -168,8 +159,6 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', documentId)
-
-    console.log(`Successfully processed document ${documentId} with ${chunks.length} chunks`)
 
     return new Response(
       JSON.stringify({ 
@@ -229,13 +218,11 @@ serve(async (req) => {
 function chunkText(text: string, maxWords: number): string[] {
   // Handle null, undefined, or empty text
   if (!text || typeof text !== 'string') {
-    console.warn('chunkText received invalid input:', typeof text)
     return ['No content available for processing']
   }
 
   const trimmedText = text.trim()
   if (trimmedText.length === 0) {
-    console.warn('chunkText received empty text')
     return ['Document appears to be empty']
   }
 
