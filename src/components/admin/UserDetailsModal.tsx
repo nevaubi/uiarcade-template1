@@ -61,29 +61,54 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
 
     setLoading(true);
     try {
+      console.log('UserDetailsModal: Starting user update...', { userId: user.id, fullName, isAdmin });
+      
       // Update profile
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ full_name: fullName })
         .eq('id', user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('UserDetailsModal: Profile update error:', profileError);
+        throw profileError;
+      }
+      console.log('UserDetailsModal: Profile updated successfully');
 
       // Update admin status in subscribers table
-      const { error: subscriberError } = await supabase
-        .from('subscribers')
-        .upsert({
-          email: user.email,
-          user_id: user.id,
-          is_admin: isAdmin,
-          subscribed: subscriber?.subscribed || false,
-          subscription_tier: subscriber?.subscription_tier,
-          subscription_end: subscriber?.subscription_end,
-          stripe_customer_id: subscriber?.stripe_customer_id,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'email' });
+      if (subscriber) {
+        // Update existing subscriber record
+        const { error: subscriberError } = await supabase
+          .from('subscribers')
+          .update({ 
+            is_admin: isAdmin,
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', user.email);
 
-      if (subscriberError) throw subscriberError;
+        if (subscriberError) {
+          console.error('UserDetailsModal: Subscriber update error:', subscriberError);
+          throw subscriberError;
+        }
+        console.log('UserDetailsModal: Subscriber updated successfully');
+      } else {
+        // Create new subscriber record if none exists
+        const { error: subscriberError } = await supabase
+          .from('subscribers')
+          .insert({
+            email: user.email,
+            user_id: user.id,
+            is_admin: isAdmin,
+            subscribed: false,
+            updated_at: new Date().toISOString()
+          });
+
+        if (subscriberError) {
+          console.error('UserDetailsModal: Subscriber creation error:', subscriberError);
+          throw subscriberError;
+        }
+        console.log('UserDetailsModal: New subscriber record created successfully');
+      }
 
       toast({
         title: "Success",
@@ -93,10 +118,11 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
       setIsEditing(false);
       onUserUpdated();
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('UserDetailsModal: Error updating user:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update user details';
       toast({
         title: "Error",
-        description: "Failed to update user details",
+        description: `Failed to update user details: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {

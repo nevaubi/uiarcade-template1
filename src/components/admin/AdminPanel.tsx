@@ -164,6 +164,30 @@ const AdminPanel: React.FC = () => {
     return filtered;
   }, [users, subscribers, searchTerm, adminFilter, subscriptionFilter, sortBy]);
 
+  const filteredSubscribers = useMemo(() => {
+    console.log('AdminPanel: Filtering active subscribers...');
+    
+    // Only show active subscribers
+    let filtered = subscribers.filter(subscriber => subscriber.subscribed);
+    
+    // Apply search filter to subscribers as well
+    if (searchTerm) {
+      filtered = filtered.filter(subscriber => 
+        subscriber.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply admin filter to subscribers
+    if (adminFilter !== 'all') {
+      filtered = filtered.filter(subscriber =>
+        adminFilter === 'admin' ? subscriber.is_admin : !subscriber.is_admin
+      );
+    }
+    
+    console.log('AdminPanel: Filtered active subscribers result:', filtered.length, 'active subscribers');
+    return filtered;
+  }, [subscribers, searchTerm, adminFilter]);
+
   const handleClearFilters = () => {
     console.log('AdminPanel: Clearing all filters');
     setSearchTerm('');
@@ -304,7 +328,7 @@ const AdminPanel: React.FC = () => {
             <StatCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-600" />
             <StatCard title="Admin Users" value={stats.adminUsers} icon={Shield} color="text-amber-600" />
             <StatCard title="Active Subscribers" value={stats.totalSubscribers} icon={Activity} color="text-green-600" />
-            <StatCard title="Database Records" value={users.length + subscribers.length} icon={Database} color="text-purple-600" />
+            <StatCard title="Active Subscriptions" value={stats.activeSubscriptions} icon={Database} color="text-purple-600" />
           </div>
 
           {/* Data Export Section */}
@@ -435,10 +459,10 @@ const AdminPanel: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-xl font-semibold">
                 <Activity className="h-5 w-5 mr-3" />
-                Subscription Overview
+                Active Subscriptions
               </CardTitle>
               <CardDescription className="text-base">
-                Monitor user subscriptions and billing ({subscribers.length} total subscribers found)
+                Monitor active user subscriptions and billing ({filteredSubscribers.length} active subscribers {searchTerm || adminFilter !== 'all' ? 'matching filters' : 'found'})
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -453,26 +477,26 @@ const AdminPanel: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {subscribers.length === 0 ? (
+                    {filteredSubscribers.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
-                          No subscription data found
+                          {subscribers.filter(s => s.subscribed).length === 0 
+                            ? 'No active subscriptions found' 
+                            : 'No active subscriptions match your current filters'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      subscribers.slice(0, 10).map((subscriber, index) => (
+                      filteredSubscribers.map((subscriber, index) => (
                         <TableRow key={subscriber.email + index} className="transition-colors hover:bg-muted/50">
                           <TableCell className="font-medium">{subscriber.email}</TableCell>
                           <TableCell>
                             <span className="text-sm">
-                              {subscriber.subscription_tier ? `${subscriber.subscription_tier} Plan` : 'No active plan'}
+                              {subscriber.subscription_tier ? `${subscriber.subscription_tier} Plan` : 'Active Plan'}
                             </span>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
-                              <Badge variant={subscriber.subscribed ? "default" : "secondary"}>
-                                {subscriber.subscribed ? "Active" : "Inactive"}
-                              </Badge>
+                              <Badge variant="default">Active</Badge>
                               {subscriber.is_admin && (
                                 <Badge className="bg-amber-100 text-amber-800 border-amber-300">Admin</Badge>
                               )}
@@ -485,7 +509,7 @@ const AdminPanel: React.FC = () => {
                                 {new Date(subscriber.subscription_end).toLocaleDateString()}
                               </div>
                             ) : (
-                              <span className="text-sm text-muted-foreground">-</span>
+                              <span className="text-sm text-muted-foreground">Ongoing</span>
                             )}
                           </TableCell>
                         </TableRow>
