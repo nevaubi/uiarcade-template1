@@ -83,19 +83,32 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check for active subscriptions (including canceled ones still in grace period)
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 1,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+    
+    let hasActiveSub = false;
     let subscriptionTier = null;
     let subscriptionEnd = null;
+    let cancelAtPeriodEnd = false;
+    let cancellationStatus = null;
 
-    if (hasActiveSub) {
+    if (subscriptions.data.length > 0) {
       const subscription = subscriptions.data[0];
+      hasActiveSub = true;
+      cancelAtPeriodEnd = subscription.cancel_at_period_end;
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      
+      // Set cancellation status if subscription is canceled
+      if (cancelAtPeriodEnd) {
+        cancellationStatus = 'canceled_at_period_end';
+        logStep("Subscription canceled at period end", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      } else {
+        logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      }
       
       // Determine subscription tier from price ID
       const priceId = subscription.items.data[0].price.id;
@@ -112,7 +125,7 @@ serve(async (req) => {
       };
       
       subscriptionTier = priceToTierMap[priceId] || 'Unknown';
-      logStep("Determined subscription tier", { priceId, subscriptionTier });
+      logStep("Determined subscription tier", { priceId, subscriptionTier, cancelAtPeriodEnd });
     } else {
       logStep("No active subscription found");
     }
@@ -124,15 +137,19 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
+      cancellation_status: cancellationStatus,
       is_admin: isAdmin, // Preserve existing admin status
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier, isAdmin });
+    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier, isAdmin, cancelAtPeriodEnd, cancellationStatus });
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
+      cancellation_status: cancellationStatus,
       is_admin: isAdmin
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -9,6 +9,8 @@ interface SubscriptionData {
   subscribed: boolean;
   subscription_tier: string | null;
   subscription_end: string | null;
+  cancel_at_period_end: boolean;
+  cancellation_status: string | null;
   is_admin: boolean;
 }
 
@@ -19,6 +21,8 @@ export const useSubscription = () => {
     subscribed: false,
     subscription_tier: null,
     subscription_end: null,
+    cancel_at_period_end: false,
+    cancellation_status: null,
     is_admin: false,
   });
   const [loading, setLoading] = useState(true);
@@ -35,6 +39,8 @@ export const useSubscription = () => {
         subscribed: false,
         subscription_tier: null,
         subscription_end: null,
+        cancel_at_period_end: false,
+        cancellation_status: null,
         is_admin: false,
       });
       setLoading(false);
@@ -54,6 +60,8 @@ export const useSubscription = () => {
             subscribed: cached.subscribed,
             subscription_tier: cached.subscription_tier,
             subscription_end: cached.subscription_end,
+            cancel_at_period_end: cached.cancel_at_period_end,
+            cancellation_status: cached.cancellation_status,
             is_admin: cached.is_admin,
           });
           setLoading(false);
@@ -72,6 +80,8 @@ export const useSubscription = () => {
               subscribed: cachedAfterPending.subscribed,
               subscription_tier: cachedAfterPending.subscription_tier,
               subscription_end: cachedAfterPending.subscription_end,
+              cancel_at_period_end: cachedAfterPending.cancel_at_period_end,
+              cancellation_status: cachedAfterPending.cancellation_status,
               is_admin: cachedAfterPending.is_admin,
             });
           }
@@ -108,6 +118,8 @@ export const useSubscription = () => {
         subscribed: data.subscribed || false,
         subscription_tier: data.subscription_tier || null,
         subscription_end: data.subscription_end || null,
+        cancel_at_period_end: data.cancel_at_period_end || false,
+        cancellation_status: data.cancellation_status || null,
         is_admin: data.is_admin || false,
       };
 
@@ -206,6 +218,20 @@ export const useSubscription = () => {
         // On desktop, open in new tab
         console.log('Desktop detected: opening portal in new tab');
         window.open(data.url, '_blank');
+        
+        // Set up a listener to refresh subscription when user returns
+        const checkFocus = () => {
+          if (!document.hidden) {
+            console.log('Window focused after portal, refreshing subscription...');
+            checkSubscriptionInternal(true);
+            document.removeEventListener('visibilitychange', checkFocus);
+          }
+        };
+        
+        // Add a slight delay to ensure user has had time to make changes
+        setTimeout(() => {
+          document.addEventListener('visibilitychange', checkFocus);
+        }, 1000);
       }
     } finally {
       setPortalLoading(false);
@@ -232,6 +258,8 @@ export const useSubscription = () => {
           subscribed: false,
           subscription_tier: null,
           subscription_end: null,
+          cancel_at_period_end: false,
+          cancellation_status: null,
           is_admin: false,
         });
         setLoading(false);

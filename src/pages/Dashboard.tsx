@@ -40,6 +40,8 @@ const Dashboard = () => {
     subscribed, 
     subscription_tier, 
     subscription_end, 
+    cancel_at_period_end,
+    
     is_admin: isAdmin,
     loading: subscriptionLoading,
     error: subscriptionError,
@@ -119,6 +121,12 @@ const Dashboard = () => {
     return new Date(subscription_end).toLocaleDateString();
   };
 
+  const getBillingLabel = () => {
+    if (!subscribed) return 'Next Billing';
+    if (cancel_at_period_end) return 'Subscription Ends';
+    return 'Next Billing';
+  };
+
   const stats = [
     {
       title: 'Current Plan',
@@ -128,11 +136,13 @@ const Dashboard = () => {
       color: getSubscriptionColor()
     },
     {
-      title: 'Next Billing',
+      title: getBillingLabel(),
       value: getBillingDate(),
-      description: subscribed ? 'Billing date' : 'No billing scheduled',
+      description: subscribed ? 
+        (cancel_at_period_end ? 'Subscription will end' : 'Billing date') : 
+        'No billing scheduled',
       icon: Calendar,
-      color: 'text-blue-600'
+      color: cancel_at_period_end ? 'text-orange-600' : 'text-blue-600'
     }
   ];
 
@@ -213,13 +223,23 @@ const Dashboard = () => {
                 </h4>
                 <p className="text-sm text-gray-600 break-words">
                   {subscribed 
-                    ? `Next billing: ${getBillingDate()}` 
+                    ? (cancel_at_period_end 
+                        ? `Subscription ends: ${getBillingDate()}` 
+                        : `Next billing: ${getBillingDate()}`)
                     : 'Choose a plan to get started'
                   }
                 </p>
               </div>
-              <Badge className={`${subscribed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"} flex-shrink-0 ml-2`}>
-                {subscribed ? 'Active' : 'Inactive'}
+              <Badge className={`${
+                subscribed 
+                  ? (cancel_at_period_end 
+                      ? "bg-orange-100 text-orange-800" 
+                      : "bg-green-100 text-green-800") 
+                  : "bg-gray-100 text-gray-800"
+              } flex-shrink-0 ml-2`}>
+                {subscribed 
+                  ? (cancel_at_period_end ? 'Canceling' : 'Active') 
+                  : 'Inactive'}
               </Badge>
             </div>
             

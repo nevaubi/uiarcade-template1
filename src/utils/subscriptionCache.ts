@@ -3,6 +3,8 @@ interface CachedSubscriptionData {
   subscribed: boolean;
   subscription_tier: string | null;
   subscription_end: string | null;
+  cancel_at_period_end: boolean;
+  cancellation_status: string | null;
   is_admin: boolean;
   timestamp: number;
 }
