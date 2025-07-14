@@ -411,8 +411,15 @@ const AdminPanel: React.FC = () => {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant={subscriber?.subscribed ? "default" : "secondary"}>
-                                {subscriber?.subscribed ? "Active" : "Free"}
+                              <Badge 
+                                variant={subscriber?.subscription_tier ? "default" : "secondary"}
+                                className={
+                                  subscriber?.subscription_tier === "premium" ? "bg-blue-100 text-blue-800 border-blue-300" :
+                                  subscriber?.subscription_tier === "enterprise" ? "bg-purple-100 text-purple-800 border-purple-300" :
+                                  ""
+                                }
+                              >
+                                {subscriber?.subscription_tier || "Free"}
                               </Badge>
                             </TableCell>
                             <TableCell>
