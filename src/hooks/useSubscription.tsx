@@ -55,7 +55,6 @@ export const useSubscription = () => {
       if (!forceRefresh) {
         const cached = subscriptionCache.get(user.id);
         if (cached) {
-          console.log('Using cached subscription data');
           setSubscriptionData({
             subscribed: cached.subscribed,
             subscription_tier: cached.subscription_tier,
@@ -71,7 +70,6 @@ export const useSubscription = () => {
         // Check if there's already a pending request for this user
         const pendingRequest = subscriptionCache.getPendingRequest(user.id);
         if (pendingRequest) {
-          console.log('Waiting for existing subscription request');
           await pendingRequest;
           // After the pending request completes, try to get from cache
           const cachedAfterPending = subscriptionCache.get(user.id);
@@ -89,8 +87,6 @@ export const useSubscription = () => {
           return;
         }
       }
-
-      console.log('Fetching fresh subscription data...');
       
       const requestPromise = withExponentialBackoff(async () => {
         const { data, error } = await supabase.functions.invoke('check-subscription', {
@@ -111,8 +107,6 @@ export const useSubscription = () => {
       subscriptionCache.setPendingRequest(user.id, requestPromise);
 
       const data = await requestPromise;
-
-      console.log('Subscription data received:', data);
       
       const newSubscriptionData = {
         subscribed: data.subscribed || false,
@@ -162,7 +156,6 @@ export const useSubscription = () => {
     setCheckoutLoading(true);
     
     try {
-      console.log('Creating checkout session for price:', priceId);
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
         headers: {
@@ -178,11 +171,9 @@ export const useSubscription = () => {
       // Mobile-friendly navigation
       if (isMobile) {
         // On mobile, redirect in same tab to avoid pop-up blocking
-        console.log('Mobile detected: redirecting in same tab');
         window.location.href = data.url;
       } else {
         // On desktop, open in new tab
-        console.log('Desktop detected: opening in new tab');
         window.open(data.url, '_blank');
       }
     } finally {
@@ -197,7 +188,6 @@ export const useSubscription = () => {
     setPortalLoading(true);
 
     try {
-      console.log('Opening customer portal...');
       const { data, error } = await supabase.functions.invoke('customer-portal', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -212,17 +202,14 @@ export const useSubscription = () => {
       // Mobile-friendly navigation
       if (isMobile) {
         // On mobile, redirect in same tab to avoid pop-up blocking
-        console.log('Mobile detected: redirecting to portal in same tab');
         window.location.href = data.url;
       } else {
         // On desktop, open in new tab
-        console.log('Desktop detected: opening portal in new tab');
         window.open(data.url, '_blank');
         
         // Set up a listener to refresh subscription when user returns
         const checkFocus = () => {
           if (!document.hidden) {
-            console.log('Window focused after portal, refreshing subscription...');
             checkSubscriptionInternal(true);
             document.removeEventListener('visibilitychange', checkFocus);
           }
@@ -243,10 +230,6 @@ export const useSubscription = () => {
     const currentUserId = user?.id || null;
     
     if (currentUserId !== lastUserIdRef.current) {
-      console.log('User changed, checking subscription...', { 
-        old: lastUserIdRef.current, 
-        new: currentUserId 
-      });
       lastUserIdRef.current = currentUserId;
       
       if (currentUserId) {

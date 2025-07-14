@@ -55,10 +55,8 @@ const AdminPanel: React.FC = () => {
   const fetchAdminData = async () => {
     try {
       setRefreshing(true);
-      console.log('AdminPanel: Starting data fetch...');
       
       // Fetch user profiles
-      console.log('AdminPanel: Fetching user profiles...');
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, full_name, created_at, status')
@@ -72,12 +70,10 @@ const AdminPanel: React.FC = () => {
           variant: "destructive",
         });
       } else {
-        console.log('AdminPanel: Successfully fetched profiles:', profilesData?.length || 0, 'profiles');
         setUsers(profilesData || []);
       }
 
       // Fetch ALL subscriber information (admins can now see all with new RLS policies)
-      console.log('AdminPanel: Fetching all subscriber information...');
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
         .select('email, subscribed, subscription_tier, subscription_end, is_admin, created_at, stripe_customer_id')
@@ -92,13 +88,8 @@ const AdminPanel: React.FC = () => {
           variant: "destructive",
         });
       } else {
-        console.log('AdminPanel: Successfully fetched subscribers:', subscribersData?.length || 0, 'subscribers');
-        console.log('AdminPanel: Active subscribers:', subscribersData?.filter(s => s.subscribed).length || 0);
-        console.log('AdminPanel: Sample subscriber data:', subscribersData?.[0]);
         setSubscribers(subscribersData || []);
       }
-
-      console.log('AdminPanel: Data fetch completed successfully');
 
     } catch (error) {
       console.error('AdminPanel: Error in fetchAdminData:', error);
@@ -114,19 +105,10 @@ const AdminPanel: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log('AdminPanel: Component mounted, fetching initial data...');
     fetchAdminData();
   }, []);
 
   const filteredUsers = useMemo(() => {
-    console.log('AdminPanel: Filtering users...', {
-      totalUsers: users.length,
-      searchTerm,
-      adminFilter,
-      subscriptionFilter,
-      sortBy
-    });
-
     let filtered = users.filter(user => {
       const subscriber = subscribers.find(sub => sub.email === user.email);
       
@@ -163,13 +145,10 @@ const AdminPanel: React.FC = () => {
       }
     });
 
-    console.log('AdminPanel: Filtered users result:', filtered.length, 'users after filtering');
     return filtered;
   }, [users, subscribers, searchTerm, adminFilter, subscriptionFilter, sortBy]);
 
   const filteredSubscribers = useMemo(() => {
-    console.log('AdminPanel: Filtering active subscribers...');
-    
     // Only show active subscribers
     let filtered = subscribers.filter(subscriber => subscriber.subscribed);
     
@@ -187,12 +166,10 @@ const AdminPanel: React.FC = () => {
       );
     }
     
-    console.log('AdminPanel: Filtered active subscribers result:', filtered.length, 'active subscribers');
     return filtered;
   }, [subscribers, searchTerm, adminFilter]);
 
   const handleClearFilters = () => {
-    console.log('AdminPanel: Clearing all filters');
     setSearchTerm('');
     setAdminFilter('all');
     setSubscriptionFilter('all');
@@ -207,13 +184,6 @@ const AdminPanel: React.FC = () => {
       if (!sub.subscription_end) return false;
       return new Date(sub.subscription_end) > new Date();
     }).length;
-
-    console.log('AdminPanel: Stats calculated:', {
-      totalUsers,
-      adminUsers,
-      totalSubscribers,
-      activeSubscriptions
-    });
 
     return { totalUsers, adminUsers, totalSubscribers, activeSubscriptions };
   };

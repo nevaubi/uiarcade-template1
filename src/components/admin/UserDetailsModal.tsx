@@ -80,8 +80,6 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
 
     setLoading(true);
     try {
-      console.log('UserDetailsModal: Starting user update...', { userId: user.id, fullName, isAdmin });
-      
       // Update profile
       const { error: profileError } = await supabase
         .from('profiles')
@@ -97,7 +95,6 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
         });
         return;
       }
-      console.log('UserDetailsModal: Profile updated successfully');
 
       // Update admin status in subscribers table
       if (subscriber) {
@@ -119,7 +116,6 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           });
           return;
         }
-        console.log('UserDetailsModal: Subscriber updated successfully');
       } else {
         // Create new subscriber record if none exists
         const { error: subscriberError } = await supabase
@@ -141,7 +137,6 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           });
           return;
         }
-        console.log('UserDetailsModal: New subscriber record created successfully');
       }
 
       toast({
