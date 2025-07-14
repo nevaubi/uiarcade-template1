@@ -158,6 +158,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_configs: {
+        Row: {
+          config_type: string
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          from_name: string
+          id: string
+          template_html: string
+          template_subject: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config_type: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          from_name?: string
+          id?: string
+          template_html: string
+          template_subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config_type?: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          from_name?: string
+          id?: string
+          template_html?: string
+          template_subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
