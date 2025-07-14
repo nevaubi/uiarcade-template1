@@ -20,6 +20,7 @@ import {
   Trash2,
   User
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
 import { useDocuments } from '@/hooks/useDocuments';
@@ -28,11 +29,8 @@ import ErrorBoundary from '../ErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ChatbotStats {
-  totalChats: number;
-  avgResponseTime: string;
-  userSatisfaction: string;
   documentsCount: number;
-  lastActivity: string;
+  lastUpdated: string;
 }
 
 interface Message {
@@ -66,25 +64,30 @@ const ChatbotPanel = () => {
   } = useDocuments();
 
   useEffect(() => {
-    // Placeholder for data fetching
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // TODO: Fetch chatbot data from backend
-        // const data = await fetchChatbotData();
-        // setConversations(data.conversations);
-        // setStats(data.stats);
+        // Calculate last updated date from documents
+        const getLastUpdated = () => {
+          if (documents.length === 0) return 'Never';
+          
+          const allChunks = documents.flatMap(doc => doc.chunks);
+          if (allChunks.length === 0) return 'Never';
+
+          const mostRecentDate = Math.max(
+            ...allChunks.map(chunk => new Date(chunk.created_at).getTime())
+          );
+          
+          return formatDistanceToNow(new Date(mostRecentDate), { addSuffix: true });
+        };
         
         // Simulate loading delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Set mock stats with actual document count
+        // Set real stats from documents data
         setStats({
-          totalChats: 0,
-          avgResponseTime: '0s',
-          userSatisfaction: '0%',
           documentsCount: documents.length,
-          lastActivity: 'Never'
+          lastUpdated: getLastUpdated()
         });
       } catch (error) {
         console.error('Error fetching chatbot data:', error);
@@ -94,7 +97,7 @@ const ChatbotPanel = () => {
     };
 
     fetchData();
-  }, [documents.length]);
+  }, [documents]);
 
   const handleConfigUpdate = async (field: string, value: any) => {
     if (config) {
@@ -244,10 +247,10 @@ const ChatbotPanel = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {isLoading ? (
                   <>
-                    {[...Array(4)].map((_, i) => (
+                    {[...Array(2)].map((_, i) => (
                       <div key={i} className="space-y-2">
                         <Skeleton className="h-4 w-20" />
                         <Skeleton className="h-8 w-full" />
@@ -258,24 +261,14 @@ const ChatbotPanel = () => {
                 ) : (
                   <>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Total Conversations</p>
-                      <p className="text-2xl font-semibold">{stats?.totalChats || 0}</p>
-                      <p className="text-xs text-gray-400">All time</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Avg Response Time</p>
-                      <p className="text-2xl font-semibold">{stats?.avgResponseTime || '0s'}</p>
-                      <p className="text-xs text-gray-400">Last 24h</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">User Satisfaction</p>
-                      <p className="text-2xl font-semibold">{stats?.userSatisfaction || '0%'}</p>
-                      <p className="text-xs text-gray-400">Based on feedback</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Knowledge Base</p>
+                      <p className="text-sm text-gray-500">Knowledge Base Documents</p>
                       <p className="text-2xl font-semibold">{stats?.documentsCount || 0}</p>
-                      <p className="text-xs text-gray-400">Documents</p>
+                      <p className="text-xs text-gray-400">Total uploaded</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Knowledge Base Last Updated</p>
+                      <p className="text-2xl font-semibold">{stats?.lastUpdated || 'Never'}</p>
+                      <p className="text-xs text-gray-400">Most recent upload</p>
                     </div>
                   </>
                 )}
