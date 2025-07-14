@@ -76,8 +76,8 @@ const AdminPanel: React.FC = () => {
         setUsers(profilesData || []);
       }
 
-      // Fetch subscriber information
-      console.log('AdminPanel: Fetching subscriber information...');
+      // Fetch ALL subscriber information (admins can now see all with new RLS policies)
+      console.log('AdminPanel: Fetching all subscriber information...');
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('subscribers')
         .select('email, subscribed, subscription_tier, subscription_end, is_admin, created_at, stripe_customer_id')
@@ -85,13 +85,16 @@ const AdminPanel: React.FC = () => {
 
       if (subscribersError) {
         console.error('AdminPanel: Error fetching subscribers:', subscribersError);
+        console.error('AdminPanel: Subscriber error details:', subscribersError.message, subscribersError.code);
         toast({
           title: "Error",
-          description: "Failed to load subscription data",
+          description: `Failed to load subscription data: ${subscribersError.message}`,
           variant: "destructive",
         });
       } else {
         console.log('AdminPanel: Successfully fetched subscribers:', subscribersData?.length || 0, 'subscribers');
+        console.log('AdminPanel: Active subscribers:', subscribersData?.filter(s => s.subscribed).length || 0);
+        console.log('AdminPanel: Sample subscriber data:', subscribersData?.[0]);
         setSubscribers(subscribersData || []);
       }
 

@@ -71,7 +71,12 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
 
       if (profileError) {
         console.error('UserDetailsModal: Profile update error:', profileError);
-        throw profileError;
+        toast({
+          title: "Error",
+          description: `Failed to update profile: ${profileError.message}`,
+          variant: "destructive",
+        });
+        return;
       }
       console.log('UserDetailsModal: Profile updated successfully');
 
@@ -88,7 +93,12 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
 
         if (subscriberError) {
           console.error('UserDetailsModal: Subscriber update error:', subscriberError);
-          throw subscriberError;
+          toast({
+            title: "Error",
+            description: `Failed to update subscriber: ${subscriberError.message}`,
+            variant: "destructive",
+          });
+          return;
         }
         console.log('UserDetailsModal: Subscriber updated successfully');
       } else {
@@ -105,7 +115,12 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
 
         if (subscriberError) {
           console.error('UserDetailsModal: Subscriber creation error:', subscriberError);
-          throw subscriberError;
+          toast({
+            title: "Error",
+            description: `Failed to create subscriber record: ${subscriberError.message}`,
+            variant: "destructive",
+          });
+          return;
         }
         console.log('UserDetailsModal: New subscriber record created successfully');
       }
@@ -122,7 +137,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to update user details';
       toast({
         title: "Error",
-        description: `Failed to update user details: ${errorMessage}`,
+        description: `Unexpected error: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
