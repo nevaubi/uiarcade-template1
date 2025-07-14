@@ -3,7 +3,7 @@ import { useMemo, memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend } from '@/components/ui/chart';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, DollarSign, AlertCircle, Clock, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Activity, DollarSign, AlertCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -146,6 +146,45 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
     }
   }, [subscribers, isMobile]);
 
+  // Process data for Admin vs Users with corrected logic
+  const roleData = useMemo(() => {
+    try {
+      if (!users?.length && !subscribers?.length) return [];
+
+      // Create a map of email to admin status from subscribers
+      const adminEmails = new Set(
+        subscribers?.filter(sub => sub.is_admin).map(sub => sub.email) || []
+      );
+
+      // Count users based on their profile email and admin status
+      const adminCount = users?.filter(user => user.email && adminEmails.has(user.email)).length || 0;
+      const userCount = (users?.length || 0) - adminCount;
+      const total = adminCount + userCount;
+
+      if (total === 0) return [];
+
+      return [
+        { 
+          name: 'Users', 
+          value: userCount, 
+          fill: 'hsl(var(--chart-1))',
+          percentage: Math.round((userCount / total) * 100),
+          label: isMobile ? `Users (${userCount})` : `Regular Users (${userCount} users - ${Math.round((userCount / total) * 100)}%)`
+        },
+        { 
+          name: 'Admins', 
+          value: adminCount, 
+          fill: 'hsl(var(--chart-2))',
+          percentage: Math.round((adminCount / total) * 100),
+          label: isMobile ? `Admins (${adminCount})` : `Administrators (${adminCount} users - ${Math.round((adminCount / total) * 100)}%)`
+        }
+      ];
+    } catch (error) {
+      console.error('Error processing role data:', error);
+      return [];
+    }
+  }, [users, subscribers, isMobile]);
+
   // Process data for Monthly Revenue with fixed pricing and better error handling
   const revenueData = useMemo(() => {
     try {
@@ -181,131 +220,6 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
       return sortedData;
     } catch (error) {
       console.error('Error processing revenue data:', error);
-      return [];
-    }
-  }, [subscribers, isMobile]);
-
-  // Calculate Time to First Value (TTFV) - Average time from registration to first subscription
-  const timeToFirstValue = useMemo(() => {
-    try {
-      if (!users?.length || !subscribers?.length) return { days: 0, hours: 0 };
-
-      // Find users who eventually subscribed
-      const subscribedUsers = subscribers.filter(sub => sub.subscribed && sub.email);
-      if (!subscribedUsers.length) return { days: 0, hours: 0 };
-
-      let totalHours = 0;
-      let validConversions = 0;
-
-      subscribedUsers.forEach(subscriber => {
-        const user = users.find(u => u.email === subscriber.email);
-        if (user) {
-          const registrationDate = new Date(user.created_at);
-          const subscriptionDate = new Date(subscriber.created_at);
-          
-          if (!isNaN(registrationDate.getTime()) && !isNaN(subscriptionDate.getTime())) {
-            const hoursDiff = (subscriptionDate.getTime() - registrationDate.getTime()) / (1000 * 60 * 60);
-            if (hoursDiff >= 0) { // Only count positive time differences
-              totalHours += hoursDiff;
-              validConversions++;
-            }
-          }
-        }
-      });
-
-      if (validConversions === 0) return { days: 0, hours: 0 };
-
-      const avgHours = totalHours / validConversions;
-      return {
-        days: Math.round(avgHours / 24 * 10) / 10,
-        hours: Math.round(avgHours * 10) / 10
-      };
-    } catch (error) {
-      console.error('Error calculating TTFV:', error);
-      return { days: 0, hours: 0 };
-    }
-  }, [users, subscribers]);
-
-  // Calculate Active vs Inactive Users data
-  const activeInactiveData = useMemo(() => {
-    try {
-      if (!users?.length || !subscribers?.length) return [];
-
-      const activeSubscribers = subscribers.filter(sub => sub.subscribed).length;
-      const totalUsers = users.length;
-      const inactiveUsers = totalUsers - activeSubscribers;
-
-      const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
-      
-      return [
-        {
-          name: 'Active Subscribers',
-          value: activeSubscribers,
-          fill: colors[0],
-          percentage: Math.round((activeSubscribers / totalUsers) * 100),
-          label: isMobile ? `Active (${activeSubscribers})` : `Active Subscribers (${activeSubscribers} users - ${Math.round((activeSubscribers / totalUsers) * 100)}%)`
-        },
-        {
-          name: 'Inactive Users',
-          value: inactiveUsers,
-          fill: colors[1],
-          percentage: Math.round((inactiveUsers / totalUsers) * 100),
-          label: isMobile ? `Inactive (${inactiveUsers})` : `Inactive Users (${inactiveUsers} users - ${Math.round((inactiveUsers / totalUsers) * 100)}%)`
-        }
-      ];
-    } catch (error) {
-      console.error('Error processing active/inactive data:', error);
-      return [];
-    }
-  }, [users, subscribers, isMobile]);
-
-  // Calculate ARPU (Average Revenue Per User)
-  const arpu = useMemo(() => {
-    try {
-      if (!users?.length || !subscribers?.length) return 0;
-      
-      const totalRevenue = subscribers
-        .filter(sub => sub.subscribed && sub.subscription_tier)
-        .reduce((sum, sub) => {
-          const tierRevenue = TIER_PRICING[sub.subscription_tier as keyof typeof TIER_PRICING] || 0;
-          return sum + tierRevenue;
-        }, 0);
-      
-      return Math.round((totalRevenue / users.length) * 100) / 100;
-    } catch (error) {
-      console.error('Error calculating ARPU:', error);
-      return 0;
-    }
-  }, [users, subscribers]);
-
-  // Calculate Revenue Per Plan breakdown
-  const revenuePerPlan = useMemo(() => {
-    try {
-      if (!subscribers?.length) return [];
-
-      const planRevenue = subscribers
-        .filter(sub => sub.subscribed && sub.subscription_tier)
-        .reduce((acc, sub) => {
-          const tier = sub.subscription_tier as keyof typeof TIER_PRICING;
-          const revenue = TIER_PRICING[tier] || 0;
-          acc[tier] = (acc[tier] || 0) + revenue;
-          return acc;
-        }, {} as Record<string, number>);
-
-      const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-      const total = Object.values(planRevenue).reduce((sum, revenue) => sum + revenue, 0);
-      
-      if (total === 0) return [];
-      
-      return Object.entries(planRevenue).map(([tier, revenue], index) => ({
-        name: tier,
-        value: Math.round(revenue * 100) / 100,
-        fill: colors[index % colors.length],
-        percentage: Math.round((revenue / total) * 100),
-        label: isMobile ? `${tier} ($${revenue})` : `${tier} ($${revenue} - ${Math.round((revenue / total) * 100)}%)`
-      }));
-    } catch (error) {
-      console.error('Error processing revenue per plan:', error);
       return [];
     }
   }, [subscribers, isMobile]);
@@ -520,68 +434,66 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Enhanced Key Metrics Cards - New SaaS Metrics */}
+      {/* Enhanced Key Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300">Time to First Value</CardTitle>
-            <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Users</CardTitle>
+            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-100">
-              {timeToFirstValue.days > 0 ? `${timeToFirstValue.days}d` : `${timeToFirstValue.hours}h`}
-            </div>
+            <div className="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-100">{users.length.toLocaleString()}</div>
             <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-              {timeToFirstValue.days > 0 ? 
-                `Average ${timeToFirstValue.days} days to subscribe` : 
-                `Average ${timeToFirstValue.hours} hours to subscribe`}
+              +{users.filter(u => new Date(u.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} this month
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300">Active Users</CardTitle>
+            <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300">Active Subscriptions</CardTitle>
             <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-green-900 dark:text-green-100">
-              {subscribers.filter(s => s.subscribed).length.toLocaleString()}
-            </div>
+            <div className="text-2xl sm:text-3xl font-bold text-green-900 dark:text-green-100">{subscribers.filter(s => s.subscribed).length.toLocaleString()}</div>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-              {Math.round((subscribers.filter(s => s.subscribed).length / users.length) * 100)}% of total users
+              Active recurring subscriptions
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-purple-700 dark:text-purple-300">ARPU</CardTitle>
+            <CardTitle className="text-sm font-semibold text-purple-700 dark:text-purple-300">Est. Monthly Revenue</CardTitle>
             <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-purple-900 dark:text-purple-100">
-              ${arpu.toFixed(2)}
+              ${revenueData.reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}
             </div>
             <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-              Average revenue per user
+              Based on subscription tiers
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-amber-700 dark:text-amber-300">Top Plan Revenue</CardTitle>
-            <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <CardTitle className="text-sm font-semibold text-amber-700 dark:text-amber-300">Growth Rate</CardTitle>
+            <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-amber-900 dark:text-amber-100">
-              {revenuePerPlan.length > 0 ? `$${Math.max(...revenuePerPlan.map(p => p.value)).toFixed(0)}` : '$0'}
+              {(() => {
+                if (userGrowthData.length <= 1) return '0%';
+                const current = userGrowthData[userGrowthData.length - 1]?.users || 0;
+                const previous = userGrowthData[userGrowthData.length - 2]?.users || 0;
+                if (previous === 0) return current > 0 ? '100%' : '0%';
+                return `${Math.round(((current - previous) / previous) * 100)}%`;
+              })()}
             </div>
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-              {revenuePerPlan.length > 0 ? 
-                `${revenuePerPlan.find(p => p.value === Math.max(...revenuePerPlan.map(p => p.value)))?.name || 'Unknown'} plan` : 
-                'No revenue data'}
+              Month over month
             </p>
           </CardContent>
         </Card>
@@ -740,23 +652,23 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </CardContent>
         </Card>
 
-        {/* Active vs Inactive Users - Pie Chart with Enhanced Legend */}
+        {/* User Roles Distribution with Enhanced Legend */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/20">
           <CardHeader className="pb-3">
-            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold`}>Active vs Inactive Users</CardTitle>
-            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>Active subscribers vs inactive users breakdown</CardDescription>
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold`}>User Roles Distribution</CardTitle>
+            <CardDescription className={`${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>Admin vs regular users breakdown</CardDescription>
           </CardHeader>
           <CardContent>
-            {activeInactiveData.length === 0 ? (
+            {roleData.length === 0 ? (
               <EmptyStateCard 
-                title="No User Activity Data" 
-                description="No user activity data available." 
+                title="No Role Data" 
+                description="No user role distribution data available." 
               />
             ) : (
               <ChartContainer config={chartConfig} style={{ minHeight: isMobile ? '280px' : '320px' }}>
                 <PieChart margin={getChartMargins()}>
                   <Pie
-                    data={activeInactiveData}
+                    data={roleData}
                     cx="50%"
                     cy="50%"
                     innerRadius={getPieChartDimensions().innerRadius + (isMobile ? 5 : 10)}
@@ -764,7 +676,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                     paddingAngle={isMobile ? 2 : 4}
                     dataKey="value"
                   >
-                    {activeInactiveData.map((entry, index) => (
+                    {roleData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
