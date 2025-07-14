@@ -226,11 +226,11 @@ const ChatWidget = () => {
       ) : (
         <Button
           onClick={() => setIsWidgetOpen(true)}
-          className="h-16 w-16 sm:h-20 sm:w-20 rounded-full shadow-lg bg-white hover:bg-gray-50 transition-all duration-500 hover:scale-105 hover:shadow-xl group border border-gray-200/50"
+          className="h-16 w-16 sm:h-20 sm:w-20 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-gradient-to-br from-white to-gray-50/95 hover:from-gray-50 hover:to-gray-100/95 backdrop-blur-md transition-all duration-300 ease-out hover:scale-[1.02] active:scale-95 hover:shadow-[0_12px_40px_rgb(0,0,0,0.15)] group border border-white/20"
         >
           <Bot 
-            className="text-gray-700 group-hover:text-gray-900 transition-colors duration-300" 
-            style={{ width: '60px', height: '60px' }}
+            className="text-blue-600 group-hover:text-blue-700 transition-colors duration-300" 
+            style={{ width: '54px', height: '54px' }}
           />
         </Button>
       )}
