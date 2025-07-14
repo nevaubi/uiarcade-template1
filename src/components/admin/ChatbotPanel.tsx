@@ -32,6 +32,8 @@ import DocumentManager from './DocumentManager';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useChatbotConfig } from '@/hooks/useChatbotConfig';
 import ErrorBoundary from '../ErrorBoundary';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 interface Document {
   id: string;
@@ -62,6 +64,11 @@ const ChatbotPanel = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [stats, setStats] = useState<ChatbotStats | null>(null);
+  
+  // Test message state
+  const [testResponse, setTestResponse] = useState('');
+  const [testLoading, setTestLoading] = useState(false);
+  const [testError, setTestError] = useState('');
 
   // Use the existing useChatbotConfig hook
   const { config, loading: configLoading, updating, updateConfig } = useChatbotConfig();
@@ -114,11 +121,37 @@ const ChatbotPanel = () => {
   };
 
   const handleTestMessage = async () => {
-    if (!testMessage.trim()) return;
+    if (!testMessage.trim() || testLoading) return;
     
-    // TODO: Send test message to chatbot
-    console.log('Test message:', testMessage);
-    setTestMessage('');
+    setTestLoading(true);
+    setTestError('');
+    setTestResponse('');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: { 
+          message: testMessage.trim(),
+          conversationHistory: [] // Fresh test with no history
+        },
+      });
+
+      if (error) {
+        setTestError(data?.error || error.message || 'Failed to get response from chatbot');
+        return;
+      }
+
+      if (data?.response) {
+        setTestResponse(data.response);
+      } else {
+        setTestError('No response received from chatbot');
+      }
+    } catch (error) {
+      console.error('Test message error:', error);
+      setTestError('Network error. Please check your connection and try again.');
+    } finally {
+      setTestLoading(false);
+      setTestMessage('');
+    }
   };
 
   const toggleChatbotStatus = async () => {
@@ -229,18 +262,45 @@ const ChatbotPanel = () => {
                 Send a test message to see how your chatbot responds
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input 
                   placeholder="Type a test message..." 
                   value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleTestMessage()}
+                  disabled={testLoading}
                 />
-                <Button onClick={handleTestMessage} disabled={!testMessage.trim()}>
-                  <Send className="h-4 w-4" />
+                <Button 
+                  onClick={handleTestMessage} 
+                  disabled={!testMessage.trim() || testLoading}
+                >
+                  {testLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
+              
+              {/* Test Response Display */}
+              {(testResponse || testError) && (
+                <div className="mt-4 p-4 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Bot className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium">Chatbot Response:</span>
+                  </div>
+                  {testError ? (
+                    <div className="text-red-600 text-sm bg-red-50 p-3 rounded border">
+                      {testError}
+                    </div>
+                  ) : (
+                    <div className="text-gray-700 text-sm bg-gray-50 p-3 rounded border">
+                      {testResponse}
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
