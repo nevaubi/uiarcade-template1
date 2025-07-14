@@ -140,6 +140,15 @@ const Dashboard = () => {
     return email.substring(0, 2).toUpperCase();
   };
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    
+    // Close sidebar on mobile when navigation item is clicked
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
+
   const renderDashboardContent = () => (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -423,7 +432,7 @@ const Dashboard = () => {
           {sidebarItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleTabChange(item.id)}
               className={`
                 w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
                 ${item.active 
