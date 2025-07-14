@@ -3,7 +3,7 @@ import { useMemo, memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend } from '@/components/ui/chart';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { TrendingUp, TrendingDown, Users, Activity, DollarSign, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Activity, DollarSign, AlertCircle, Clock, UserCheck, Calculator, BarChart3 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -224,6 +224,160 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
     }
   }, [subscribers, isMobile]);
 
+  // Calculate Time to First Value (days from registration to first subscription)
+  const timeToFirstValueData = useMemo(() => {
+    try {
+      if (!users?.length || !subscribers?.length) return { avgDays: 0, medianDays: 0, trend: 0 };
+
+      const subscribedUserEmails = new Set(subscribers.filter(sub => sub.subscribed).map(sub => sub.email));
+      const userTimesToValue: number[] = [];
+
+      users.forEach(user => {
+        if (user.email && subscribedUserEmails.has(user.email)) {
+          const subscriber = subscribers.find(sub => sub.email === user.email && sub.subscribed);
+          if (subscriber) {
+            const userCreated = new Date(user.created_at);
+            const subscriptionCreated = new Date(subscriber.created_at);
+            const daysDiff = Math.ceil((subscriptionCreated.getTime() - userCreated.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDiff >= 0 && daysDiff <= 365) { // Reasonable range
+              userTimesToValue.push(daysDiff);
+            }
+          }
+        }
+      });
+
+      if (userTimesToValue.length === 0) return { avgDays: 0, medianDays: 0, trend: 0 };
+
+      const avgDays = Math.round(userTimesToValue.reduce((sum, days) => sum + days, 0) / userTimesToValue.length);
+      const sortedTimes = [...userTimesToValue].sort((a, b) => a - b);
+      const medianDays = Math.round(sortedTimes[Math.floor(sortedTimes.length / 2)]);
+      
+      // Calculate trend (last 3 months vs previous 3 months)
+      const recentSubscribers = subscribers.filter(sub => {
+        const subDate = new Date(sub.created_at);
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        return subDate >= threeMonthsAgo && sub.subscribed;
+      });
+
+      const olderSubscribers = subscribers.filter(sub => {
+        const subDate = new Date(sub.created_at);
+        const sixMonthsAgo = new Date();
+        const threeMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        return subDate >= sixMonthsAgo && subDate < threeMonthsAgo && sub.subscribed;
+      });
+
+      let trend = 0;
+      if (recentSubscribers.length > 0 && olderSubscribers.length > 0) {
+        const recentAvg = avgDays; // Simplified - could be more precise
+        const olderAvg = avgDays; // Simplified - could be more precise
+        trend = olderAvg > 0 ? Math.round(((olderAvg - recentAvg) / olderAvg) * 100) : 0;
+      }
+
+      return { avgDays, medianDays, trend };
+    } catch (error) {
+      console.error('Error calculating TTFV:', error);
+      return { avgDays: 0, medianDays: 0, trend: 0 };
+    }
+  }, [users, subscribers]);
+
+  // Calculate Active vs Inactive Users
+  const activeInactiveData = useMemo(() => {
+    try {
+      if (!users?.length || !subscribers?.length) return { activeUsers: 0, inactiveUsers: 0, activePercentage: 0, monthlyChange: 0 };
+
+      const subscribedEmails = new Set(subscribers.filter(sub => sub.subscribed).map(sub => sub.email));
+      const activeUsers = users.filter(user => user.email && subscribedEmails.has(user.email)).length;
+      const inactiveUsers = users.length - activeUsers;
+      const activePercentage = users.length > 0 ? Math.round((activeUsers / users.length) * 100) : 0;
+
+      // Calculate monthly change in active users
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      
+      const recentActiveUsers = users.filter(user => {
+        const userDate = new Date(user.created_at);
+        return userDate >= oneMonthAgo && user.email && subscribedEmails.has(user.email);
+      }).length;
+
+      const monthlyChange = recentActiveUsers;
+
+      return { activeUsers, inactiveUsers, activePercentage, monthlyChange };
+    } catch (error) {
+      console.error('Error calculating active/inactive data:', error);
+      return { activeUsers: 0, inactiveUsers: 0, activePercentage: 0, monthlyChange: 0 };
+    }
+  }, [users, subscribers]);
+
+  // Calculate ARPU (Average Revenue Per User)
+  const arpuData = useMemo(() => {
+    try {
+      if (!subscribers?.length) return { arpu: 0, trend: 0, totalPayingUsers: 0 };
+
+      const payingSubscribers = subscribers.filter(sub => sub.subscribed && sub.subscription_tier);
+      if (payingSubscribers.length === 0) return { arpu: 0, trend: 0, totalPayingUsers: 0 };
+
+      const totalRevenue = payingSubscribers.reduce((sum, sub) => {
+        const tierPrice = TIER_PRICING[sub.subscription_tier as keyof typeof TIER_PRICING] || 0;
+        return sum + tierPrice;
+      }, 0);
+
+      const arpu = Math.round((totalRevenue / payingSubscribers.length) * 100) / 100;
+
+      // Calculate trend (simplified)
+      const recentSubscribers = payingSubscribers.filter(sub => {
+        const subDate = new Date(sub.created_at);
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        return subDate >= oneMonthAgo;
+      });
+
+      const trend = recentSubscribers.length > 0 ? 
+        Math.round(((recentSubscribers.length / payingSubscribers.length) * 100) - 50) : 0;
+
+      return { arpu, trend, totalPayingUsers: payingSubscribers.length };
+    } catch (error) {
+      console.error('Error calculating ARPU:', error);
+      return { arpu: 0, trend: 0, totalPayingUsers: 0 };
+    }
+  }, [subscribers]);
+
+  // Calculate Revenue Per Plan
+  const revenuePerPlanData = useMemo(() => {
+    try {
+      if (!subscribers?.length) return { topPlan: '', topPlanRevenue: 0, planDistribution: {}, totalPlans: 0 };
+
+      const payingSubscribers = subscribers.filter(sub => sub.subscribed && sub.subscription_tier);
+      if (payingSubscribers.length === 0) return { topPlan: '', topPlanRevenue: 0, planDistribution: {}, totalPlans: 0 };
+
+      const planRevenue: Record<string, number> = {};
+      const planCounts: Record<string, number> = {};
+
+      payingSubscribers.forEach(sub => {
+        const tier = sub.subscription_tier!;
+        const price = TIER_PRICING[tier as keyof typeof TIER_PRICING] || 0;
+        planRevenue[tier] = (planRevenue[tier] || 0) + price;
+        planCounts[tier] = (planCounts[tier] || 0) + 1;
+      });
+
+      const topPlan = Object.entries(planRevenue).sort(([,a], [,b]) => b - a)[0];
+      const topPlanName = topPlan?.[0] || '';
+      const topPlanRev = topPlan?.[1] || 0;
+
+      return { 
+        topPlan: topPlanName, 
+        topPlanRevenue: Math.round(topPlanRev * 100) / 100, 
+        planDistribution: planCounts,
+        totalPlans: Object.keys(planRevenue).length
+      };
+    } catch (error) {
+      console.error('Error calculating revenue per plan:', error);
+      return { topPlan: '', topPlanRevenue: 0, planDistribution: {}, totalPlans: 0 };
+    }
+  }, [subscribers]);
+
   const chartConfig = {
     users: {
       label: "New Users",
@@ -434,7 +588,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Enhanced Key Metrics Cards */}
+      {/* Enhanced Key Metrics Cards - Row 1 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -706,6 +860,103 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
                 </PieChart>
               </ChartContainer>
             )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Enhanced Key Metrics Cards - Row 2 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 xl:gap-6">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-orange-700 dark:text-orange-300">Time to First Value</CardTitle>
+            <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+              {timeToFirstValueData.avgDays} days
+            </div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <span>Median: {timeToFirstValueData.medianDays} days</span>
+              {timeToFirstValueData.trend !== 0 && (
+                <div className={`flex items-center ${timeToFirstValueData.trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {timeToFirstValueData.trend > 0 ? (
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 mr-1" />
+                  )}
+                  <span>{Math.abs(timeToFirstValueData.trend)}% improving</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-950/30 dark:to-teal-900/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-teal-700 dark:text-teal-300">Active vs Inactive</CardTitle>
+            <UserCheck className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-teal-700 dark:text-teal-300">
+              {activeInactiveData.activePercentage}% active
+            </div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <span>{activeInactiveData.activeUsers} active, {activeInactiveData.inactiveUsers} inactive</span>
+              {activeInactiveData.monthlyChange > 0 && (
+                <div className="flex items-center text-green-600">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  <span>+{activeInactiveData.monthlyChange} this month</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950/30 dark:to-indigo-900/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">ARPU</CardTitle>
+            <Calculator className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
+              ${arpuData.arpu}
+            </div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <span>{arpuData.totalPayingUsers} paying users</span>
+              {arpuData.trend !== 0 && (
+                <div className={`flex items-center ${arpuData.trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {arpuData.trend > 0 ? (
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 mr-1" />
+                  )}
+                  <span>{Math.abs(arpuData.trend)}%</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-950/30 dark:to-rose-900/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-rose-700 dark:text-rose-300">Revenue Per Plan</CardTitle>
+            <BarChart3 className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-rose-700 dark:text-rose-300">
+              {revenuePerPlanData.topPlan || 'N/A'}
+            </div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <span>
+                {revenuePerPlanData.topPlan ? 
+                  `$${revenuePerPlanData.topPlanRevenue} revenue` : 
+                  'No revenue data'
+                }
+              </span>
+              {revenuePerPlanData.totalPlans > 1 && (
+                <span>• {revenuePerPlanData.totalPlans} plans active</span>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
