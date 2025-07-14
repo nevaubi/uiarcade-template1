@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Clock, User, Calendar, Share2, Twitter, Facebook, Linkedin } from 'lucide-react';

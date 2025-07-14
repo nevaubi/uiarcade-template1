@@ -33,9 +33,6 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const PROCESSING_TIMEOUT = 30000;
 
 // Type guard for PDF.js text items - only TextItem has str property
-const isTextItem = (item: any): item is { str: string } => {
-  return item && typeof item === 'object' && typeof item.str === 'string';
-};
 
 // Validate file before processing
 const validateFile = (file: File): void => {

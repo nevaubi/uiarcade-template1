@@ -92,7 +92,6 @@ const DataExport: React.FC<DataExportProps> = ({ users, subscribers }) => {
     setExportingCombined(true);
     try {
       const userData = prepareUsersForExport(users, subscribers);
-      const subscriberData = prepareSubscribersForExport(subscribers);
       
       // Create combined dataset with all unique information
       const combinedData = userData.map(user => {
