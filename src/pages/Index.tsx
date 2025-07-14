@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Check, Star, Users, Shield, Zap, ArrowRight, Menu, X, Sparkles } from 'lucide-react';
+import { Shield, ArrowRight, Menu, X, Sparkles, Bot, CreditCard, Mail, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate, Link } from 'react-router-dom';
@@ -221,39 +221,39 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: Zap,
-                title: 'Lightning Fast',
-                description: 'Built for speed with modern technologies and optimized performance.',
+                icon: Bot,
+                title: 'AI Assistant Integration',
+                description: 'Intelligent chatbot powered by OpenAI with document integration and custom instructions.',
                 bgColor: 'bg-navy-600'
               },
               {
-                icon: Shield,
-                title: 'Enterprise Security',
-                description: 'Bank-level security with end-to-end encryption and compliance.',
+                icon: CreditCard,
+                title: 'Complete Stripe Integration',
+                description: 'Full payment processing with subscriptions, one-time payments, and customer portal.',
                 bgColor: 'bg-navy-700'
               },
               {
-                icon: Users,
-                title: 'Team Collaboration',
-                description: 'Work together seamlessly with real-time collaboration tools.',
+                icon: Mail,
+                title: 'Professional Email System',
+                description: 'Automated welcome emails and transactional messaging via Resend integration.',
                 bgColor: 'bg-navy-800'
               },
               {
-                icon: Star,
-                title: 'Complete Stripe Integration',
-                description: 'Deep insights into your business with comprehensive analytics.',
+                icon: BarChart3,
+                title: 'Advanced Admin Dashboard',
+                description: 'Comprehensive analytics, user management, and business insights with visual charts.',
                 bgColor: 'bg-navy-600'
               },
               {
-                icon: Check,
-                title: 'Easy Integration',
-                description: 'Connect with your favorite tools through our robust API.',
+                icon: FileText,
+                title: 'Document Management',
+                description: 'Upload, process, and embed documents with AI-powered search and retrieval.',
                 bgColor: 'bg-navy-700'
               },
               {
-                icon: ArrowRight,
-                title: 'Scalable Infrastructure',
-                description: 'Grow from startup to enterprise with our scalable platform.',
+                icon: Shield,
+                title: 'Enterprise Authentication',
+                description: 'Secure Supabase auth with rate limiting, user suspension, and admin controls.',
                 bgColor: 'bg-navy-800'
               }
             ].map((feature, index) => (
