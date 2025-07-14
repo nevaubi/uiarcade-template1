@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Upload, FileText, Loader2, AlertCircle, CloudUpload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -16,34 +15,97 @@ interface DocumentUploadProps {
 const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, uploadDocument: externalUploadDocument }: DocumentUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [internalUploading, setInternalUploading] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
   const { isRateLimited, timeUntilReset } = useRateLimit();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploading = externalUploading || internalUploading;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const validateFile = useCallback((selectedFile: File) => {
+    const validTypes = ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!validTypes.includes(selectedFile.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF, TXT, or DOCX file.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (selectedFile.size > 10 * 1024 * 1024) { // 10MB limit
+      toast({
+        title: "File too large",
+        description: "Please upload a file smaller than 10MB.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  }, [toast]);
+
+  const handleFileChange = useCallback((selectedFile: File) => {
+    if (validateFile(selectedFile)) {
+      setFile(selectedFile);
+    }
+  }, [validateFile]);
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      const validTypes = ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!validTypes.includes(selectedFile.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF, TXT, or DOCX file.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (selectedFile.size > 10 * 1024 * 1024) { // 10MB limit
-        toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      setFile(selectedFile);
+      handleFileChange(selectedFile);
+    }
+  };
+
+  const onDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!uploading && !isRateLimited) {
+      setIsDragActive(true);
+    }
+  }, [uploading, isRateLimited]);
+
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+    setIsDragOver(false);
+  }, []);
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!uploading && !isRateLimited) {
+      setIsDragOver(true);
+    }
+  }, [uploading, isRateLimited]);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+    setIsDragOver(false);
+
+    if (uploading || isRateLimited) return;
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+      handleFileChange(droppedFiles[0]);
+    }
+  }, [uploading, isRateLimited, handleFileChange]);
+
+  const handleBrowseClick = () => {
+    if (!uploading && !isRateLimited) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const resetFile = () => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -53,10 +115,7 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
     if (externalUploadDocument) {
       try {
         await externalUploadDocument(file);
-        setFile(null);
-        // Reset file input
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
+        resetFile();
         if (onUploadComplete) {
           onUploadComplete();
         }
@@ -93,10 +152,7 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
         description: `Processed ${data.chunks} chunks from ${file.name}`,
       });
 
-      setFile(null);
-      // Reset file input
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      resetFile();
       
       if (onUploadComplete) {
         onUploadComplete();
@@ -113,74 +169,167 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
     }
   };
 
+  const getDropZoneClasses = () => {
+    let baseClasses = "relative border-2 border-dashed rounded-2xl transition-all duration-300 ease-out cursor-pointer group";
+    
+    if (isDragOver || isDragActive) {
+      return `${baseClasses} border-primary/60 bg-primary/5 scale-[1.02] shadow-lg`;
+    }
+    
+    if (uploading || isRateLimited) {
+      return `${baseClasses} border-muted bg-muted/20 cursor-not-allowed opacity-60`;
+    }
+    
+    if (file) {
+      return `${baseClasses} border-primary/40 bg-primary/5 hover:border-primary/60 hover:bg-primary/10`;
+    }
+    
+    return `${baseClasses} border-border hover:border-primary/40 hover:bg-accent`;
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CloudUpload className="h-5 w-5" />
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+          <div className="p-2 rounded-xl bg-primary/10">
+            <CloudUpload className="h-5 w-5 text-primary" />
+          </div>
           Upload Documents
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-muted-foreground">
           Upload documents to build your chatbot's knowledge base
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-          <CloudUpload className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-sm text-gray-600 mb-2">
-            Select a file to upload
-          </p>
-          <Input
+      
+      <CardContent className="space-y-6">
+        {/* Drag & Drop Zone */}
+        <div
+          className={getDropZoneClasses()}
+          onDragEnter={onDragEnter}
+          onDragLeave={onDragLeave}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+          onClick={handleBrowseClick}
+        >
+          <div className="p-8 text-center">
+            <div className="mb-4">
+              {uploading ? (
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-2">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                </div>
+              ) : file ? (
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-2 transform group-hover:scale-105 transition-transform">
+                  <FileText className="h-8 w-8 text-primary" />
+                </div>
+              ) : (
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-2 transform group-hover:scale-105 transition-transform">
+                  <CloudUpload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              {uploading ? (
+                <>
+                  <h3 className="text-lg font-medium text-foreground">Processing Document...</h3>
+                  <p className="text-sm text-muted-foreground">Please wait while we process your file</p>
+                </>
+              ) : file ? (
+                <>
+                  <h3 className="text-lg font-medium text-foreground">Ready to Upload</h3>
+                  <p className="text-sm text-muted-foreground">Click the upload button below to proceed</p>
+                </>
+              ) : isDragActive ? (
+                <>
+                  <h3 className="text-lg font-medium text-primary">Drop your file here</h3>
+                  <p className="text-sm text-muted-foreground">Release to select this file</p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-medium text-foreground">Drop files to upload</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Or <span className="text-primary font-medium">browse</span> to choose files
+                  </p>
+                </>
+              )}
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-xs text-muted-foreground">
+                Supports PDF, TXT, DOCX • Max 10MB
+              </p>
+            </div>
+          </div>
+          
+          <input
+            ref={fileInputRef}
             type="file"
             accept=".pdf,.txt,.docx"
-            onChange={handleFileChange}
+            onChange={onFileInputChange}
             disabled={uploading || isRateLimited}
-            className="max-w-xs mx-auto"
+            className="hidden"
           />
-          <p className="text-xs text-gray-500 mt-2">
-            Supported formats: PDF, TXT, DOCX (max 10MB)
-          </p>
         </div>
 
+        {/* Selected File Display */}
         {file && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-            <FileText className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-medium text-blue-900">{file.name}</span>
-            <span className="text-xs text-blue-700 ml-auto">
-              {(file.size / 1024 / 1024).toFixed(2)} MB
-            </span>
+          <div className="p-4 bg-accent/50 rounded-xl border border-border/50 transition-all duration-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  resetFile();
+                }}
+                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+              >
+                ×
+              </Button>
+            </div>
           </div>
         )}
 
+        {/* Rate Limit Warning */}
         {isRateLimited && (
-          <div className="flex items-center gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-orange-500" />
-            <span className="text-sm text-orange-700">
-              Rate limit reached. Please wait {timeUntilReset} seconds.
-            </span>
+          <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-destructive">Rate limit reached</p>
+                <p className="text-xs text-destructive/80">
+                  Please wait {timeUntilReset} seconds before uploading
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
+        {/* Upload Button */}
         <Button 
           onClick={handleUpload} 
           disabled={!file || uploading || isRateLimited}
-          className={`w-full ${file && !uploading ? 'animate-pulse bg-blue-600 hover:bg-blue-700' : ''}`}
+          size="lg"
+          className="w-full h-12 text-base font-medium transition-all duration-200 disabled:opacity-50"
         >
           {uploading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Processing Document...
             </>
           ) : (
             <>
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="mr-2 h-5 w-5" />
               Upload Document
-              {file && (
-                <span className="ml-2 relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                </span>
-              )}
             </>
           )}
         </Button>
