@@ -12,7 +12,7 @@ interface DocumentChunk {
   chunk_index: number;
   content: string;
   word_count: number;
-  created_by?: string;
+  created_by: string | null;
   created_at: string;
 }
 
@@ -23,7 +23,7 @@ interface DocumentInfo {
   total_chunks: number;
   total_words: number;
   created_at: string;
-  created_by?: string;
+  created_by: string | null;
 }
 
 export const useDocuments = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -6,26 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { 
   Bot, 
-  FileText, 
   MessageSquare, 
-  Activity, 
-  Settings, 
-  Play, 
-  Pause, 
   Send,
-  Clock,
-  Users,
-  TrendingUp,
-  RotateCcw,
-  AlertCircle,
   Power,
-  PowerOff
+  PowerOff,
+  Loader2
 } from 'lucide-react';
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
@@ -33,22 +23,6 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useChatbotConfig } from '@/hooks/useChatbotConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
-
-interface Document {
-  id: string;
-  name: string;
-  size: string;
-  uploadDate: string;
-  status: 'processed' | 'processing' | 'error';
-}
-
-interface Conversation {
-  id: string;
-  user: string;
-  message: string;
-  time: string;
-}
 
 interface ChatbotStats {
   totalChats: number;
@@ -62,7 +36,6 @@ const ChatbotPanel = () => {
   const [activeTab, setActiveTab] = useState('my-chatbot');
   const [testMessage, setTestMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [stats, setStats] = useState<ChatbotStats | null>(null);
   
   // Test message state
@@ -79,8 +52,7 @@ const ChatbotPanel = () => {
     loading: documentsLoading, 
     uploading, 
     uploadDocument, 
-    deleteDocument, 
-    refreshDocuments 
+    deleteDocument
   } = useDocuments();
 
   useEffect(() => {

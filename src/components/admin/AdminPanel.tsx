@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Shield, Database, Activity, Loader2, RefreshCw, Calendar, Mail, MoreHorizontal, BarChart3 } from 'lucide-react';
+import { Users, Shield, Database, Activity, RefreshCw, Calendar, Mail, MoreHorizontal, BarChart3 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import UserSearchFilter from './UserSearchFilter';
 import DataExport from './DataExport';
@@ -15,19 +15,19 @@ import VisualAnalytics from './VisualAnalytics';
 
 interface UserProfile {
   id: string;
-  email: string;
-  full_name: string;
+  email: string | null;
+  full_name: string | null;
   created_at: string;
 }
 
 interface SubscriberInfo {
   email: string;
   subscribed: boolean;
-  subscription_tier: string;
-  subscription_end: string;
+  subscription_tier: string | null;
+  subscription_end: string | null;
   is_admin: boolean;
   created_at: string;
-  stripe_customer_id: string;
+  stripe_customer_id: string | null;
 }
 
 const AdminPanel: React.FC = () => {

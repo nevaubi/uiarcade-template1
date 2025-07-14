@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, X, Send, Loader2, Bot } from 'lucide-react';
+import { X, Send, Loader2, Bot } from 'lucide-react';
 import { useChatbotStatus } from '@/hooks/useChatbotStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useRateLimit } from '@/hooks/useRateLimit';
@@ -23,7 +23,7 @@ const ChatWidget = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { status, loading } = useChatbotStatus();
-  const { handleRateLimitResponse, isRateLimited, timeUntilReset } = useRateLimit();
+  const { isRateLimited, timeUntilReset } = useRateLimit();
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,14 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   FileText, 
   Trash2, 
-  AlertCircle,
-  CheckCircle,
   Loader2,
-  FileIcon,
   Eye,
   File
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface DocumentInfo {
@@ -23,7 +20,7 @@ interface DocumentInfo {
   total_chunks: number;
   total_words: number;
   created_at: string;
-  created_by?: string;
+  created_by: string | null;
 }
 
 interface DocumentManagerProps {

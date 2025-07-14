@@ -1,26 +1,26 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend } from '@/components/ui/chart';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { TrendingUp, TrendingDown, Users, Activity, DollarSign } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UserProfile {
   id: string;
-  email: string;
-  full_name: string;
+  email: string | null;
+  full_name: string | null;
   created_at: string;
 }
 
 interface SubscriberInfo {
   email: string;
   subscribed: boolean;
-  subscription_tier: string;
-  subscription_end: string;
+  subscription_tier: string | null;
+  subscription_end: string | null;
   is_admin: boolean;
   created_at: string;
-  stripe_customer_id: string;
+  stripe_customer_id: string | null;
 }
 
 interface VisualAnalyticsProps {
@@ -109,7 +109,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           month: isMobile ? 'short' : 'short', 
           year: isMobile ? '2-digit' : 'numeric' 
         });
-        const revenue = tierPricing[sub.subscription_tier] || 0;
+        const revenue = tierPricing[sub.subscription_tier!] || 0;
         acc[month] = (acc[month] || 0) + revenue;
         return acc;
       }, {} as Record<string, number>);
