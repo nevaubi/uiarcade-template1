@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,7 +52,36 @@ const ChatbotPanel = () => {
   const testScrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Use the existing useChatbotConfig hook
-  const { config, loading: configLoading, updating, updateConfig } = useChatbotConfig();
+  const { config, loading: configLoading, updateConfig } = useChatbotConfig();
+
+  // Local state for form inputs to prevent auto-save
+  const [localConfig, setLocalConfig] = useState<typeof config>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize local config when config loads
+  useEffect(() => {
+    if (config && !localConfig) {
+      setLocalConfig(config);
+    }
+  }, [config, localConfig]);
+
+  // Track if there are unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    if (!config || !localConfig) return false;
+    
+    return (
+      config.chatbot_name !== localConfig.chatbot_name ||
+      config.description !== localConfig.description ||
+      config.personality !== localConfig.personality ||
+      config.role !== localConfig.role ||
+      config.custom_instructions !== localConfig.custom_instructions ||
+      config.response_style !== localConfig.response_style ||
+      config.max_response_length !== localConfig.max_response_length ||
+      config.creativity_level !== localConfig.creativity_level ||
+      config.include_citations !== localConfig.include_citations ||
+      config.fallback_response !== localConfig.fallback_response
+    );
+  }, [config, localConfig]);
 
   // Move useDocuments hook here - single source of truth
   const { 
@@ -98,12 +127,6 @@ const ChatbotPanel = () => {
 
     fetchData();
   }, [documents]);
-
-  const handleConfigUpdate = async (field: string, value: any) => {
-    if (config) {
-      await updateConfig({ [field]: value });
-    }
-  };
 
   // Auto-scroll test chat to bottom when new messages are added
   useEffect(() => {
@@ -197,11 +220,41 @@ const ChatbotPanel = () => {
   };
 
   const handleSaveSettings = async () => {
-    if (!config) return;
+    if (!localConfig || !config || !hasUnsavedChanges) return;
     
-    // The config is already being updated in real-time through handleConfigUpdate
-    // This button can be used to provide user feedback or trigger a manual save
-    console.log('Settings saved successfully');
+    setIsSaving(true);
+    
+    try {
+      // Batch save all changes at once
+      const updates = {
+        chatbot_name: localConfig.chatbot_name,
+        description: localConfig.description,
+        personality: localConfig.personality,
+        role: localConfig.role,
+        custom_instructions: localConfig.custom_instructions,
+        response_style: localConfig.response_style,
+        max_response_length: localConfig.max_response_length,
+        creativity_level: localConfig.creativity_level,
+        include_citations: localConfig.include_citations,
+        fallback_response: localConfig.fallback_response,
+      };
+
+      await updateConfig(updates);
+      
+      // Reset local config to match saved config
+      setLocalConfig(config);
+      
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Helper function to update local config
+  const updateLocalConfig = (field: string, value: any) => {
+    if (!localConfig) return;
+    setLocalConfig(prev => prev ? { ...prev, [field]: value } : null);
   };
 
   return (
@@ -431,8 +484,8 @@ const ChatbotPanel = () => {
                   <Input 
                     id="chatbot-name" 
                     placeholder="e.g., Support Assistant" 
-                    value={config?.chatbot_name || ''}
-                    onChange={(e) => handleConfigUpdate('chatbot_name', e.target.value)}
+                    value={localConfig?.chatbot_name || ''}
+                    onChange={(e) => updateLocalConfig('chatbot_name', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -440,8 +493,8 @@ const ChatbotPanel = () => {
                   <Input 
                     id="description" 
                     placeholder="Brief description of your chatbot" 
-                    value={config?.description || ''}
-                    onChange={(e) => handleConfigUpdate('description', e.target.value)}
+                    value={localConfig?.description || ''}
+                    onChange={(e) => updateLocalConfig('description', e.target.value)}
                   />
                 </div>
               </div>
@@ -461,8 +514,8 @@ const ChatbotPanel = () => {
                 <div className="space-y-2">
                   <Label htmlFor="personality">Personality</Label>
                   <Select 
-                    value={config?.personality || ''}
-                    onValueChange={(value) => handleConfigUpdate('personality', value)}
+                    value={localConfig?.personality || ''}
+                    onValueChange={(value) => updateLocalConfig('personality', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select personality" />
@@ -480,8 +533,8 @@ const ChatbotPanel = () => {
                   <Input 
                     id="role" 
                     placeholder="e.g., Customer Support Specialist" 
-                    value={config?.role || ''}
-                    onChange={(e) => handleConfigUpdate('role', e.target.value)}
+                    value={localConfig?.role || ''}
+                    onChange={(e) => updateLocalConfig('role', e.target.value)}
                   />
                 </div>
               </div>
@@ -492,8 +545,8 @@ const ChatbotPanel = () => {
                   id="custom-instructions" 
                   placeholder="Add specific instructions for your chatbot..." 
                   className="min-h-[100px]"
-                  value={config?.custom_instructions || ''}
-                  onChange={(e) => handleConfigUpdate('custom_instructions', e.target.value)}
+                  value={localConfig?.custom_instructions || ''}
+                  onChange={(e) => updateLocalConfig('custom_instructions', e.target.value)}
                 />
               </div>
             </CardContent>
@@ -512,8 +565,8 @@ const ChatbotPanel = () => {
                 <div className="space-y-2">
                   <Label htmlFor="response-style">Response Style</Label>
                   <Select 
-                    value={config?.response_style || ''}
-                    onValueChange={(value) => handleConfigUpdate('response_style', value)}
+                    value={localConfig?.response_style || ''}
+                    onValueChange={(value) => updateLocalConfig('response_style', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select style" />
@@ -529,8 +582,8 @@ const ChatbotPanel = () => {
                 <div className="space-y-2">
                   <Label htmlFor="max-length">Max Response Length</Label>
                   <Select 
-                    value={config?.max_response_length || ''}
-                    onValueChange={(value) => handleConfigUpdate('max_response_length', value)}
+                    value={localConfig?.max_response_length || ''}
+                    onValueChange={(value) => updateLocalConfig('max_response_length', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select length" />
@@ -550,14 +603,14 @@ const ChatbotPanel = () => {
                 <div className="flex items-center gap-4">
                   <Slider 
                     id="creativity"
-                    value={[config?.creativity_level || 30]}
-                    onValueChange={(value) => handleConfigUpdate('creativity_level', value[0])}
+                    value={[localConfig?.creativity_level || 30]}
+                    onValueChange={(value) => updateLocalConfig('creativity_level', value[0])}
                     max={100}
                     step={10}
                     className="flex-1"
                   />
                   <span className="text-sm text-gray-600 w-12">
-                    {config?.creativity_level || 30}%
+                    {localConfig?.creativity_level || 30}%
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">
@@ -574,8 +627,8 @@ const ChatbotPanel = () => {
                 </div>
                 <Switch 
                   id="citations"
-                  checked={config?.include_citations || false}
-                  onCheckedChange={(checked) => handleConfigUpdate('include_citations', checked)}
+                  checked={localConfig?.include_citations || false}
+                  onCheckedChange={(checked) => updateLocalConfig('include_citations', checked)}
                 />
               </div>
 
@@ -585,21 +638,28 @@ const ChatbotPanel = () => {
                   id="fallback-response" 
                   placeholder="What should the chatbot say when it can't answer?" 
                   className="min-h-[80px]"
-                  value={config?.fallback_response || ''}
-                  onChange={(e) => handleConfigUpdate('fallback_response', e.target.value)}
+                  value={localConfig?.fallback_response || ''}
+                  onChange={(e) => updateLocalConfig('fallback_response', e.target.value)}
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Save Settings Button */}
+          {hasUnsavedChanges && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-amber-800 font-medium">You have unsaved changes</p>
+              <p className="text-xs text-amber-600">Click "Save Settings" to apply your changes</p>
+            </div>
+          )}
           <div className="flex justify-end">
             <Button 
               size="lg" 
               onClick={handleSaveSettings}
-              disabled={updating}
+              disabled={!hasUnsavedChanges || isSaving}
+              className={hasUnsavedChanges ? 'bg-blue-600 hover:bg-blue-700' : ''}
             >
-              {updating ? 'Saving...' : 'Save Settings'}
+              {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Settings' : 'No Changes'}
             </Button>
           </div>
         </TabsContent>
