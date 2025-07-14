@@ -101,7 +101,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section - Navy Theme */}
-      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 relative">
+      <section className="pt-24 pb-8 sm:pb-16 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Column - Content */}
@@ -207,7 +207,7 @@ const Index = () => {
       </section>
 
       {/* Features Section - Navy Theme */}
-      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 relative">
+      <section id="features" className="py-8 sm:py-24 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 scroll-animate opacity-0 transform translate-y-8">
             <h2 className="text-3xl sm:text-5xl font-bold text-navy-900 dark:text-white mb-6">
