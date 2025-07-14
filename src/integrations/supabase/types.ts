@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author: string
+          category: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          publish_date: string | null
+          read_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          category?: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          publish_date?: string | null
+          read_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          publish_date?: string | null
+          read_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chatbot_config: {
         Row: {
           chatbot_name: string | null

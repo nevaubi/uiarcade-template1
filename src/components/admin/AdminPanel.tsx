@@ -7,13 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Shield, Database, Activity, RefreshCw, Calendar, Mail, MoreHorizontal, BarChart3 } from 'lucide-react';
+import { Users, Shield, Database, Activity, RefreshCw, Calendar, Mail, MoreHorizontal, BarChart3, PenTool } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import UserSearchFilter from './UserSearchFilter';
 import DataExport from './DataExport';
 import VisualAnalytics from './VisualAnalytics';
 import UserDetailsModal from './UserDetailsModal';
 import SuspendUserModal from './SuspendUserModal';
+import BlogManager from './BlogManager';
 
 interface UserProfile {
   id: string;
@@ -314,10 +315,14 @@ const AdminPanel: React.FC = () => {
 
       {/* Tabs for different admin sections - Moved to top */}
       <Tabs defaultValue="users" className="space-y-8">
-        <TabsList className="grid w-full max-w-md grid-cols-2 h-12">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3 h-12">
           <TabsTrigger value="users" className="flex items-center gap-2 text-base font-medium">
             <Users className="h-4 w-4" />
             User Management
+          </TabsTrigger>
+          <TabsTrigger value="blog" className="flex items-center gap-2 text-base font-medium">
+            <PenTool className="h-4 w-4" />
+            Blog Management
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2 text-base font-medium">
             <BarChart3 className="h-4 w-4" />
@@ -534,6 +539,10 @@ const AdminPanel: React.FC = () => {
 
         <TabsContent value="analytics">
           <VisualAnalytics users={users} subscribers={subscribers} loading={loading} />
+        </TabsContent>
+
+        <TabsContent value="blog">
+          <BlogManager />
         </TabsContent>
       </Tabs>
 

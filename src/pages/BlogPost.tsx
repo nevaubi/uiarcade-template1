@@ -1,69 +1,63 @@
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Clock, User, Calendar, Share2, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+
+interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string | null;
+  author: string;
+  category: string;
+  image_url: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  publish_date: string | null;
+  read_time: string | null;
+}
 
 const BlogPost = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Sample blog post data (in a real app, this would come from an API)
-  const blogPosts = {
-    "1": {
-      title: "Building SaaS Products with React and TypeScript",
-      content: `
-        <p>Building a successful SaaS product requires careful consideration of architecture, user experience, and scalability. In this comprehensive guide, we'll explore how to leverage React and TypeScript to create robust, maintainable applications that can grow with your business.</p>
+  useEffect(() => {
+    if (id) {
+      fetchBlogPost(id);
+    }
+  }, [id]);
 
-        <h2>Why React and TypeScript?</h2>
-        <p>React has become the de facto standard for building modern web applications, offering a component-based architecture that promotes reusability and maintainability. When combined with TypeScript, you get the added benefits of static type checking, better IDE support, and improved developer experience.</p>
+  const fetchBlogPost = async (postId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('id', postId)
+        .eq('is_published', true)
+        .single();
 
-        <h2>Setting Up Your Development Environment</h2>
-        <p>Start with a solid foundation by setting up your development environment properly. We recommend using Vite for fast development builds, ESLint for code quality, and Prettier for consistent formatting.</p>
-
-        <h2>Component Architecture</h2>
-        <p>Design your components with reusability in mind. Create a component library that can be shared across your application, ensuring consistency in design and behavior.</p>
-
-        <h2>State Management</h2>
-        <p>Choose the right state management solution for your needs. For most SaaS applications, React's built-in state management combined with React Query for server state works perfectly.</p>
-
-        <h2>Conclusion</h2>
-        <p>Building SaaS products with React and TypeScript provides a solid foundation for scalable, maintainable applications. Focus on creating reusable components, implementing proper state management, and maintaining high code quality standards.</p>
-      `,
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      author: "Sarah Johnson",
-      publishDate: "2025-06-20",
-      readTime: "8 min read",
-      category: "Development"
-    },
-    "2": {
-      title: "Complete Guide to Stripe Integration",
-      content: `
-        <p>Integrating payment processing into your SaaS application is crucial for monetization. Stripe provides a comprehensive platform for handling payments, subscriptions, and billing. This guide will walk you through everything you need to know.</p>
-
-        <h2>Getting Started with Stripe</h2>
-        <p>First, create a Stripe account and obtain your API keys. You'll need both publishable and secret keys for different parts of your integration.</p>
-
-        <h2>Setting Up Stripe Elements</h2>
-        <p>Stripe Elements provides pre-built UI components for collecting payment information securely. These components are PCI-compliant and handle sensitive data without it touching your servers.</p>
-
-        <h2>Implementing Subscriptions</h2>
-        <p>For SaaS applications, subscriptions are often the primary revenue model. Stripe's subscription system handles recurring billing, proration, and complex pricing scenarios.</p>
-
-        <h2>Webhooks and Security</h2>
-        <p>Implement Stripe webhooks to handle events like successful payments, failed charges, and subscription updates. Always verify webhook signatures to ensure security.</p>
-
-        <h2>Best Practices</h2>
-        <p>Follow Stripe's best practices for error handling, retry logic, and user experience. Provide clear feedback to users during the payment process.</p>
-      `,
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      author: "Mike Chen",
-      publishDate: "2025-06-18",
-      readTime: "12 min read",
-      category: "Payments"
+      if (error) throw error;
+      setPost(data);
+    } catch (error) {
+      console.error('Error fetching blog post:', error);
+      setPost(null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const post = blogPosts[id as keyof typeof blogPosts];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -128,18 +122,18 @@ const BlogPost = () => {
       <article className="pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Hero Image */}
-          <div className="relative mb-8 rounded-2xl overflow-hidden">
-            <img 
-              src={post.image} 
-              alt={post.title}
-              className="w-full h-64 sm:h-80 object-cover"
-            />
-            <div className="absolute top-6 left-6">
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                {post.category}
-              </span>
+            <div className="relative mb-8 rounded-2xl overflow-hidden">
+              <img 
+                src={post.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} 
+                alt={post.title}
+                className="w-full h-64 sm:h-80 object-cover"
+              />
+              <div className="absolute top-6 left-6">
+                <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  {post.category}
+                </span>
+              </div>
             </div>
-          </div>
 
           {/* Article Header */}
           <header className="mb-12">
@@ -153,14 +147,14 @@ const BlogPost = () => {
                   <User className="h-5 w-5 mr-2" />
                   {post.author}
                 </div>
-                <div className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  {new Date(post.publishDate).toLocaleDateString()}
-                </div>
-                <div className="flex items-center">
-                  <Clock className="h-5 w-5 mr-2" />
-                  {post.readTime}
-                </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-5 w-5 mr-2" />
+                    {new Date(post.publish_date || post.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 mr-2" />
+                    {post.read_time}
+                  </div>
               </div>
               
               <div className="flex items-center space-x-2">

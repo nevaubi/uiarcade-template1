@@ -1,62 +1,53 @@
-
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, User, ArrowRight, Calendar } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+
+interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string | null;
+  author: string;
+  category: string;
+  image_url: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  publish_date: string | null;
+  read_time: string | null;
+}
 
 const Blog = () => {
   const navigate = useNavigate();
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample blog posts data
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Building SaaS Products with React and TypeScript",
-      excerpt: "Learn how to create scalable SaaS applications using modern React patterns and TypeScript for type safety.",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      author: "Sarah Johnson",
-      publishDate: "2025-06-20",
-      readTime: "8 min read",
-      category: "Development",
-      isPublished: true
-    },
-    {
-      id: 2,
-      title: "Complete Guide to Stripe Integration",
-      excerpt: "Master payment processing with Stripe, from basic setup to advanced subscription management and webhooks.",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      author: "Mike Chen",
-      publishDate: "2025-06-18",
-      readTime: "12 min read",
-      category: "Payments",
-      isPublished: true
-    },
-    {
-      id: 3,
-      title: "Authentication Best Practices for Modern Apps",
-      excerpt: "Coming soon: Learn about implementing secure authentication flows with modern techniques and best practices.",
-      image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      author: "Alex Rivera",
-      publishDate: "Coming Soon",
-      readTime: "10 min read",
-      category: "Security",
-      isPublished: false
-    },
-    {
-      id: 4,
-      title: "Scaling Your SaaS: From MVP to Enterprise",
-      excerpt: "Coming soon: Strategic insights on growing your SaaS product and building for enterprise customers.",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      author: "Emily Watson",
-      publishDate: "Coming Soon",
-      readTime: "15 min read",
-      category: "Business",
-      isPublished: false
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('publish_date', { ascending: false });
+
+      if (error) throw error;
+      setBlogPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const handlePostClick = (post: typeof blogPosts[0]) => {
-    if (post.isPublished) {
+  const handlePostClick = (post: BlogPost) => {
+    if (post.is_published) {
       navigate(`/blog/${post.id}`);
     }
   };
@@ -112,99 +103,89 @@ const Blog = () => {
       <section className="pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {blogPosts.map((post) => (
-              <Card 
-                key={post.id} 
-                className={`group transition-all duration-500 overflow-hidden border-0 glass-morph backdrop-blur-sm ${
-                  post.isPublished 
-                    ? 'hover:shadow-2xl hover:-translate-y-2 cursor-pointer' 
-                    : 'opacity-60 cursor-not-allowed'
-                }`}
-                onClick={() => handlePostClick(post)}
-              >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={post.image} 
-                    alt={post.title}
-                    className={`w-full h-48 object-cover transition-transform duration-500 ${
-                      post.isPublished ? 'group-hover:scale-105' : 'grayscale'
-                    }`}
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className={`text-white px-3 py-1 rounded-full text-sm font-semibold ${
-                      post.isPublished 
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600' 
-                        : 'bg-slate-500'
-                    }`}>
-                      {post.category}
-                    </span>
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 4 }).map((_, index) => (
+                <Card key={index} className="group transition-all duration-500 overflow-hidden border-0 glass-morph backdrop-blur-sm">
+                  <div className="relative overflow-hidden">
+                    <div className="w-full h-48 bg-muted animate-pulse" />
                   </div>
-                  {!post.isPublished && (
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-slate-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        Coming Soon
+                  <CardHeader>
+                    <div className="h-6 bg-muted rounded animate-pulse" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="h-12 bg-muted rounded animate-pulse" />
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                    </div>
+                    <div className="h-10 bg-muted rounded animate-pulse" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : blogPosts.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground text-lg">No blog posts available yet.</p>
+              </div>
+            ) : (
+              blogPosts.map((post) => (
+                <Card 
+                  key={post.id} 
+                  className="group transition-all duration-500 overflow-hidden border-0 glass-morph backdrop-blur-sm hover:shadow-2xl hover:-translate-y-2 cursor-pointer"
+                  onClick={() => handlePostClick(post)}
+                >
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={post.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'} 
+                      alt={post.title}
+                      className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                        {post.category}
                       </span>
                     </div>
-                  )}
-                </div>
-                
-                <CardHeader>
-                  <CardTitle className={`text-xl font-semibold transition-colors duration-300 line-clamp-2 ${
-                    post.isPublished 
-                      ? 'group-hover:text-purple-600 dark:group-hover:text-purple-400' 
-                      : 'text-slate-500 dark:text-slate-400'
-                  }`}>
-                    {post.title}
-                  </CardTitle>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <p className={`line-clamp-3 ${
-                    post.isPublished 
-                      ? 'text-slate-600 dark:text-slate-300' 
-                      : 'text-slate-500 dark:text-slate-400'
-                  }`}>
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className={`flex items-center justify-between text-sm ${
-                    post.isPublished 
-                      ? 'text-slate-500 dark:text-slate-400' 
-                      : 'text-slate-400 dark:text-slate-500'
-                  }`}>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-1" />
-                        {post.author}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {post.isPublished ? new Date(post.publishDate).toLocaleDateString() : post.publishDate}
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {post.readTime}
-                    </div>
                   </div>
                   
-                  <Button 
-                    variant="ghost" 
-                    className={`w-full transition-colors ${
-                      post.isPublished 
-                        ? 'group-hover:bg-purple-50 dark:group-hover:bg-purple-950/20' 
-                        : 'cursor-not-allowed opacity-60'
-                    }`}
-                    disabled={!post.isPublished}
-                  >
-                    {post.isPublished ? 'Read More' : 'Coming Soon'}
-                    {post.isPublished && (
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold transition-colors duration-300 line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                      {post.title}
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <p className="line-clamp-3 text-slate-600 dark:text-slate-300">
+                      {post.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-1" />
+                          {post.author}
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {new Date(post.publish_date || post.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {post.read_time}
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="w-full transition-colors group-hover:bg-purple-50 dark:group-hover:bg-purple-950/20"
+                    >
+                      Read More
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>
