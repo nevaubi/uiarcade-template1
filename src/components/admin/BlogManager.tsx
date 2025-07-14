@@ -9,9 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { PenTool, Plus, Eye, Trash2, Calendar, User } from 'lucide-react';
+import { PenTool, Plus, Eye, Trash2, Calendar, User, Clock, Search } from 'lucide-react';
 
 interface BlogPost {
   id: string;
@@ -26,6 +27,9 @@ interface BlogPost {
   updated_at: string;
   publish_date: string | null;
   read_time: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
 }
 
 const BlogManager: React.FC = () => {
@@ -41,7 +45,12 @@ const BlogManager: React.FC = () => {
     category: 'General',
     image_url: '',
     is_published: false,
-    read_time: '5 min read'
+    read_time: '5 min read',
+    publish_date: '',
+    schedule_for_later: false,
+    meta_title: '',
+    meta_description: '',
+    canonical_url: ''
   });
 
   const { toast } = useToast();
@@ -81,21 +90,66 @@ const BlogManager: React.FC = () => {
     }
 
     try {
+      // Prepare the data
+      const saveData = {
+        title: formData.title,
+        content: formData.content,
+        excerpt: formData.excerpt,
+        author: formData.author,
+        category: formData.category,
+        image_url: formData.image_url || null,
+        read_time: formData.read_time,
+        meta_title: formData.meta_title || null,
+        meta_description: formData.meta_description || null,
+        canonical_url: formData.canonical_url || null
+      };
+
+      // Handle scheduling logic
+      if (formData.schedule_for_later && formData.publish_date) {
+        const scheduledDate = new Date(formData.publish_date);
+        const now = new Date();
+        
+        if (scheduledDate <= now) {
+          toast({
+            title: "Error",
+            description: "Scheduled date must be in the future",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        Object.assign(saveData, {
+          is_published: false,
+          publish_date: scheduledDate.toISOString()
+        });
+      } else {
+        Object.assign(saveData, {
+          is_published: formData.is_published,
+          publish_date: formData.is_published ? new Date().toISOString() : null
+        });
+      }
+
       if (editingPost) {
         const { error } = await supabase
           .from('blog_posts')
-          .update(formData)
+          .update(saveData)
           .eq('id', editingPost.id);
         
         if (error) throw error;
-        toast({ title: "Success", description: "Post updated successfully" });
+        toast({ 
+          title: "Success", 
+          description: formData.schedule_for_later ? "Post scheduled successfully" : "Post updated successfully" 
+        });
       } else {
         const { error } = await supabase
           .from('blog_posts')
-          .insert([formData]);
+          .insert([saveData]);
         
         if (error) throw error;
-        toast({ title: "Success", description: "Post created successfully" });
+        toast({ 
+          title: "Success", 
+          description: formData.schedule_for_later ? "Post scheduled successfully" : "Post created successfully" 
+        });
       }
 
       setIsDialogOpen(false);
@@ -133,6 +187,9 @@ const BlogManager: React.FC = () => {
 
   const handleEdit = (post: BlogPost) => {
     setEditingPost(post);
+    const publishDate = post.publish_date ? new Date(post.publish_date) : null;
+    const isScheduled = publishDate && publishDate > new Date() && !post.is_published;
+    
     setFormData({
       title: post.title,
       content: post.content,
@@ -141,7 +198,12 @@ const BlogManager: React.FC = () => {
       category: post.category,
       image_url: post.image_url || '',
       is_published: post.is_published,
-      read_time: post.read_time || '5 min read'
+      read_time: post.read_time || '5 min read',
+      publish_date: publishDate ? publishDate.toISOString().slice(0, 16) : '',
+      schedule_for_later: isScheduled || false,
+      meta_title: post.meta_title || '',
+      meta_description: post.meta_description || '',
+      canonical_url: post.canonical_url || ''
     });
     setIsDialogOpen(true);
   };
@@ -156,8 +218,24 @@ const BlogManager: React.FC = () => {
       category: 'General',
       image_url: '',
       is_published: false,
-      read_time: '5 min read'
+      read_time: '5 min read',
+      publish_date: '',
+      schedule_for_later: false,
+      meta_title: '',
+      meta_description: '',
+      canonical_url: ''
     });
+  };
+
+  const getPostStatus = (post: BlogPost) => {
+    if (post.is_published) return { status: 'Published', variant: 'default' as const };
+    
+    const publishDate = post.publish_date ? new Date(post.publish_date) : null;
+    if (publishDate && publishDate > new Date()) {
+      return { status: 'Scheduled', variant: 'secondary' as const };
+    }
+    
+    return { status: 'Draft', variant: 'secondary' as const };
   };
 
   const handleNewPost = () => {
@@ -276,13 +354,91 @@ const BlogManager: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_published"
-                  checked={formData.is_published}
-                  onCheckedChange={(checked) => setFormData({...formData, is_published: checked})}
-                />
-                <Label htmlFor="is_published">Publish immediately</Label>
+              <Separator />
+              
+              {/* SEO Section */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Search className="h-4 w-4" />
+                  <Label className="text-base font-medium">SEO Settings</Label>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="meta_title">Meta Title (for SEO)</Label>
+                    <Input
+                      id="meta_title"
+                      value={formData.meta_title}
+                      onChange={(e) => setFormData({...formData, meta_title: e.target.value})}
+                      placeholder="Leave empty to use post title"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="meta_description">Meta Description</Label>
+                    <Textarea
+                      id="meta_description"
+                      value={formData.meta_description}
+                      onChange={(e) => setFormData({...formData, meta_description: e.target.value})}
+                      placeholder="Brief description for search engines (150-160 characters)"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="canonical_url">Canonical URL (optional)</Label>
+                    <Input
+                      id="canonical_url"
+                      value={formData.canonical_url}
+                      onChange={(e) => setFormData({...formData, canonical_url: e.target.value})}
+                      placeholder="https://yourdomain.com/blog/post-slug"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Publishing Options */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Publishing Options</Label>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="schedule_for_later"
+                    checked={formData.schedule_for_later}
+                    onCheckedChange={(checked) => {
+                      setFormData({
+                        ...formData, 
+                        schedule_for_later: checked,
+                        is_published: checked ? false : formData.is_published
+                      });
+                    }}
+                  />
+                  <Label htmlFor="schedule_for_later">Schedule for later</Label>
+                </div>
+
+                {formData.schedule_for_later ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="publish_date">Schedule Date & Time</Label>
+                    <Input
+                      id="publish_date"
+                      type="datetime-local"
+                      value={formData.publish_date}
+                      onChange={(e) => setFormData({...formData, publish_date: e.target.value})}
+                      min={new Date().toISOString().slice(0, 16)}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_published"
+                      checked={formData.is_published}
+                      onCheckedChange={(checked) => setFormData({...formData, is_published: checked})}
+                    />
+                    <Label htmlFor="is_published">Publish immediately</Label>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -311,7 +467,7 @@ const BlogManager: React.FC = () => {
                 <TableHead>Author</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>Publish Date</TableHead>
                 <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -336,15 +492,31 @@ const BlogManager: React.FC = () => {
                     <Badge variant="secondary">{post.category}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={post.is_published ? "default" : "secondary"}>
-                      {post.is_published ? "Published" : "Draft"}
-                    </Badge>
+                    {(() => {
+                      const { status, variant } = getPostStatus(post);
+                      return (
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={variant}>{status}</Badge>
+                          {status === 'Scheduled' && (
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                          )}
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-3 w-3 mr-1" />
-                      {new Date(post.created_at).toLocaleDateString()}
+                      {post.publish_date 
+                        ? new Date(post.publish_date).toLocaleDateString()
+                        : new Date(post.created_at).toLocaleDateString()
+                      }
                     </div>
+                    {post.publish_date && new Date(post.publish_date) > new Date() && (
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(post.publish_date).toLocaleTimeString()}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

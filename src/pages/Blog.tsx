@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, User, ArrowRight, Calendar } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 interface BlogPost {
   id: string;
@@ -18,6 +19,9 @@ interface BlogPost {
   updated_at: string;
   publish_date: string | null;
   read_time: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
 }
 
 const Blog = () => {
@@ -35,6 +39,7 @@ const Blog = () => {
         .from('blog_posts')
         .select('*')
         .eq('is_published', true)
+        .lte('publish_date', new Date().toISOString()) // Only show posts where publish_date <= now
         .order('publish_date', { ascending: false });
 
       if (error) throw error;
@@ -54,6 +59,12 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <SEO 
+        title="Blog - Template1"
+        description="Insights, tutorials, and best practices for building amazing SaaS products. Learn from our experience and accelerate your development journey."
+        canonical={typeof window !== 'undefined' ? `${window.location.origin}/blog` : undefined}
+      />
+      
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

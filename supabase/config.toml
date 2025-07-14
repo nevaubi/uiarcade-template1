@@ -36,6 +36,12 @@ verify_jwt = false
 
 [functions.vector-embed]
 
+[functions.publish-scheduled-posts]
+verify_jwt = false
+
+[functions.generate-sitemap]
+verify_jwt = false
+
 [storage]
 enabled = true
 port = 54324

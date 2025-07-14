@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Clock, User, Calendar, Share2, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 interface BlogPost {
   id: string;
@@ -18,6 +19,9 @@ interface BlogPost {
   updated_at: string;
   publish_date: string | null;
   read_time: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
 }
 
 const BlogPost = () => {
@@ -39,6 +43,7 @@ const BlogPost = () => {
         .select('*')
         .eq('id', postId)
         .eq('is_published', true)
+        .lte('publish_date', new Date().toISOString()) // Only show if publish_date <= now
         .single();
 
       if (error) throw error;
@@ -76,6 +81,21 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <SEO 
+        title={post.meta_title || post.title}
+        description={post.meta_description || post.excerpt || `Read ${post.title} by ${post.author}`}
+        canonical={post.canonical_url || (typeof window !== 'undefined' ? `${window.location.origin}/blog/${post.id}` : undefined)}
+        image={post.image_url || undefined}
+        type="article"
+        article={{
+          author: post.author,
+          publishedTime: post.publish_date || post.created_at,
+          modifiedTime: post.updated_at,
+          section: post.category,
+          tags: [post.category]
+        }}
+      />
+      
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
