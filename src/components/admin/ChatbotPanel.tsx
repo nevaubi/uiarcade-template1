@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,9 @@ import {
   Send,
   Power,
   PowerOff,
-  Loader2
+  Loader2,
+  Trash2,
+  User
 } from 'lucide-react';
 import DocumentUpload from './DocumentUpload';
 import DocumentManager from './DocumentManager';
@@ -32,16 +35,23 @@ interface ChatbotStats {
   lastActivity: string;
 }
 
+interface Message {
+  id: string;
+  content: string;
+  isBot: boolean;
+  timestamp: Date;
+}
+
 const ChatbotPanel = () => {
   const [activeTab, setActiveTab] = useState('my-chatbot');
   const [testMessage, setTestMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<ChatbotStats | null>(null);
   
-  // Test message state
-  const [testResponse, setTestResponse] = useState('');
+  // Test conversation state
+  const [testMessages, setTestMessages] = useState<Message[]>([]);
   const [testLoading, setTestLoading] = useState(false);
-  const [testError, setTestError] = useState('');
+  const testScrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Use the existing useChatbotConfig hook
   const { config, loading: configLoading, updating, updateConfig } = useChatbotConfig();
@@ -92,38 +102,88 @@ const ChatbotPanel = () => {
     }
   };
 
+  // Auto-scroll test chat to bottom when new messages are added
+  useEffect(() => {
+    if (testScrollAreaRef.current) {
+      const scrollContainer = testScrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  }, [testMessages]);
+
   const handleTestMessage = async () => {
     if (!testMessage.trim() || testLoading) return;
-    
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: testMessage.trim(),
+      isBot: false,
+      timestamp: new Date(),
+    };
+
+    setTestMessages(prev => [...prev, userMessage]);
+    setTestMessage('');
     setTestLoading(true);
-    setTestError('');
-    setTestResponse('');
     
     try {
+      // Pass last 20 messages as conversation history (same as normal chat)
+      const conversationHistory = testMessages.slice(-20).map(msg => ({
+        role: msg.isBot ? 'assistant' as const : 'user' as const,
+        content: msg.content
+      }));
+
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
         body: { 
-          message: testMessage.trim(),
-          conversationHistory: [] // Fresh test with no history
+          message: userMessage.content,
+          conversationHistory
         },
       });
 
       if (error) {
-        setTestError(data?.error || error.message || 'Failed to get response from chatbot');
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: data?.error || error.message || 'Failed to get response from chatbot',
+          isBot: true,
+          timestamp: new Date(),
+        };
+        setTestMessages(prev => [...prev, errorMessage]);
         return;
       }
 
       if (data?.response) {
-        setTestResponse(data.response);
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: data.response,
+          isBot: true,
+          timestamp: new Date(),
+        };
+        setTestMessages(prev => [...prev, botMessage]);
       } else {
-        setTestError('No response received from chatbot');
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: 'No response received from chatbot',
+          isBot: true,
+          timestamp: new Date(),
+        };
+        setTestMessages(prev => [...prev, errorMessage]);
       }
     } catch (error) {
       console.error('Test message error:', error);
-      setTestError('Network error. Please check your connection and try again.');
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'Network error. Please check your connection and try again.',
+        isBot: true,
+        timestamp: new Date(),
+      };
+      setTestMessages(prev => [...prev, errorMessage]);
     } finally {
       setTestLoading(false);
-      setTestMessage('');
     }
+  };
+
+  const clearTestHistory = () => {
+    setTestMessages([]);
   };
 
   const toggleChatbotStatus = async () => {
@@ -226,26 +286,106 @@ const ChatbotPanel = () => {
           {/* Test Chatbot */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Test Your Chatbot
-              </CardTitle>
-              <CardDescription>
-                Send a test message to see how your chatbot responds
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Test Your Chatbot
+                    {testMessages.length > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                        {testMessages.length} messages
+                      </span>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    Test your chatbot with conversation history (last 20 messages context)
+                  </CardDescription>
+                </div>
+                {testMessages.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={clearTestHistory}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Chat History Display */}
+              {testMessages.length > 0 && (
+                <div className="border rounded-lg overflow-hidden bg-gray-50/50">
+                  <div className="bg-gray-100 px-3 py-2 border-b">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Bot className="h-4 w-4" />
+                      <span className="font-medium">Test Session</span>
+                      <span className="text-xs">• {testMessages.length} messages</span>
+                    </div>
+                  </div>
+                  <ScrollArea ref={testScrollAreaRef} className="h-64 px-3 py-2">
+                    <div className="space-y-3">
+                      {testMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
+                        >
+                          <div className="flex items-start gap-2 max-w-[80%]">
+                            {message.isBot && (
+                              <Bot className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
+                            )}
+                            <div className="flex flex-col">
+                              <div
+                                className={`px-3 py-2 rounded-lg text-sm break-words ${
+                                  message.isBot
+                                    ? 'bg-white text-gray-800 border border-gray-200 shadow-sm'
+                                    : 'bg-blue-500 text-white'
+                                }`}
+                              >
+                                {message.content}
+                              </div>
+                              <span className="text-xs text-gray-400 mt-1 px-1">
+                                {message.timestamp.toLocaleTimeString()}
+                              </span>
+                            </div>
+                            {!message.isBot && (
+                              <User className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {testLoading && (
+                        <div className="flex justify-start">
+                          <div className="flex items-start gap-2">
+                            <Bot className="h-5 w-5 text-blue-500 mt-1" />
+                            <div className="bg-white text-gray-800 border border-gray-200 shadow-sm px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <span>Thinking...</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+
+              {/* Message Input */}
               <div className="flex gap-2">
                 <Input 
                   placeholder="Type a test message..." 
                   value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleTestMessage()}
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleTestMessage()}
                   disabled={testLoading}
+                  className="flex-1"
                 />
                 <Button 
                   onClick={handleTestMessage} 
                   disabled={!testMessage.trim() || testLoading}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   {testLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -254,23 +394,14 @@ const ChatbotPanel = () => {
                   )}
                 </Button>
               </div>
-              
-              {/* Test Response Display */}
-              {(testResponse || testError) && (
-                <div className="mt-4 p-4 rounded-lg border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Bot className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm font-medium">Chatbot Response:</span>
-                  </div>
-                  {testError ? (
-                    <div className="text-red-600 text-sm bg-red-50 p-3 rounded border">
-                      {testError}
-                    </div>
-                  ) : (
-                    <div className="text-gray-700 text-sm bg-gray-50 p-3 rounded border">
-                      {testResponse}
-                    </div>
-                  )}
+
+              {testMessages.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <Bot className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-sm">Start a conversation to test your chatbot</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    This will use the same functionality as your live chatbot
+                  </p>
                 </div>
               )}
             </CardContent>
