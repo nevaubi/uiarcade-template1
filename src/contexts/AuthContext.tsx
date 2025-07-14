@@ -47,18 +47,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Handle successful sign in with post-auth callback
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, checking for post-auth callback...');
+          console.log('User signed in, checking for post-auth callback...', { postAuthCallback });
           
-          // Use a small delay to ensure state is properly updated
-          setTimeout(() => {
+          // Check immediately, then again after a small delay for race condition safety
+          const checkAndExecuteCallback = () => {
             if (postAuthCallback) {
               console.log('Executing post-auth callback:', postAuthCallback);
               handlePostAuthCheckout(postAuthCallback, session); // Pass fresh session
               setPostAuthCallback(null); // Clear the callback after use
-            } else if (window.location.pathname === '/auth' || window.location.pathname === '/') {
-              window.location.href = '/dashboard';
+              return true;
             }
-          }, 100);
+            return false;
+          };
+          
+          // First immediate check
+          const callbackExecuted = checkAndExecuteCallback();
+          
+          // If no callback found, check again after a small delay (for race condition safety)
+          if (!callbackExecuted) {
+            setTimeout(() => {
+              console.log('Delayed check for post-auth callback...', { postAuthCallback });
+              const delayedCallbackExecuted = checkAndExecuteCallback();
+              
+              // If still no callback, check URL parameters as fallback
+              if (!delayedCallbackExecuted) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const planParam = urlParams.get('plan');
+                const billingParam = urlParams.get('billing');
+                
+                if (planParam && billingParam && window.location.pathname === '/auth') {
+                  console.log('Fallback: Found plan parameters in URL, executing checkout directly');
+                  handlePostAuthCheckout({ plan: planParam, billing: billingParam }, session);
+                } else if (window.location.pathname === '/auth' || window.location.pathname === '/') {
+                  console.log('No callback found, redirecting to dashboard');
+                  window.location.href = '/dashboard';
+                }
+              }
+            }, 100);
+          }
         }
 
         // Handle sign out
@@ -80,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [postAuthCallback]); // Add postAuthCallback as dependency so listener sees updated values
 
   const handlePostAuthCheckout = async (callback: PostAuthCallback, freshSession: Session) => {
     try {

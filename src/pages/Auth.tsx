@@ -38,9 +38,10 @@ const Auth = () => {
     }
   }, [user, navigate, planParam, billingParam]);
 
-  // Set up post-auth callback if plan parameters exist
+  // Set up post-auth callback IMMEDIATELY when component mounts (synchronous)
   useEffect(() => {
     if (planParam && billingParam && setPostAuthCallback) {
+      console.log('Auth.tsx: Setting post-auth callback immediately:', { plan: planParam, billing: billingParam });
       setPostAuthCallback({
         plan: planParam,
         billing: billingParam
