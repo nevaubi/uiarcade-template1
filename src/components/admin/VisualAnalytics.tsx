@@ -1,10 +1,11 @@
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend } from '@/components/ui/chart';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { TrendingUp, TrendingDown, Users, Activity, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Activity, DollarSign, AlertCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface UserProfile {
   id: string;
@@ -23,101 +24,204 @@ interface SubscriberInfo {
   stripe_customer_id: string | null;
 }
 
+// Pricing configuration - centralized and easy to update
+const TIER_PRICING = {
+  'Starter': 9,
+  'Professional': 29,
+  'Enterprise': 99,
+  'Basic': 9.99, // Legacy tier
+  'Pro': 19.99, // Legacy tier
+  'Premium': 29.99 // Legacy tier
+} as const;
+
 interface VisualAnalyticsProps {
   users: UserProfile[];
   subscribers: SubscriberInfo[];
   loading: boolean;
 }
 
+// Utility functions for date processing
+const formatMonthKey = (date: Date, isMobile: boolean): string => {
+  return date.toLocaleString('default', { 
+    month: 'short', 
+    year: isMobile ? '2-digit' : 'numeric' 
+  });
+};
+
+const createDateFromMonthKey = (monthKey: string): Date => {
+  try {
+    // Handle both "Jan 2024" and "Jan 24" formats
+    const parts = monthKey.split(' ');
+    if (parts.length !== 2) return new Date();
+    
+    const month = parts[0];
+    let year = parseInt(parts[1]);
+    
+    // Convert 2-digit year to 4-digit
+    if (year < 100) {
+      year += 2000;
+    }
+    
+    return new Date(year, new Date(`${month} 1, ${year}`).getMonth(), 1);
+  } catch {
+    return new Date();
+  }
+};
+
+// Empty state component
+const EmptyStateCard: React.FC<{ title: string; description: string }> = memo(({ title, description }) => (
+  <div className="flex flex-col items-center justify-center h-64 text-center space-y-3">
+    <AlertCircle className="h-12 w-12 text-muted-foreground" />
+    <div className="space-y-2">
+      <h3 className="font-semibold text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-sm">{description}</p>
+    </div>
+  </div>
+));
+
 const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, loading }) => {
   const isMobile = useIsMobile();
 
-  // Process data for User Registration Timeline
+  // Process data for User Registration Timeline with improved date handling
   const userGrowthData = useMemo(() => {
-    const monthlyData = users.reduce((acc, user) => {
-      const month = new Date(user.created_at).toLocaleString('default', { 
-        month: isMobile ? 'short' : 'short', 
-        year: isMobile ? '2-digit' : 'numeric' 
-      });
-      acc[month] = (acc[month] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    try {
+      if (!users?.length) return [];
 
-    return Object.entries(monthlyData)
-      .map(([month, count]) => ({ month, users: count }))
-      .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
-      .slice(-6); // Last 6 months
+      const monthlyData = users.reduce((acc, user) => {
+        try {
+          const date = new Date(user.created_at);
+          if (isNaN(date.getTime())) return acc; // Skip invalid dates
+          
+          const monthKey = formatMonthKey(date, isMobile);
+          acc[monthKey] = (acc[monthKey] || 0) + 1;
+          return acc;
+        } catch {
+          return acc; // Skip invalid entries
+        }
+      }, {} as Record<string, number>);
+
+      const sortedData = Object.entries(monthlyData)
+        .map(([month, count]) => ({ 
+          month, 
+          users: count,
+          date: createDateFromMonthKey(month)
+        }))
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .slice(-6) // Last 6 months
+        .map(({ month, users }) => ({ month, users }));
+
+      return sortedData;
+    } catch (error) {
+      console.error('Error processing user growth data:', error);
+      return [];
+    }
   }, [users, isMobile]);
 
-  // Process data for Subscription Distribution
+  // Process data for Subscription Distribution with better handling
   const subscriptionData = useMemo(() => {
-    const tierCounts = subscribers.reduce((acc, sub) => {
-      const tier = sub.subscription_tier || 'Free';
-      acc[tier] = (acc[tier] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    try {
+      if (!subscribers?.length) return [];
 
-    const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-    const total = Object.values(tierCounts).reduce((sum, count) => sum + count, 0);
-    
-    return Object.entries(tierCounts).map(([tier, count], index) => ({
-      name: tier,
-      value: count,
-      fill: colors[index % colors.length],
-      percentage: Math.round((count / total) * 100),
-      label: isMobile ? `${tier} (${count})` : `${tier} (${count} users - ${Math.round((count / total) * 100)}%)`
-    }));
-  }, [subscribers, isMobile]);
-
-  // Process data for Admin vs Users
-  const roleData = useMemo(() => {
-    const adminCount = subscribers.filter(sub => sub.is_admin).length;
-    const userCount = users.length - adminCount;
-    const total = adminCount + userCount;
-
-    return [
-      { 
-        name: 'Users', 
-        value: userCount, 
-        fill: 'hsl(var(--chart-1))',
-        percentage: Math.round((userCount / total) * 100),
-        label: isMobile ? `Users (${userCount})` : `Regular Users (${userCount} users - ${Math.round((userCount / total) * 100)}%)`
-      },
-      { 
-        name: 'Admins', 
-        value: adminCount, 
-        fill: 'hsl(var(--chart-2))',
-        percentage: Math.round((adminCount / total) * 100),
-        label: isMobile ? `Admins (${adminCount})` : `Administrators (${adminCount} users - ${Math.round((adminCount / total) * 100)}%)`
-      }
-    ];
-  }, [users, subscribers, isMobile]);
-
-  // Process data for Monthly Revenue (estimated based on subscription tiers)
-  const revenueData = useMemo(() => {
-    const tierPricing = {
-      'Basic': 9.99,
-      'Pro': 19.99,
-      'Enterprise': 49.99,
-      'Premium': 29.99
-    } as Record<string, number>;
-
-    const monthlyRevenue = subscribers
-      .filter(sub => sub.subscribed && sub.subscription_tier)
-      .reduce((acc, sub) => {
-        const month = new Date(sub.created_at).toLocaleString('default', { 
-          month: isMobile ? 'short' : 'short', 
-          year: isMobile ? '2-digit' : 'numeric' 
-        });
-        const revenue = tierPricing[sub.subscription_tier!] || 0;
-        acc[month] = (acc[month] || 0) + revenue;
+      const tierCounts = subscribers.reduce((acc, sub) => {
+        const tier = sub.subscription_tier || 'Free';
+        acc[tier] = (acc[tier] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
-    return Object.entries(monthlyRevenue)
-      .map(([month, revenue]) => ({ month, revenue: Math.round(revenue * 100) / 100 }))
-      .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
-      .slice(-6);
+      const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+      const total = Object.values(tierCounts).reduce((sum, count) => sum + count, 0);
+      
+      if (total === 0) return [];
+      
+      return Object.entries(tierCounts).map(([tier, count], index) => ({
+        name: tier,
+        value: count,
+        fill: colors[index % colors.length],
+        percentage: Math.round((count / total) * 100),
+        label: isMobile ? `${tier} (${count})` : `${tier} (${count} users - ${Math.round((count / total) * 100)}%)`
+      }));
+    } catch (error) {
+      console.error('Error processing subscription data:', error);
+      return [];
+    }
+  }, [subscribers, isMobile]);
+
+  // Process data for Admin vs Users with corrected logic
+  const roleData = useMemo(() => {
+    try {
+      if (!users?.length && !subscribers?.length) return [];
+
+      // Create a map of email to admin status from subscribers
+      const adminEmails = new Set(
+        subscribers?.filter(sub => sub.is_admin).map(sub => sub.email) || []
+      );
+
+      // Count users based on their profile email and admin status
+      const adminCount = users?.filter(user => user.email && adminEmails.has(user.email)).length || 0;
+      const userCount = (users?.length || 0) - adminCount;
+      const total = adminCount + userCount;
+
+      if (total === 0) return [];
+
+      return [
+        { 
+          name: 'Users', 
+          value: userCount, 
+          fill: 'hsl(var(--chart-1))',
+          percentage: Math.round((userCount / total) * 100),
+          label: isMobile ? `Users (${userCount})` : `Regular Users (${userCount} users - ${Math.round((userCount / total) * 100)}%)`
+        },
+        { 
+          name: 'Admins', 
+          value: adminCount, 
+          fill: 'hsl(var(--chart-2))',
+          percentage: Math.round((adminCount / total) * 100),
+          label: isMobile ? `Admins (${adminCount})` : `Administrators (${adminCount} users - ${Math.round((adminCount / total) * 100)}%)`
+        }
+      ];
+    } catch (error) {
+      console.error('Error processing role data:', error);
+      return [];
+    }
+  }, [users, subscribers, isMobile]);
+
+  // Process data for Monthly Revenue with fixed pricing and better error handling
+  const revenueData = useMemo(() => {
+    try {
+      if (!subscribers?.length) return [];
+
+      const activeSubscribers = subscribers.filter(sub => sub.subscribed && sub.subscription_tier);
+      if (!activeSubscribers.length) return [];
+
+      const monthlyRevenue = activeSubscribers.reduce((acc, sub) => {
+        try {
+          const date = new Date(sub.created_at);
+          if (isNaN(date.getTime())) return acc; // Skip invalid dates
+          
+          const monthKey = formatMonthKey(date, isMobile);
+          const revenue = TIER_PRICING[sub.subscription_tier as keyof typeof TIER_PRICING] || 0;
+          acc[monthKey] = (acc[monthKey] || 0) + revenue;
+          return acc;
+        } catch {
+          return acc; // Skip invalid entries
+        }
+      }, {} as Record<string, number>);
+
+      const sortedData = Object.entries(monthlyRevenue)
+        .map(([month, revenue]) => ({ 
+          month, 
+          revenue: Math.round(revenue * 100) / 100,
+          date: createDateFromMonthKey(month)
+        }))
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .slice(-6) // Last 6 months
+        .map(({ month, revenue }) => ({ month, revenue }));
+
+      return sortedData;
+    } catch (error) {
+      console.error('Error processing revenue data:', error);
+      return [];
+    }
   }, [subscribers, isMobile]);
 
   const chartConfig = {
@@ -131,15 +235,25 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
     },
   };
 
-  // Custom Bar Chart Legend for User Registration
-  const CustomUserGrowthLegend = ({ payload }: any) => {
+  // Custom Bar Chart Legend for User Registration with improved growth calculation
+  const CustomUserGrowthLegend = memo(({ payload }: any) => {
     if (!payload?.length || !userGrowthData.length) return null;
     
-    const totalUsers = userGrowthData.reduce((sum, item) => sum + item.users, 0);
-    const avgUsers = Math.round(totalUsers / userGrowthData.length);
-    const growthRate = userGrowthData.length > 1 
-      ? Math.round(((userGrowthData[userGrowthData.length - 1]?.users || 0) / Math.max(userGrowthData[userGrowthData.length - 2]?.users || 1, 1) - 1) * 100)
-      : 0;
+    try {
+      const totalUsers = userGrowthData.reduce((sum, item) => sum + item.users, 0);
+      const avgUsers = userGrowthData.length > 0 ? Math.round(totalUsers / userGrowthData.length) : 0;
+      
+      // Improved growth rate calculation
+      let growthRate = 0;
+      if (userGrowthData.length > 1) {
+        const current = userGrowthData[userGrowthData.length - 1]?.users || 0;
+        const previous = userGrowthData[userGrowthData.length - 2]?.users || 0;
+        if (previous > 0) {
+          growthRate = Math.round(((current - previous) / previous) * 100);
+        } else if (current > 0) {
+          growthRate = 100; // First month with data
+        }
+      }
     
     return (
       <div className="flex flex-col gap-3 pt-4">
@@ -181,17 +295,31 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
         </div>
       </div>
     );
-  };
+    } catch (error) {
+      console.error('Error in CustomUserGrowthLegend:', error);
+      return null;
+    }
+  });
 
-  // Custom Bar Chart Legend for Revenue
-  const CustomRevenueLegend = ({ payload }: any) => {
+  // Custom Bar Chart Legend for Revenue with improved calculation
+  const CustomRevenueLegend = memo(({ payload }: any) => {
     if (!payload?.length || !revenueData.length) return null;
     
-    const totalRevenue = revenueData.reduce((sum, item) => sum + item.revenue, 0);
-    const avgRevenue = totalRevenue / revenueData.length;
-    const revenueGrowth = revenueData.length > 1 
-      ? Math.round(((revenueData[revenueData.length - 1]?.revenue || 0) / Math.max(revenueData[revenueData.length - 2]?.revenue || 1, 1) - 1) * 100)
-      : 0;
+    try {
+      const totalRevenue = revenueData.reduce((sum, item) => sum + item.revenue, 0);
+      const avgRevenue = revenueData.length > 0 ? totalRevenue / revenueData.length : 0;
+      
+      // Improved revenue growth calculation
+      let revenueGrowth = 0;
+      if (revenueData.length > 1) {
+        const current = revenueData[revenueData.length - 1]?.revenue || 0;
+        const previous = revenueData[revenueData.length - 2]?.revenue || 0;
+        if (previous > 0) {
+          revenueGrowth = Math.round(((current - previous) / previous) * 100);
+        } else if (current > 0) {
+          revenueGrowth = 100; // First month with revenue
+        }
+      }
     
     return (
       <div className="flex flex-col gap-3 pt-4">
@@ -233,28 +361,37 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
         </div>
       </div>
     );
-  };
+    } catch (error) {
+      console.error('Error in CustomRevenueLegend:', error);
+      return null;
+    }
+  });
 
-  // Custom Legend Content for Pie Charts
-  const CustomPieChartLegend = ({ payload }: any) => {
+  // Custom Legend Content for Pie Charts with error handling
+  const CustomPieChartLegend = memo(({ payload }: any) => {
     if (!payload?.length) return null;
     
-    return (
-      <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-wrap'} items-center justify-center gap-4 pt-4`}>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
-            <div 
-              className="h-3 w-3 rounded-sm" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="font-medium text-foreground">
-              {entry.payload.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  };
+    try {
+      return (
+        <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-wrap'} items-center justify-center gap-4 pt-4`}>
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center gap-2 text-sm">
+              <div 
+                className="h-3 w-3 rounded-sm" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="font-medium text-foreground">
+                {entry.payload.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    } catch (error) {
+      console.error('Error in CustomPieChartLegend:', error);
+      return null;
+    }
+  });
 
   // Responsive chart margins
   const getChartMargins = () => ({
@@ -340,9 +477,13 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-amber-900 dark:text-amber-100">
-              {userGrowthData.length > 1 ? 
-                Math.round(((userGrowthData[userGrowthData.length - 1]?.users || 0) / Math.max(userGrowthData[userGrowthData.length - 2]?.users || 1, 1) - 1) * 100) 
-                : 0}%
+              {(() => {
+                if (userGrowthData.length <= 1) return '0%';
+                const current = userGrowthData[userGrowthData.length - 1]?.users || 0;
+                const previous = userGrowthData[userGrowthData.length - 2]?.users || 0;
+                if (previous === 0) return current > 0 ? '100%' : '0%';
+                return `${Math.round(((current - previous) / previous) * 100)}%`;
+              })()}
             </div>
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
               Month over month
@@ -360,35 +501,42 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
             <CardDescription className="text-sm sm:text-base">New user registrations over the last 6 months</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
-              <BarChart data={userGrowthData} margin={getChartMargins()}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis 
-                  dataKey="month" 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={isMobile ? 10 : 12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={isMobile ? 10 : 12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
-                />
-                <ChartLegend content={<CustomUserGrowthLegend />} />
-                <Bar 
-                  dataKey="users" 
-                  fill="var(--color-users)"
-                  radius={[4, 4, 0, 0]}
-                  name="New Users"
-                />
-              </BarChart>
-            </ChartContainer>
+            {userGrowthData.length === 0 ? (
+              <EmptyStateCard 
+                title="No User Data" 
+                description="No user registration data available for the selected period." 
+              />
+            ) : (
+              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+                <BarChart data={userGrowthData} margin={getChartMargins()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={isMobile ? 10 : 12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={isMobile ? 10 : 12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+                  />
+                  <ChartLegend content={<CustomUserGrowthLegend />} />
+                  <Bar 
+                    dataKey="users" 
+                    fill="var(--color-users)"
+                    radius={[4, 4, 0, 0]}
+                    name="New Users"
+                  />
+                </BarChart>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -399,46 +547,53 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
             <CardDescription className="text-sm sm:text-base">Distribution of users across subscription tiers</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
-              <PieChart margin={getChartMargins()}>
-                <Pie
-                  data={subscriptionData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={getPieChartDimensions().outerRadius}
-                  innerRadius={getPieChartDimensions().innerRadius}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {subscriptionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <ChartTooltip 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="rounded-lg border bg-background p-2 shadow-lg">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="h-3 w-3 rounded-sm" 
-                              style={{ backgroundColor: data.fill }}
-                            />
-                            <span className="font-medium">{data.name}</span>
+            {subscriptionData.length === 0 ? (
+              <EmptyStateCard 
+                title="No Subscription Data" 
+                description="No subscription distribution data available." 
+              />
+            ) : (
+              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+                <PieChart margin={getChartMargins()}>
+                  <Pie
+                    data={subscriptionData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={getPieChartDimensions().outerRadius}
+                    innerRadius={getPieChartDimensions().innerRadius}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {subscriptionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-lg">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="h-3 w-3 rounded-sm" 
+                                style={{ backgroundColor: data.fill }}
+                              />
+                              <span className="font-medium">{data.name}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {data.value} users ({data.percentage}%)
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {data.value} users ({data.percentage}%)
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <ChartLegend content={<CustomPieChartLegend />} />
-              </PieChart>
-            </ChartContainer>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <ChartLegend content={<CustomPieChartLegend />} />
+                </PieChart>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -449,35 +604,42 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
             <CardDescription className="text-sm sm:text-base">Estimated monthly recurring revenue</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
-              <BarChart data={revenueData} margin={getChartMargins()}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis 
-                  dataKey="month" 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={isMobile ? 10 : 12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={isMobile ? 10 : 12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
-                />
-                <ChartLegend content={<CustomRevenueLegend />} />
-                <Bar
-                  dataKey="revenue"
-                  fill="var(--color-revenue)"
-                  radius={[4, 4, 0, 0]}
-                  name="Revenue ($)"
-                />
-              </BarChart>
-            </ChartContainer>
+            {revenueData.length === 0 ? (
+              <EmptyStateCard 
+                title="No Revenue Data" 
+                description="No revenue data available for the selected period." 
+              />
+            ) : (
+              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+                <BarChart data={revenueData} margin={getChartMargins()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={isMobile ? 10 : 12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={isMobile ? 10 : 12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+                  />
+                  <ChartLegend content={<CustomRevenueLegend />} />
+                  <Bar 
+                    dataKey="revenue" 
+                    fill="var(--color-revenue)"
+                    radius={[4, 4, 0, 0]}
+                    name="Revenue ($)"
+                  />
+                </BarChart>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -488,46 +650,53 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
             <CardDescription className="text-sm sm:text-base">Admin vs regular users breakdown</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
-              <PieChart margin={getChartMargins()}>
-                <Pie
-                  data={roleData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={getPieChartDimensions().innerRadius + 10}
-                  outerRadius={getPieChartDimensions().outerRadius}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {roleData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <ChartTooltip 
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="rounded-lg border bg-background p-2 shadow-lg">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="h-3 w-3 rounded-sm" 
-                              style={{ backgroundColor: data.fill }}
-                            />
-                            <span className="font-medium">{data.name}</span>
+            {roleData.length === 0 ? (
+              <EmptyStateCard 
+                title="No Role Data" 
+                description="No user role distribution data available." 
+              />
+            ) : (
+              <ChartContainer config={chartConfig} className="h-64 sm:h-72 lg:h-80">
+                <PieChart margin={getChartMargins()}>
+                  <Pie
+                    data={roleData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={getPieChartDimensions().innerRadius + 10}
+                    outerRadius={getPieChartDimensions().outerRadius}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {roleData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-lg">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="h-3 w-3 rounded-sm" 
+                                style={{ backgroundColor: data.fill }}
+                              />
+                              <span className="font-medium">{data.name}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {data.value} users ({data.percentage}%)
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {data.value} users ({data.percentage}%)
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <ChartLegend content={<CustomPieChartLegend />} />
-              </PieChart>
-            </ChartContainer>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <ChartLegend content={<CustomPieChartLegend />} />
+                </PieChart>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -535,4 +704,21 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
   );
 };
 
-export default VisualAnalytics;
+// Wrap with Error Boundary and memo for performance
+const VisualAnalyticsWithErrorBoundary: React.FC<VisualAnalyticsProps> = (props) => (
+  <ErrorBoundary fallback={
+    <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+      <AlertCircle className="h-16 w-16 text-destructive" />
+      <div className="text-center space-y-2">
+        <h3 className="text-lg font-semibold">Analytics Error</h3>
+        <p className="text-sm text-muted-foreground max-w-md">
+          There was an error loading the analytics dashboard. Please refresh the page or contact support.
+        </p>
+      </div>
+    </div>
+  }>
+    <VisualAnalytics {...props} />
+  </ErrorBoundary>
+);
+
+export default memo(VisualAnalyticsWithErrorBoundary);
