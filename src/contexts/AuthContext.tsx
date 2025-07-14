@@ -123,22 +123,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      // FIXED: Add mobile detection and handle appropriately
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // On mobile, redirect in same tab to avoid popup blocking
-        console.log('Mobile detected: redirecting in same tab');
-        window.location.href = data.url;
-      } else {
-        // On desktop, open in new tab
-        console.log('Desktop detected: opening in new tab');
-        window.open(data.url, '_blank');
-      }
+      // For post-auth checkout, always redirect in same tab for seamless experience
+      console.log('Post-auth checkout: redirecting to checkout in same tab');
+      window.location.href = data.url;
       
       toast({
-        title: isMobile ? "Redirecting to checkout" : "Checkout opened",
-        description: isMobile ? "Please complete your subscription." : "Complete your subscription in the new tab.",
+        title: "Redirecting to checkout",
+        description: "Please complete your subscription.",
       });
       
     } catch (error) {
