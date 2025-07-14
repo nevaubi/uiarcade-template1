@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,6 +48,8 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   const [fullName, setFullName] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showAdminConfirmation, setShowAdminConfirmation] = useState(false);
+  const [pendingAdminStatus, setPendingAdminStatus] = useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -55,6 +58,22 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
       setIsAdmin(subscriber?.is_admin || false);
     }
   }, [user, subscriber]);
+
+  const handleAdminStatusChange = (newStatus: boolean) => {
+    if (!isEditing) return;
+    
+    setPendingAdminStatus(newStatus);
+    setShowAdminConfirmation(true);
+  };
+
+  const confirmAdminStatusChange = () => {
+    setIsAdmin(pendingAdminStatus);
+    setShowAdminConfirmation(false);
+  };
+
+  const cancelAdminStatusChange = () => {
+    setShowAdminConfirmation(false);
+  };
 
   const handleSave = async () => {
     if (!user || !user.email) return;
@@ -218,7 +237,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 <div className="mt-2 flex items-center space-x-2">
                   <Switch
                     checked={isAdmin}
-                    onCheckedChange={setIsAdmin}
+                    onCheckedChange={handleAdminStatusChange}
                     disabled={!isEditing}
                   />
                   <span className="text-sm text-muted-foreground">
@@ -302,6 +321,35 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           </div>
         </div>
       </DialogContent>
+
+      <AlertDialog open={showAdminConfirmation} onOpenChange={setShowAdminConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingAdminStatus ? 'Grant Administrator Privileges' : 'Revoke Administrator Privileges'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAdminStatus ? (
+                <>
+                  Are you sure you want to grant administrator privileges to{' '}
+                  <strong>{user?.full_name || user?.email}</strong>? This will give them full access to all admin features.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to revoke administrator privileges from{' '}
+                  <strong>{user?.full_name || user?.email}</strong>? They will lose access to all admin features.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelAdminStatusChange}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmAdminStatusChange}>
+              {pendingAdminStatus ? 'Grant Admin Access' : 'Revoke Admin Access'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
