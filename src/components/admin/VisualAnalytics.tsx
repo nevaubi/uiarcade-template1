@@ -281,7 +281,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </div>
           <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
             <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Growth Rate</span>
-            <div className="flex items-center gap-1">
+            <div className={`flex items-center gap-1 ${isMobile ? '' : 'justify-center'}`}>
               {growthRate >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-600" />
               ) : (
@@ -347,7 +347,7 @@ const VisualAnalytics: React.FC<VisualAnalyticsProps> = ({ users, subscribers, l
           </div>
           <div className={`flex ${isMobile ? 'flex-row justify-between items-center' : 'flex-col'} ${isMobile ? 'px-2 py-1 bg-muted/30 rounded-md' : ''}`}>
             <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>Growth Rate</span>
-            <div className="flex items-center gap-1">
+            <div className={`flex items-center gap-1 ${isMobile ? '' : 'justify-center'}`}>
               {revenueGrowth >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-600" />
               ) : (
