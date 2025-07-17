@@ -491,35 +491,49 @@ html {
     }
 }
 
-/* Enhanced fade edges with vibrant colors */
+/* Enhanced fade edges with responsive sizing */
 .reviews-scroll-container::before,
 .reviews-scroll-container::after {
     content: '';
     position: absolute;
     top: 0;
-    width: 140px;
+    width: 80px;
     height: 100%;
     z-index: 10;
     pointer-events: none;
 }
 
+@media (min-width: 640px) {
+    .reviews-scroll-container::before,
+    .reviews-scroll-container::after {
+        width: 120px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .reviews-scroll-container::before,
+    .reviews-scroll-container::after {
+        width: 140px;
+    }
+}
+
 .reviews-scroll-container::before {
     left: 0;
-    background: linear-gradient(to right, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
+    background: linear-gradient(to right, rgb(229, 231, 235), rgba(229, 231, 235, 0.6), transparent);
 }
 
 .reviews-scroll-container::after {
     right: 0;
-    background: linear-gradient(to left, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
+    background: linear-gradient(to left, rgb(229, 231, 235), rgba(229, 231, 235, 0.6), transparent);
 }
 
 /* Dark mode fade edges */
 @media (prefers-color-scheme: dark) {
     .reviews-scroll-container::before {
-        background: linear-gradient(to right, rgb(24, 24, 27), rgba(39, 39, 42, 0.4), transparent);
+        background: linear-gradient(to right, rgb(55, 65, 81), rgba(75, 85, 99, 0.6), transparent);
     }
     
     .reviews-scroll-container::after {
-        background: linear-gradient(to left, rgb(24, 24, 27), rgba(39, 39, 42, 0.4), transparent);
+        background: linear-gradient(to left, rgb(55, 65, 81), rgba(75, 85, 99, 0.6), transparent);
     }
 }
