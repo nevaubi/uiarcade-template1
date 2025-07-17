@@ -30,13 +30,13 @@ const faqs = [
 
 const FaqSection = () => {
   return (
-    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-navy-50 dark:bg-navy-900/70">
+    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-5xl font-bold text-navy-900 dark:text-white mb-4">
+          <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-lg sm:text-xl text-navy-700 dark:text-navy-300">
+          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300">
             Here is a FAQ section you can customize for your personal webapp
           </p>
         </div>
@@ -45,12 +45,12 @@ const FaqSection = () => {
             <AccordionItem 
               key={index} 
               value={`item-${index}`}
-              className="border border-navy-200 dark:border-navy-700 rounded-lg overflow-hidden bg-white dark:bg-navy-800/50 shadow-sm hover:shadow-md transition-all"
+              className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-slate-50/50 dark:bg-slate-800/50 shadow-sm hover:shadow-md transition-all"
             >
-              <AccordionTrigger className="text-lg text-left font-semibold hover:no-underline px-5 text-navy-900 dark:text-navy-100 hover:bg-navy-50/50 dark:hover:bg-navy-700/50 transition-colors">
+              <AccordionTrigger className="text-lg text-left font-semibold hover:no-underline px-5 text-slate-900 dark:text-slate-100 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 transition-colors">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-navy-700 dark:text-navy-300 text-base px-5 border-t border-navy-100 dark:border-navy-700 bg-white/50 dark:bg-navy-800/30">
+              <AccordionContent className="text-slate-700 dark:text-slate-300 text-base px-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/30">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
