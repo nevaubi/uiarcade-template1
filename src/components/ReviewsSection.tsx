@@ -102,7 +102,7 @@ const ReviewsSection = () => {
             <div className="reviews-scroll-track">
               {duplicatedReviews.map((review, index) => (
                 <div key={index} className="reviews-scroll-item">
-                  <Card className="h-full bg-white/95 dark:bg-slate-800/90 shadow-lg dark:shadow-2xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-all duration-300 backdrop-blur-sm border-2">
+                  <Card className="h-full bg-gray-50/90 sm:bg-white/95 dark:bg-slate-800/90 shadow-md sm:shadow-lg dark:shadow-2xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-all duration-300 backdrop-blur-sm border sm:border-2">
                     <CardContent className="flex-grow p-5 flex flex-col">
                       <div className="flex items-center mb-3">
                         <img 
@@ -135,7 +135,7 @@ const ReviewsSection = () => {
             <div className="reviews-scroll-track-reverse">
               {duplicatedSecondRowReviews.map((review, index) => (
                 <div key={index} className="reviews-scroll-item">
-                  <Card className="h-full bg-white/95 dark:bg-slate-800/90 shadow-lg dark:shadow-2xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-all duration-300 backdrop-blur-sm border-2">
+                  <Card className="h-full bg-gray-50/90 sm:bg-white/95 dark:bg-slate-800/90 shadow-md sm:shadow-lg dark:shadow-2xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-all duration-300 backdrop-blur-sm border sm:border-2">
                     <CardContent className="flex-grow p-5 flex flex-col">
                       <div className="flex items-center mb-3">
                         <img 
