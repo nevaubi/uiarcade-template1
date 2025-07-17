@@ -9,6 +9,7 @@ import PricingSection from '@/components/PricingSection';
 import ReviewsSection from '@/components/ReviewsSection';
 import FaqSection from '@/components/FaqSection';
 import MetricsSection from '@/components/MetricsSection';
+import HeroBackground from '@/components/HeroBackground';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,14 +36,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-navy-900 relative overflow-hidden">
-      {/* Simplified Background Effects - Navy Theme */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute w-[800px] h-[600px] bg-navy-100 dark:bg-navy-800 rounded-full blur-3xl -top-48 -right-48 animate-float opacity-30" style={{ animationDuration: '20s' }}></div>
-        <div className="absolute w-[600px] h-[400px] bg-navy-50 dark:bg-navy-700 rounded-full blur-3xl -bottom-24 -left-24 animate-float opacity-20" style={{ animationDuration: '25s', animationDelay: '5s' }}></div>
-      </div>
-
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/90 dark:bg-navy-900/90 backdrop-blur-md border-b border-navy-200 dark:border-navy-700 z-50">
+      <nav className="fixed top-0 w-full bg-white dark:bg-navy-900/90 backdrop-blur-md border-b border-navy-200 dark:border-navy-700 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -101,46 +96,47 @@ const Index = () => {
         )}
       </nav>
 
-      {/* Hero Section - Navy Theme */}
-      <section className="pt-24 pb-8 sm:pb-16 px-4 sm:px-6 lg:px-8 relative">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      {/* Hero Section */}
+      <section className="header-container pt-24 px-4 sm:px-6 lg:px-8">
+        <HeroBackground />
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Left Column - Content */}
-            <div className="scroll-animate opacity-0 transform translate-y-8 text-center lg:text-left space-y-8">
-              {/* Trust Badge - Navy Theme */}
-              <div className="inline-flex items-center gap-3 px-4 py-3 rounded-full bg-navy-50 dark:bg-navy-800 border border-navy-200 dark:border-navy-700 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group">
-                <div className="p-1 bg-navy-100 dark:bg-navy-700 rounded-full">
-                  <Sparkles className="h-4 w-4 text-navy-700 dark:text-navy-300 group-hover:rotate-12 transition-transform duration-300" />
+            <div className="scroll-animate opacity-0 transform translate-y-8 text-center lg:text-left space-y-6 lg:space-y-8">
+              {/* Trust Badge */}
+              <div className="inline-flex items-center gap-3 px-4 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                <div className="p-1 bg-white/20 rounded-full">
+                  <Sparkles className="h-4 w-4 text-white group-hover:rotate-12 transition-transform duration-300" />
                 </div>
-                <span className="text-sm font-medium text-navy-700 dark:text-navy-300">
+                <span className="text-sm font-medium text-white">
                   Save weeks of development time
                 </span>
               </div>
 
-              {/* Headline - Navy Theme */}
+              {/* Headline */}
               <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-navy-900 dark:text-white leading-tight tracking-tight">
+                <h1 className="text-[2.5rem] sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
                   Build Amazing
-                  <span className="block text-navy-800 dark:text-navy-200 relative">
+                  <span className="block text-blue-300 relative">
                     SaaS Products
                   </span>
                 </h1>
                 
-                <p className="text-xl sm:text-2xl text-navy-700 dark:text-navy-200 font-medium leading-relaxed">
+                <p className="text-xl sm:text-2xl text-navy-200 font-medium leading-relaxed">
                   Build, ship, and scale faster than ever
                 </p>
                 
-                <p className="text-lg text-navy-600 dark:text-navy-400 leading-relaxed max-w-xl lg:max-w-none">
+                <p className="text-lg text-navy-300 leading-relaxed max-w-xl lg:max-w-none">
                   Join developers who save days of boilerplate creation and ship on day one.
                 </p>
               </div>
 
-              {/* CTA Section - Navy Theme */}
+              {/* CTA Section */}
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Button 
                     size="lg" 
-                    className="bg-navy-900 hover:bg-navy-800 text-white text-lg px-8 py-4 h-14 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 min-w-[200px] font-semibold btn-enhanced"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 h-14 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 min-w-[200px] font-semibold btn-enhanced"
                     onClick={() => navigate('/auth?tab=signup')}
                   >
                     Get Started Free
@@ -148,34 +144,33 @@ const Index = () => {
                   </Button>
                   
                   <Button 
-                    variant="outline" 
                     size="lg" 
-                    className="text-lg px-8 py-4 h-14 border-2 border-navy-300 dark:border-navy-600 hover:border-navy-400 dark:hover:border-navy-500 hover:bg-navy-50 dark:hover:bg-navy-800 transition-all duration-300 min-w-[160px]"
+                    className="hidden lg:flex text-lg px-8 py-4 h-14 bg-white text-black hover:bg-gray-200 transition-all duration-300 min-w-[160px]"
                   >
-                    Watch Demo
+                    View Demo
                   </Button>
                 </div>
 
-                {/* Social Proof - Navy Theme */}
-                <div className="pt-4 border-t border-navy-200 dark:border-navy-700">
+                {/* Social Proof */}
+                <div className="pt-4 border-t border-white/20">
                   <div className="grid grid-cols-3 gap-8 text-center">
                     <div className="space-y-1">
-                      <div className="text-2xl sm:text-3xl font-bold text-navy-900 dark:text-navy-100">
+                      <div className="text-2xl sm:text-3xl font-bold text-white">
                         Tons
                       </div>
-                      <div className="text-sm text-navy-500 dark:text-navy-400">Hours saved</div>
+                      <div className="text-sm text-navy-300">Hours saved</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-2xl sm:text-3xl font-bold text-navy-900 dark:text-navy-100">
+                      <div className="text-2xl sm:text-3xl font-bold text-white">
                         99.9%
                       </div>
-                      <div className="text-sm text-navy-500 dark:text-navy-400">Uptime</div>
+                      <div className="text-sm text-navy-300">Uptime</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-2xl sm:text-3xl font-bold text-navy-900 dark:text-navy-100">
+                      <div className="text-2xl sm:text-3xl font-bold text-white">
                         24/7
                       </div>
-                      <div className="text-sm text-navy-500 dark:text-navy-400">Support</div>
+                      <div className="text-sm text-navy-300">Support</div>
                     </div>
                   </div>
                 </div>
@@ -183,23 +178,15 @@ const Index = () => {
             </div>
 
             {/* Right Column - Image */}
-            <div className="scroll-animate opacity-0 transform translate-y-8 lg:order-last order-first" style={{ animationDelay: '0.2s' }}>
+            <div className="scroll-animate opacity-0 transform translate-y-8 lg:order-last order-first w-4/5 mx-auto lg:w-full lg:mx-0" style={{ animationDelay: '0.2s' }}>
               <div className="relative group">
-                <div className="relative bg-white/90 dark:bg-navy-800/90 backdrop-blur-sm border border-navy-200 dark:border-navy-700 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all duration-500 navy-card">
+                <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all duration-500">
                   <img 
                     src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80" 
                     alt="Developer working on MacBook Pro" 
                     className="w-full h-auto rounded-xl shadow-md aspect-[4/3] object-cover"
                     loading="lazy"
                   />
-                  
-                  {/* Floating Tech Badges - Navy Theme */}
-                  <div className="absolute top-6 -left-3 bg-navy-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg animate-float opacity-95">
-                    React + TypeScript
-                  </div>
-                  <div className="absolute bottom-6 -right-3 bg-navy-800 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg animate-float opacity-95" style={{ animationDelay: '1s' }}>
-                    Tailwind CSS
-                  </div>
                 </div>
               </div>
             </div>
@@ -208,9 +195,9 @@ const Index = () => {
       </section>
 
       {/* Features Section - Navy Theme */}
-      <section id="features" className="py-8 sm:py-24 px-4 sm:px-6 lg:px-8 relative">
+      <section id="features" className="pt-8 sm:pt-12 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 relative bg-white dark:bg-navy-900">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20 scroll-animate opacity-0 transform translate-y-8">
+          <div className="text-center mb-12 sm:mb-16 scroll-animate opacity-0 transform translate-y-8">
             <h2 className="text-3xl sm:text-5xl font-bold text-navy-900 dark:text-white mb-6">
               Everything you need to succeed
             </h2>
@@ -219,7 +206,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
             {[
               {
                 icon: Bot,
@@ -258,23 +245,23 @@ const Index = () => {
                 bgColor: 'bg-navy-800'
               }
             ].map((feature, index) => (
-              <Card key={index} className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden border-0 navy-card backdrop-blur-sm feature-card" style={{
+              <Card key={index} className="scroll-animate opacity-0 transform translate-y-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden border-0 navy-card backdrop-blur-sm feature-card cursor-pointer p-2" style={{
                 animationDelay: `${index * 150}ms`
               }}>
                 {/* Card border */}
                 <div className="absolute inset-0 bg-navy-200/20 dark:bg-navy-700/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute inset-[1px] bg-white/90 dark:bg-navy-800/90 rounded-lg backdrop-blur-sm"></div>
                 
-                <CardHeader className="relative z-10">
+                <CardHeader className="relative z-10 pb-4 pt-6 px-6">
                   <div className={`w-16 h-16 rounded-xl ${feature.bgColor} p-3 mb-4 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
                     <feature.icon className="h-10 w-10 text-white" />
                   </div>
-                  <CardTitle className="text-xl font-semibold group-hover:text-navy-700 dark:group-hover:text-navy-300 transition-colors duration-300">
+                  <CardTitle className="text-xl font-semibold group-hover:text-navy-700 dark:group-hover:text-navy-300 transition-colors duration-300 leading-snug">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="relative z-10">
-                  <p className="text-navy-600 dark:text-navy-300 leading-relaxed">{feature.description}</p>
+                <CardContent className="relative z-10 px-6 pb-6">
+                  <p className="text-navy-600 dark:text-navy-300 leading-relaxed text-base">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
