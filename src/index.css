@@ -328,6 +328,16 @@ html {
   border: 1px solid hsl(var(--border)/0.5);
 }
 
+.sidebar-solid {
+  @apply bg-white border-r;
+  border-color: hsl(var(--border));
+}
+
+.dark .sidebar-solid {
+  @apply bg-navy-900 border-r;
+  border-color: hsl(var(--border));
+}
+
 .text-gradient {
   background: var(--gradient-primary);
   @apply bg-clip-text text-transparent;
