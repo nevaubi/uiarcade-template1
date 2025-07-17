@@ -260,27 +260,19 @@ const ChatbotPanel = () => {
   return (
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-navy-50 border border-navy-200/50 p-1">
-          <TabsTrigger value="my-chatbot" className="text-navy-600 data-[state=active]:bg-card data-[state=active]:text-navy-900 data-[state=active]:shadow-sm transition-all duration-200">
-            My Chatbot
-          </TabsTrigger>
-          <TabsTrigger value="documents" className="text-navy-600 data-[state=active]:bg-card data-[state=active]:text-navy-900 data-[state=active]:shadow-sm transition-all duration-200">
-            Documents
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="text-navy-600 data-[state=active]:bg-card data-[state=active]:text-navy-900 data-[state=active]:shadow-sm transition-all duration-200">
-            Settings
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="my-chatbot">My Chatbot</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-chatbot" className="space-y-6">
           {/* Chatbot Overview */}
-          <Card className="navy-card border-navy-200/50 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-navy-50 to-navy-100/50 border-b border-navy-200/50">
+          <Card>
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-3 text-navy-900">
-                  <div className="p-2 bg-navy-100 rounded-lg">
-                    <Bot className="h-5 w-5 text-navy-600" />
-                  </div>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
                   Chatbot Status
                 </CardTitle>
                 <Button 
@@ -288,11 +280,10 @@ const ChatbotPanel = () => {
                   variant={config?.current_status === 'active' ? 'destructive' : 'default'}
                   size="sm"
                   disabled={configLoading}
-                  className={`transition-all duration-200 hover:scale-105 active:scale-95 min-h-[44px] ${
-                    config?.current_status === 'active' 
-                      ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-sm' 
-                      : 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
-                  }`}
+                  className={config?.current_status === 'active' 
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                  }
                 >
                   {config?.current_status === 'active' ? (
                     <>
@@ -322,15 +313,15 @@ const ChatbotPanel = () => {
                   </>
                 ) : (
                   <>
-                    <div className="space-y-2 p-4 bg-navy-50/50 rounded-lg border border-navy-200/30">
-                      <p className="text-sm font-medium text-navy-600">Knowledge Base Documents</p>
-                      <p className="text-3xl font-bold text-navy-900">{stats?.documentsCount || 0}</p>
-                      <p className="text-xs text-navy-500">Total uploaded</p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Knowledge Base Documents</p>
+                      <p className="text-2xl font-semibold">{stats?.documentsCount || 0}</p>
+                      <p className="text-xs text-gray-400">Total uploaded</p>
                     </div>
-                    <div className="space-y-2 p-4 bg-navy-50/50 rounded-lg border border-navy-200/30">
-                      <p className="text-sm font-medium text-navy-600">Knowledge Base Last Updated</p>
-                      <p className="text-3xl font-bold text-navy-900">{stats?.lastUpdated || 'Never'}</p>
-                      <p className="text-xs text-navy-500">Most recent upload</p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Knowledge Base Last Updated</p>
+                      <p className="text-2xl font-semibold">{stats?.lastUpdated || 'Never'}</p>
+                      <p className="text-xs text-gray-400">Most recent upload</p>
                     </div>
                   </>
                 )}
@@ -339,22 +330,20 @@ const ChatbotPanel = () => {
           </Card>
 
           {/* Test Chatbot */}
-          <Card className="navy-card border-navy-200/50 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-navy-50 to-navy-100/50 border-b border-navy-200/50">
+          <Card>
+            <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-3 text-navy-900">
-                    <div className="p-2 bg-navy-100 rounded-lg">
-                      <MessageSquare className="h-5 w-5 text-navy-600" />
-                    </div>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
                     Test Your Chatbot
                     {testMessages.length > 0 && (
-                      <span className="text-xs bg-navy-100 text-navy-600 px-3 py-1 rounded-full border border-navy-200/50">
+                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
                         {testMessages.length} messages
                       </span>
                     )}
                   </CardTitle>
-                  <CardDescription className="text-navy-600 mt-2">
+                  <CardDescription>
                     Test your chatbot with conversation history (last 20 messages context)
                   </CardDescription>
                 </div>
@@ -363,7 +352,7 @@ const ChatbotPanel = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={clearTestHistory}
-                    className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 border-destructive/30 transition-all duration-200 hover:scale-105 active:scale-95 min-h-[44px]"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
                     Clear
@@ -374,63 +363,51 @@ const ChatbotPanel = () => {
             <CardContent className="space-y-4">
               {/* Chat History Display */}
               {testMessages.length > 0 && (
-                <div className="border border-navy-200/50 rounded-xl overflow-hidden bg-navy-50/30 shadow-sm">
-                  <div className="bg-navy-100/50 px-4 py-3 border-b border-navy-200/50">
-                    <div className="flex items-center gap-3 text-sm text-navy-700">
-                      <div className="p-1 bg-navy-200/50 rounded">
-                        <Bot className="h-4 w-4 text-navy-600" />
-                      </div>
-                      <span className="font-semibold">Test Session</span>
-                      <span className="text-xs text-navy-500">• {testMessages.length} messages</span>
+                <div className="border rounded-lg overflow-hidden bg-gray-50/50">
+                  <div className="bg-gray-100 px-3 py-2 border-b">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Bot className="h-4 w-4" />
+                      <span className="font-medium">Test Session</span>
+                      <span className="text-xs">• {testMessages.length} messages</span>
                     </div>
                   </div>
-                  <ScrollArea ref={testScrollAreaRef} className="h-64 px-4 py-3">
-                    <div className="space-y-4">
-                      {testMessages.map((message, index) => (
+                  <ScrollArea ref={testScrollAreaRef} className="h-64 px-3 py-2">
+                    <div className="space-y-3">
+                      {testMessages.map((message) => (
                         <div
                           key={message.id}
-                          className={`flex ${message.isBot ? 'justify-start' : 'justify-end'} animate-fade-in`}
-                          style={{ animationDelay: `${index * 0.1}s` }}
+                          className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
                         >
-                          <div className={`flex items-start gap-3 max-w-[85%] ${message.isBot ? 'flex-row' : 'flex-row-reverse'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
-                              message.isBot ? 'bg-navy-100 text-navy-600' : 'bg-primary text-primary-foreground'
-                            }`}>
-                              {message.isBot ? (
-                                <Bot className="h-4 w-4" />
-                              ) : (
-                                <User className="h-4 w-4" />
-                              )}
-                            </div>
+                          <div className="flex items-start gap-2 max-w-[80%]">
+                            {message.isBot && (
+                              <Bot className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
+                            )}
                             <div className="flex flex-col">
                               <div
-                                className={`px-4 py-3 rounded-xl text-sm break-words shadow-sm transition-all duration-200 hover:shadow-md ${
+                                className={`px-3 py-2 rounded-lg text-sm break-words ${
                                   message.isBot
-                                    ? 'bg-card text-navy-900 border border-navy-200/50'
-                                    : 'bg-primary text-primary-foreground'
+                                    ? 'bg-white text-gray-800 border border-gray-200 shadow-sm'
+                                    : 'bg-blue-500 text-white'
                                 }`}
                               >
                                 {message.content}
                               </div>
-                              <span className={`text-xs mt-1 px-2 ${
-                                message.isBot ? 'text-navy-400' : 'text-navy-400'
-                              }`}>
+                              <span className="text-xs text-gray-400 mt-1 px-1">
                                 {message.timestamp.toLocaleTimeString()}
                               </span>
                             </div>
+                            {!message.isBot && (
+                              <User className="h-5 w-5 text-blue-500 mt-1 flex-shrink-0" />
+                            )}
                           </div>
                         </div>
                       ))}
                       {testLoading && (
-                        <div className="flex justify-start animate-fade-in">
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 bg-navy-100 text-navy-600">
-                              <Bot className="h-4 w-4" />
-                            </div>
-                            <div className="bg-card text-navy-900 border border-navy-200/50 shadow-sm px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                              <div className="relative">
-                                <Loader2 className="h-3 w-3 animate-spin text-navy-600" />
-                              </div>
+                        <div className="flex justify-start">
+                          <div className="flex items-start gap-2">
+                            <Bot className="h-5 w-5 text-blue-500 mt-1" />
+                            <div className="bg-white text-gray-800 border border-gray-200 shadow-sm px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+                              <Loader2 className="h-3 w-3 animate-spin" />
                               <span>Thinking...</span>
                             </div>
                           </div>
@@ -442,19 +419,19 @@ const ChatbotPanel = () => {
               )}
 
               {/* Message Input */}
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <Input 
                   placeholder="Type a test message..." 
                   value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleTestMessage()}
                   disabled={testLoading}
-                  className="flex-1 border-navy-300 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-background transition-all duration-200 min-h-[44px]"
+                  className="flex-1"
                 />
                 <Button 
                   onClick={handleTestMessage} 
                   disabled={!testMessage.trim() || testLoading}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200 hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px] shadow-sm hover:shadow-md"
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   {testLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -465,12 +442,10 @@ const ChatbotPanel = () => {
               </div>
 
               {testMessages.length === 0 && (
-                <div className="text-center py-12 text-navy-500">
-                  <div className="p-4 bg-navy-100/50 rounded-full w-fit mx-auto mb-4">
-                    <Bot className="h-12 w-12 text-navy-400" />
-                  </div>
-                  <p className="text-sm font-medium text-navy-700">Start a conversation to test your chatbot</p>
-                  <p className="text-xs text-navy-500 mt-2">
+                <div className="text-center py-8 text-gray-500">
+                  <Bot className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-sm">Start a conversation to test your chatbot</p>
+                  <p className="text-xs text-gray-400 mt-1">
                     This will use the same functionality as your live chatbot
                   </p>
                 </div>
