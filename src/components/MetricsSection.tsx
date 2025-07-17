@@ -22,12 +22,9 @@ const MetricsSection = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column - Stats */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wider text-navy-300 metrics-animate opacity-0 transform translate-y-4">
-                METRICS
-              </p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mt-2 mb-4 metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '100ms'}}>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '100ms'}}>
                 We believe in developer experience
               </h2>
               <p className="text-lg text-navy-300 max-w-xl metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '200ms'}}>
@@ -35,55 +32,55 @@ const MetricsSection = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 gap-4 sm:gap-8">
               {/* Metric 1 */}
               <div className="metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '300ms'}}>
-                <p className="text-3xl sm:text-4xl font-bold text-white">
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
                   40+
                 </p>
-                <h3 className="text-xl font-semibold text-navy-200 mt-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-navy-200 mt-2">
                   Hours Saved
                 </h3>
-                <p className="text-navy-400 mt-2">
+                <p className="text-navy-400 mt-2 hidden sm:block">
                   Skip the boilerplate setup and focus on building your unique features
                 </p>
               </div>
               
               {/* Metric 2 */}
               <div className="metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '400ms'}}>
-                <p className="text-3xl sm:text-4xl font-bold text-white">
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
                   50+
                 </p>
-                <h3 className="text-xl font-semibold text-navy-200 mt-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-navy-200 mt-2">
                   UI Components
                 </h3>
-                <p className="text-navy-400 mt-2">
+                <p className="text-navy-400 mt-2 hidden sm:block">
                   Beautiful, accessible components ready for your next project
                 </p>
               </div>
               
               {/* Metric 3 */}
               <div className="metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '500ms'}}>
-                <p className="text-3xl sm:text-4xl font-bold text-white">
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
                   10x
                 </p>
-                <h3 className="text-xl font-semibold text-navy-200 mt-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-navy-200 mt-2">
                   Faster Launch
                 </h3>
-                <p className="text-navy-400 mt-2">
+                <p className="text-navy-400 mt-2 hidden sm:block">
                   Go from idea to production in days instead of months
                 </p>
               </div>
               
               {/* Metric 4 */}
               <div className="metrics-animate opacity-0 transform translate-y-4" style={{animationDelay: '600ms'}}>
-                <p className="text-3xl sm:text-4xl font-bold text-white">
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
                   ∞
                 </p>
-                <h3 className="text-xl font-semibold text-navy-200 mt-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-navy-200 mt-2">
                   Unlimited Usage
                 </h3>
-                <p className="text-navy-400 mt-2">
+                <p className="text-navy-400 mt-2 hidden sm:block">
                   Reuse your production ready boilerplate as many times as you'd like
                 </p>
               </div>
