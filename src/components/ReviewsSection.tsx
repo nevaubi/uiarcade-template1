@@ -86,13 +86,13 @@ const ReviewsSection = () => {
   const duplicatedSecondRowReviews = [...secondRowReviews, ...secondRowReviews];
 
   return (
-    <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-gray-200 via-white to-gray-300 dark:from-gray-700 dark:via-gray-900 dark:to-black">
+    <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-gray-200 via-white to-gray-300 dark:from-gray-700 dark:via-gray-900 dark:to-black">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
             Loved by Devs
           </h2>
-          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+          <p className="text-base md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
             Here is a placeholder reviews section for real users that love your product
           </p>
         </div>
@@ -103,20 +103,20 @@ const ReviewsSection = () => {
             <div className="reviews-scroll-track">
               {duplicatedReviews.map((review, index) => (
                 <div key={index} className="reviews-scroll-item">
-                  <Card className="h-full bg-white/95 dark:bg-slate-800/90 shadow-xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-2xl hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 backdrop-blur-sm border-2 hover:border-blue-200 dark:hover:border-blue-600">
-                    <CardContent className="flex-grow p-5 flex flex-col">
+                  <Card className="h-full bg-white/95 dark:bg-slate-800/90 shadow-lg dark:shadow-2xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-all duration-300 backdrop-blur-sm border-2">
+                    <CardContent className="flex-grow p-4 sm:p-5 flex flex-col">
                       <div className="flex items-center mb-3">
                         <img 
                           src={review.avatar} 
                           alt={review.name}
-                          className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-blue-200 dark:border-blue-600 shadow-md"
+                          className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-slate-300 dark:border-slate-600 shadow-sm"
                         />
                         <div>
                           <p className="font-semibold text-slate-900 dark:text-white text-sm">{review.name}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">{review.handle}</p>
                         </div>
                       </div>
-                      <div className="flex items-center mb-3">
+                      <div className="flex items-center mb-2 sm:mb-3">
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} className="w-4 h-4 text-yellow-400 fill-current drop-shadow-sm" />
                         ))}
@@ -136,20 +136,20 @@ const ReviewsSection = () => {
             <div className="reviews-scroll-track-reverse">
               {duplicatedSecondRowReviews.map((review, index) => (
                 <div key={index} className="reviews-scroll-item">
-                  <Card className="h-full bg-white/95 dark:bg-slate-800/90 shadow-xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-2xl hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 backdrop-blur-sm border-2 hover:border-purple-200 dark:hover:border-purple-600">
-                    <CardContent className="flex-grow p-5 flex flex-col">
+                  <Card className="h-full bg-white/95 dark:bg-slate-800/90 shadow-lg dark:shadow-2xl border-slate-200 dark:border-slate-700 flex flex-col hover:shadow-xl transition-all duration-300 backdrop-blur-sm border-2">
+                    <CardContent className="flex-grow p-4 sm:p-5 flex flex-col">
                       <div className="flex items-center mb-3">
                         <img 
                           src={review.avatar} 
                           alt={review.name}
-                          className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-purple-200 dark:border-purple-600 shadow-md"
+                          className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-slate-300 dark:border-slate-600 shadow-sm"
                         />
                         <div>
                           <p className="font-semibold text-slate-900 dark:text-white text-sm">{review.name}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">{review.handle}</p>
                         </div>
                       </div>
-                      <div className="flex items-center mb-3">
+                      <div className="flex items-center mb-2 sm:mb-3">
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} className="w-4 h-4 text-yellow-400 fill-current drop-shadow-sm" />
                         ))}
