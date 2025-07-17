@@ -7,6 +7,7 @@ import { X, Send, Loader2, Bot } from 'lucide-react';
 import { useChatbotStatus } from '@/hooks/useChatbotStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
   id: string;
@@ -24,6 +25,7 @@ const ChatWidget = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { status, loading } = useChatbotStatus();
   const { isRateLimited, timeUntilReset } = useRateLimit();
+  const { user } = useAuth();
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -138,8 +140,8 @@ const ChatWidget = () => {
     }
   };
 
-  // Don't render if chatbot is not active or still loading
-  if (loading || !status || status.current_status !== 'active') {
+  // Don't render if chatbot is not active, still loading, or user is authenticated
+  if (loading || !status || status.current_status !== 'active' || user) {
     return null;
   }
 
