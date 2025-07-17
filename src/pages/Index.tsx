@@ -79,10 +79,10 @@ const Index = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white dark:bg-navy-900 border-t border-navy-200 dark:border-navy-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <a href="#features" className="block px-3 py-2 text-navy-600 dark:text-navy-300 hover:text-navy-900 dark:hover:text-white">
+              <a href="#features" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-navy-600 dark:text-navy-300 hover:text-navy-900 dark:hover:text-white">
                 Features
               </a>
-              <a href="#pricing" className="block px-3 py-2 text-navy-600 dark:text-navy-300 hover:text-navy-900 dark:hover:text-white">
+              <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-navy-600 dark:text-navy-300 hover:text-navy-900 dark:hover:text-white">
                 Pricing
               </a>
               <Link to="/blog" className="block px-3 py-2 text-navy-600 dark:text-navy-300 hover:text-navy-900 dark:hover:text-white">

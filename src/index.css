@@ -380,8 +380,8 @@ html {
     width: 100%;
     height: 100%;
     background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
     background-size: 40px 40px;
     z-index: 5;
     box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.05);
@@ -505,12 +505,12 @@ html {
 
 .reviews-scroll-container::before {
     left: 0;
-    background: linear-gradient(to right, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
+    background: linear-gradient(to right, rgb(229, 231, 235), rgba(229, 231, 235, 0.4), transparent);
 }
 
 .reviews-scroll-container::after {
     right: 0;
-    background: linear-gradient(to left, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
+    background: linear-gradient(to left, rgb(229, 231, 235), rgba(229, 231, 235, 0.4), transparent);
 }
 
 /* Dark mode fade edges */
