@@ -26,7 +26,12 @@ import {
   LayoutGrid,
   Shield,
   Bot,
-  PenTool
+  PenTool,
+  Upload,
+  BarChart3,
+  HelpCircle,
+  Clock,
+  Database
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -324,42 +329,159 @@ const Dashboard = () => {
 
   const renderPlaceholder1Content = () => (
     <div className="space-y-8 animate-fade-in">
+      {/* Welcome Header */}
       <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
         <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
-          Placeholder Tab1
+          Quick Actions Hub
         </h3>
         <p className="text-base lg:text-lg text-muted-foreground">
-          This is a placeholder page for Tab1 functionality.
+          Welcome back, {user?.email?.split('@')[0] || 'User'}! Access your most used features quickly.
         </p>
       </div>
 
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-6">
-          <CardTitle className="text-xl font-bold flex items-center">
-            <File className="h-5 w-5 mr-2 text-primary" />
-            Sample Content
-          </CardTitle>
-          <CardDescription className="text-base">
-            This is placeholder content for demonstration
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
-              <h4 className="font-bold mb-3 text-lg text-foreground">Feature 1</h4>
-              <p className="text-muted-foreground font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-0 rounded-2xl card-interactive hover-scale cursor-pointer" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Upload className="h-8 w-8 text-primary" />
             </div>
-            <div className="p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
-              <h4 className="font-bold mb-3 text-lg text-foreground">Feature 2</h4>
-              <p className="text-muted-foreground font-medium">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <h4 className="font-bold text-lg text-foreground mb-2">Upload Document</h4>
+            <p className="text-sm text-muted-foreground">Add new documents to your collection</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 rounded-2xl card-interactive hover-scale cursor-pointer" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="h-8 w-8 text-primary" />
             </div>
-            <div className="p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
-              <h4 className="font-bold mb-3 text-lg text-foreground">Feature 3</h4>
-              <p className="text-muted-foreground font-medium">Ut enim ad minim veniam, quis nostrud exercitation.</p>
+            <h4 className="font-bold text-lg text-foreground mb-2">View Reports</h4>
+            <p className="text-sm text-muted-foreground">Check your analytics and insights</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 rounded-2xl card-interactive hover-scale cursor-pointer" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Settings className="h-8 w-8 text-primary" />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <h4 className="font-bold text-lg text-foreground mb-2">Account Settings</h4>
+            <p className="text-sm text-muted-foreground">Manage your profile and preferences</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 rounded-2xl card-interactive hover-scale cursor-pointer" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HelpCircle className="h-8 w-8 text-primary" />
+            </div>
+            <h4 className="font-bold text-lg text-foreground mb-2">Help & Support</h4>
+            <p className="text-sm text-muted-foreground">Get assistance and documentation</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Status Overview & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Status Overview */}
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardHeader className="pb-6">
+            <CardTitle className="text-xl font-bold flex items-center">
+              <div className="p-2 bg-primary/10 rounded-xl mr-3">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              Status Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl">
+                <div className="flex items-center">
+                  <CreditCard className="h-5 w-5 text-primary mr-3" />
+                  <span className="font-semibold text-foreground">Subscription</span>
+                </div>
+                <Badge className={subscribed ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'}>
+                  {subscribed ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl">
+                <div className="flex items-center">
+                  <Database className="h-5 w-5 text-primary mr-3" />
+                  <span className="font-semibold text-foreground">Storage Used</span>
+                </div>
+                <span className="text-sm text-muted-foreground">2.4 GB / 10 GB</span>
+              </div>
+              
+              <div className="p-4 bg-primary/5 rounded-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-foreground">Storage Usage</span>
+                  <span className="text-sm text-muted-foreground">24%</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: '24%' }}></div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardHeader className="pb-6">
+            <CardTitle className="text-xl font-bold flex items-center">
+              <div className="p-2 bg-primary/10 rounded-xl mr-3">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
+              Recent Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <Upload className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Document uploaded</p>
+                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <Settings className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Settings updated</p>
+                  <p className="text-xs text-muted-foreground">1 day ago</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                  <BarChart3 className="h-4 w-4 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Report generated</p>
+                  <p className="text-xs text-muted-foreground">3 days ago</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                  <HelpCircle className="h-4 w-4 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Help article viewed</p>
+                  <p className="text-xs text-muted-foreground">1 week ago</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 
