@@ -162,58 +162,60 @@ const Dashboard = () => {
   const renderDashboardContent = () => (
     <div className="space-y-8 animate-fade-in">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
-        <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
+      <div className="glass-effect rounded-2xl p-8 border border-primary/20">
+        <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-4">
           Welcome back, {user?.email?.split('@')[0] || 'User'}!
         </h3>
-        <p className="text-base lg:text-lg text-muted-foreground">
+        <p className="text-lg lg:text-xl text-muted-foreground">
           Here's what's happening with your account today.
         </p>
       </div>
 
-      {/* Admin Badge - Enhanced with better styling */}
+      {/* Admin Badge - iOS-inspired styling */}
       {isAdmin && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-300 rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+        <div className="glass-effect rounded-2xl p-8 border border-purple/30 card-interactive">
           <div className="flex items-center">
-            <div className="p-2 bg-amber-100 rounded-lg mr-4">
-              <Shield className="h-6 w-6 text-amber-600" />
+            <div className="p-3 bg-purple/10 rounded-xl mr-6">
+              <Shield className="h-8 w-8 text-purple" />
             </div>
             <div>
-              <h4 className="font-bold text-amber-800 text-lg">Administrator Access</h4>
-              <p className="text-amber-700 font-medium">You have admin privileges on this account.</p>
+              <h4 className="font-bold text-purple text-xl">Administrator Access</h4>
+              <p className="text-purple/80 font-medium text-lg">You have admin privileges on this account.</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Stats Cards - Enhanced with better styling */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+      {/* Stats Cards - iOS-inspired styling */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {stats.map((stat, index) => (
-          <Card key={index} className="feature-card border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          <Card key={index} className="feature-card border-0 rounded-2xl overflow-hidden" style={{ background: 'var(--gradient-card)' }}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+              <CardTitle className="text-base font-semibold text-muted-foreground uppercase tracking-wider">
                 {stat.title}
               </CardTitle>
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div className="p-3 bg-primary/10 rounded-xl">
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl lg:text-3xl font-bold text-foreground break-words tracking-tight">{stat.value}</div>
-              <p className="text-sm text-muted-foreground mt-2 font-medium">{stat.description}</p>
+              <div className="text-3xl lg:text-4xl font-bold text-foreground break-words tracking-tight">{stat.value}</div>
+              <p className="text-base text-muted-foreground mt-3 font-medium">{stat.description}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Subscription Status - Enhanced with better styling */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-6">
-          <CardTitle className="text-xl font-bold flex items-center">
-            <CreditCard className="h-5 w-5 mr-2 text-primary" />
+      {/* Subscription Status - iOS-inspired styling */}
+      <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+        <CardHeader className="pb-8">
+          <CardTitle className="text-2xl font-bold flex items-center">
+            <div className="p-2 bg-primary/10 rounded-xl mr-3">
+              <CreditCard className="h-6 w-6 text-primary" />
+            </div>
             Subscription Status
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-lg">
             Your current plan and billing information
           </CardDescription>
         </CardHeader>
@@ -278,38 +280,40 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions - Enhanced with better styling */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-6">
-          <CardTitle className="text-xl font-bold flex items-center">
-            <Settings className="h-5 w-5 mr-2 text-primary" />
+      {/* Quick Actions - iOS-inspired styling */}
+      <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+        <CardHeader className="pb-8">
+          <CardTitle className="text-2xl font-bold flex items-center">
+            <div className="p-2 bg-primary/10 rounded-xl mr-3">
+              <Settings className="h-6 w-6 text-primary" />
+            </div>
             Quick Actions
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-lg">
             Frequently used features and settings
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Button 
               variant="outline" 
-              className="h-14 btn-enhanced font-semibold text-base hover:bg-primary/5 border-2" 
+              className="h-16 btn-enhanced font-semibold text-lg hover:bg-primary/5 border-2 rounded-xl" 
               onClick={handleManageBilling}
               disabled={portalLoading}
             >
               {portalLoading ? (
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                <Loader2 className="h-6 w-6 mr-3 animate-spin" />
               ) : (
-                <CreditCard className="h-5 w-5 mr-2" />
+                <CreditCard className="h-6 w-6 mr-3" />
               )}
               {subscribed ? 'Manage Billing' : 'Subscribe'}
             </Button>
-            <Button variant="outline" className="h-14 btn-enhanced font-semibold text-base hover:bg-primary/5 border-2">
-              <Settings className="h-5 w-5 mr-2" />
+            <Button variant="outline" className="h-16 btn-enhanced font-semibold text-lg hover:bg-primary/5 border-2 rounded-xl">
+              <Settings className="h-6 w-6 mr-3" />
               Account Settings
             </Button>
-            <Button variant="outline" className="h-14 btn-enhanced font-semibold text-base hover:bg-primary/5 border-2">
-              <TrendingUp className="h-5 w-5 mr-2" />
+            <Button variant="outline" className="h-16 btn-enhanced font-semibold text-lg hover:bg-primary/5 border-2 rounded-xl">
+              <TrendingUp className="h-6 w-6 mr-3" />
               View Usage
             </Button>
           </div>
@@ -410,7 +414,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen w-full max-w-full bg-gradient-to-br from-background to-muted/20 flex overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full flex overflow-x-hidden" style={{ background: 'var(--gradient-subtle)' }}>
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -419,9 +423,9 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Sidebar - Enhanced with better styling */}
+      {/* Sidebar - iOS-inspired styling */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-card to-card/80 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-border/50
+        fixed inset-y-0 left-0 z-50 w-64 glass-effect transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-border/50
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-border/50">

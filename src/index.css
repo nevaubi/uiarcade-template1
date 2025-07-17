@@ -6,35 +6,58 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 25% 27%;
+    /* iOS-inspired color system */
+    --background: 210 17% 97%;
+    --foreground: 220 13% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 27%;
+    --card-foreground: 220 13% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 27%;
+    --popover-foreground: 220 13% 9%;
 
-    --primary: 220 28% 17%;
+    /* iOS Blue System Color */
+    --primary: 212 100% 50%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 212 100% 60%;
 
-    --secondary: 220 20% 65%;
-    --secondary-foreground: 220 25% 27%;
+    /* iOS Gray System */
+    --secondary: 210 17% 95%;
+    --secondary-foreground: 220 13% 9%;
 
-    --muted: 220 20% 96%;
-    --muted-foreground: 220 16% 47%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 220 20% 96%;
-    --accent-foreground: 220 25% 27%;
+    --accent: 210 17% 95%;
+    --accent-foreground: 220 13% 9%;
 
-    --destructive: 0 84% 60%;
+    /* iOS System Colors */
+    --destructive: 0 100% 59%;
     --destructive-foreground: 0 0% 100%;
+    --success: 120 60% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 100% 50%;
+    --warning-foreground: 0 0% 100%;
+    --purple: 280 100% 70%;
+    --purple-foreground: 0 0% 100%;
 
-    --border: 220 20% 91%;
-    --input: 220 20% 91%;
-    --ring: 220 28% 17%;
+    /* iOS-style borders and surfaces */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 212 100% 50%;
 
-    --radius: 0.5rem;
+    /* iOS-style design tokens */
+    --radius: 0.75rem;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    /* iOS-style gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-subtle: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)/0.3));
+    --gradient-glass: linear-gradient(135deg, hsl(var(--card)/0.8), hsl(var(--muted)/0.4));
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 220 25% 27%;
@@ -66,33 +89,51 @@
   }
 
   .dark {
-    --background: 220 28% 17%;
-    --foreground: 0 0% 98%;
+    /* iOS Dark Mode colors */
+    --background: 220 13% 9%;
+    --foreground: 210 17% 97%;
 
-    --card: 220 28% 17%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 13% 12%;
+    --card-foreground: 210 17% 97%;
 
-    --popover: 220 28% 17%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 13% 12%;
+    --popover-foreground: 210 17% 97%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 220 28% 17%;
+    /* iOS Blue System Color (Dark) */
+    --primary: 212 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 212 100% 70%;
 
-    --secondary: 220 25% 27%;
-    --secondary-foreground: 0 0% 98%;
+    /* iOS Dark Gray System */
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 210 17% 97%;
 
-    --muted: 220 25% 27%;
-    --muted-foreground: 220 20% 65%;
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 9% 64%;
 
-    --accent: 220 25% 27%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 13% 15%;
+    --accent-foreground: 210 17% 97%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
+    /* iOS Dark System Colors */
+    --destructive: 0 100% 67%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 120 60% 60%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 100% 60%;
+    --warning-foreground: 0 0% 100%;
+    --purple: 280 100% 80%;
+    --purple-foreground: 0 0% 100%;
 
-    --border: 220 25% 27%;
-    --input: 220 25% 27%;
-    --ring: 220 20% 84%;
+    /* iOS Dark borders and surfaces */
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 212 100% 60%;
+
+    /* iOS Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-subtle: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)/0.3));
+    --gradient-glass: linear-gradient(135deg, hsl(var(--card)/0.8), hsl(var(--muted)/0.4));
 
     --sidebar-background: 220 28% 17%;
     --sidebar-foreground: 220 20% 96%;
@@ -236,17 +277,18 @@ html {
   border-radius: 4px;
 }
 
-/* Improved button hover states with better performance */
+/* iOS-inspired enhanced interactions */
 .btn-enhanced {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, box-shadow;
+  @apply transition-all duration-300 hover:scale-105;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-enhanced:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 25px rgba(30, 41, 59, 0.15);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-enhanced:active {
+  transform: scale(0.98);
 }
 
 /* Navy blue theme variations */
@@ -261,15 +303,66 @@ html {
   border: 1px solid hsl(var(--navy-700));
 }
 
-/* Improved card interactions with performance optimization */
+/* iOS-inspired card interactions */
 .feature-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, box-shadow;
+  @apply transition-all duration-300 hover:scale-[1.02];
+  box-shadow: var(--shadow-sm);
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(30, 41, 59, 0.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-interactive {
+  @apply transition-all duration-300 hover:translate-y-[-2px];
+  box-shadow: var(--shadow-md);
+}
+
+.card-interactive:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+.glass-effect {
+  @apply backdrop-blur-xl;
+  background: var(--gradient-glass);
+  border: 1px solid hsl(var(--border)/0.5);
+}
+
+.text-gradient {
+  background: var(--gradient-primary);
+  @apply bg-clip-text text-transparent;
+}
+
+.gradient-border {
+  @apply border-2 border-transparent;
+  background: var(--gradient-primary);
+  background-clip: border-box;
+}
+
+/* iOS-style admin badge */
+.admin-badge {
+  @apply px-4 py-2 rounded-full font-semibold text-sm;
+  background: linear-gradient(135deg, hsl(var(--purple)), hsl(var(--purple)/0.8));
+  color: hsl(var(--purple-foreground));
+  box-shadow: var(--shadow-sm);
+}
+
+/* iOS-style success state */
+.success-state {
+  @apply bg-green-50 border-green-200 text-green-800;
+}
+
+.dark .success-state {
+  @apply bg-green-900/20 border-green-800/30 text-green-400;
+}
+
+/* iOS-style warning state */
+.warning-state {
+  @apply bg-orange-50 border-orange-200 text-orange-800;
+}
+
+.dark .warning-state {
+  @apply bg-orange-900/20 border-orange-800/30 text-orange-400;
 }
 
 /* Typography improvements with navy theme */

@@ -191,13 +191,15 @@ const AdminPanel: React.FC = () => {
   const stats = getStats();
 
   const StatCard = ({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) => (
-    <Card className="transition-all duration-200 hover:shadow-lg border-0 bg-gradient-to-br from-background to-muted/20">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-semibold text-muted-foreground">{title}</CardTitle>
-        <Icon className={`h-5 w-5 ${color}`} />
+    <Card className="feature-card border-0 rounded-2xl overflow-hidden" style={{ background: 'var(--gradient-card)' }}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-base font-semibold text-muted-foreground uppercase tracking-wider">{title}</CardTitle>
+        <div className="p-3 bg-primary/10 rounded-xl">
+          <Icon className={`h-6 w-6 ${color}`} />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold tracking-tight">{value.toLocaleString()}</div>
+        <div className="text-4xl font-bold tracking-tight">{value.toLocaleString()}</div>
       </CardContent>
     </Card>
   );
@@ -261,16 +263,16 @@ const AdminPanel: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Admin Panel Header - Enhanced */}
+      {/* Admin Panel Header - iOS-inspired */}
       <div className="flex items-center justify-between">
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground flex items-center tracking-tight">
-            <div className="p-2 bg-primary/10 rounded-lg mr-4">
-              <Shield className="h-8 w-8 text-primary" />
+        <div className="glass-effect rounded-2xl p-8 border border-primary/20">
+          <h1 className="text-4xl lg:text-5xl font-bold text-foreground flex items-center tracking-tight">
+            <div className="p-3 bg-primary/10 rounded-xl mr-6">
+              <Shield className="h-10 w-10 text-primary" />
             </div>
             Admin Panel
           </h1>
-          <p className="text-muted-foreground mt-3 text-lg font-medium">System administration and user management</p>
+          <p className="text-muted-foreground mt-4 text-xl font-medium">System administration and user management</p>
         </div>
         <Button
           onClick={fetchAdminData}
@@ -309,16 +311,16 @@ const AdminPanel: React.FC = () => {
           {/* Data Export Section */}
           <DataExport users={users} subscribers={subscribers} />
 
-          {/* Users Management with Data Table - Enhanced */}
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center text-xl font-bold">
-                <div className="p-2 bg-primary/10 rounded-lg mr-3">
-                  <Users className="h-5 w-5 text-primary" />
+          {/* Users Management with Data Table - iOS-inspired */}
+          <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+            <CardHeader className="pb-8">
+              <CardTitle className="flex items-center text-2xl font-bold">
+                <div className="p-3 bg-primary/10 rounded-xl mr-4">
+                  <Users className="h-6 w-6 text-primary" />
                 </div>
                 User Management
               </CardTitle>
-              <CardDescription className="text-base font-medium">
+              <CardDescription className="text-lg font-medium">
                 Search, filter, and manage user accounts ({users.length} total users found)
               </CardDescription>
             </CardHeader>
