@@ -111,9 +111,9 @@ const Dashboard = () => {
   };
 
   const getSubscriptionColor = () => {
-    if (subscriptionError) return 'text-red-600';
-    if (!subscribed) return 'text-gray-600';
-    return 'text-green-600';
+    if (subscriptionError) return 'text-destructive';
+    if (!subscribed) return 'text-muted-foreground';
+    return 'text-primary';
   };
 
   const getBillingDate = () => {
@@ -142,7 +142,7 @@ const Dashboard = () => {
         (cancel_at_period_end ? 'Subscription will end' : 'Billing date') : 
         'No billing scheduled',
       icon: Calendar,
-      color: cancel_at_period_end ? 'text-orange-600' : 'text-blue-600'
+      color: cancel_at_period_end ? 'text-orange-600' : 'text-primary'
     }
   ];
 
@@ -160,68 +160,75 @@ const Dashboard = () => {
   };
 
   const renderDashboardContent = () => (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {/* Welcome Section */}
-      <div>
-        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+      <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
+        <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
           Welcome back, {user?.email?.split('@')[0] || 'User'}!
         </h3>
-        <p className="text-sm lg:text-base text-gray-600">
+        <p className="text-base lg:text-lg text-muted-foreground">
           Here's what's happening with your account today.
         </p>
       </div>
 
-      {/* Admin Badge - Updated to gold color scheme */}
+      {/* Admin Badge - Enhanced with better styling */}
       {isAdmin && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-300 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-300 rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
           <div className="flex items-center">
-            <Shield className="h-5 w-5 text-amber-600 mr-2" />
+            <div className="p-2 bg-amber-100 rounded-lg mr-4">
+              <Shield className="h-6 w-6 text-amber-600" />
+            </div>
             <div>
-              <h4 className="font-semibold text-amber-800">Administrator Access</h4>
-              <p className="text-sm text-amber-700">You have admin privileges on this account.</p>
+              <h4 className="font-bold text-amber-800 text-lg">Administrator Access</h4>
+              <p className="text-amber-700 font-medium">You have admin privileges on this account.</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+      {/* Stats Cards - Enhanced with better styling */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
         {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+          <Card key={index} className="feature-card border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                 {stat.title}
               </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-xl lg:text-2xl font-bold text-gray-900 break-words">{stat.value}</div>
-              <p className="text-xs text-gray-600 mt-1">{stat.description}</p>
+              <div className="text-2xl lg:text-3xl font-bold text-foreground break-words tracking-tight">{stat.value}</div>
+              <p className="text-sm text-muted-foreground mt-2 font-medium">{stat.description}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Subscription Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Subscription Status</CardTitle>
-          <CardDescription>
+      {/* Subscription Status - Enhanced with better styling */}
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-bold flex items-center">
+            <CreditCard className="h-5 w-5 mr-2 text-primary" />
+            Subscription Status
+          </CardTitle>
+          <CardDescription className="text-base">
             Your current plan and billing information
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className={`flex items-center justify-between p-4 rounded-lg ${
+          <div className="space-y-6">
+            <div className={`flex items-center justify-between p-6 rounded-xl border-2 transition-all duration-300 ${
               subscribed 
-                ? 'bg-gradient-to-r from-purple-50 to-blue-50' 
-                : 'bg-gray-50'
+                ? 'bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20' 
+                : 'bg-muted/50 border-muted'
             }`}>
               <div className="min-w-0 flex-1">
-                <h4 className="font-semibold text-gray-900 truncate">
+                <h4 className="font-bold text-foreground truncate text-lg">
                   {subscribed ? `${subscription_tier} Plan` : 'No Active Plan'}
                 </h4>
-                <p className="text-sm text-gray-600 break-words">
+                <p className="text-muted-foreground break-words font-medium">
                   {subscribed 
                     ? (cancel_at_period_end 
                         ? `Subscription ends: ${getBillingDate()}` 
@@ -233,10 +240,10 @@ const Dashboard = () => {
               <Badge className={`${
                 subscribed 
                   ? (cancel_at_period_end 
-                      ? "bg-orange-100 text-orange-800" 
-                      : "bg-green-100 text-green-800") 
-                  : "bg-gray-100 text-gray-800"
-              } flex-shrink-0 ml-2`}>
+                      ? "bg-orange-100 text-orange-800 border-orange-200" 
+                      : "bg-green-100 text-green-800 border-green-200") 
+                  : "bg-muted text-muted-foreground"
+              } flex-shrink-0 ml-4 px-3 py-1 font-semibold`}>
                 {subscribed 
                   ? (cancel_at_period_end ? 'Canceling' : 'Active') 
                   : 'Inactive'}
@@ -245,11 +252,12 @@ const Dashboard = () => {
             
             <Separator />
             
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
               <Button 
                 onClick={handleManageBilling}
                 disabled={portalLoading}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto btn-enhanced h-12 px-6 font-semibold"
+                size="lg"
               >
                 {portalLoading ? (
                   <>
@@ -261,7 +269,7 @@ const Dashboard = () => {
                 )}
               </Button>
               {subscribed && (
-                <Button variant="outline" onClick={() => navigate('/pricing')} className="w-full sm:w-auto">
+                <Button variant="outline" onClick={() => navigate('/pricing')} className="w-full sm:w-auto btn-enhanced h-12 px-6 font-semibold" size="lg">
                   Change Plan
                 </Button>
               )}
@@ -270,11 +278,14 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
+      {/* Quick Actions - Enhanced with better styling */}
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-bold flex items-center">
+            <Settings className="h-5 w-5 mr-2 text-primary" />
+            Quick Actions
+          </CardTitle>
+          <CardDescription className="text-base">
             Frequently used features and settings
           </CardDescription>
         </CardHeader>
@@ -282,23 +293,23 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button 
               variant="outline" 
-              className="h-12" 
+              className="h-14 btn-enhanced font-semibold text-base hover:bg-primary/5 border-2" 
               onClick={handleManageBilling}
               disabled={portalLoading}
             >
               {portalLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
               ) : (
-                <CreditCard className="h-4 w-4 mr-2" />
+                <CreditCard className="h-5 w-5 mr-2" />
               )}
               {subscribed ? 'Manage Billing' : 'Subscribe'}
             </Button>
-            <Button variant="outline" className="h-12">
-              <Settings className="h-4 w-4 mr-2" />
+            <Button variant="outline" className="h-14 btn-enhanced font-semibold text-base hover:bg-primary/5 border-2">
+              <Settings className="h-5 w-5 mr-2" />
               Account Settings
             </Button>
-            <Button variant="outline" className="h-12">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <Button variant="outline" className="h-14 btn-enhanced font-semibold text-base hover:bg-primary/5 border-2">
+              <TrendingUp className="h-5 w-5 mr-2" />
               View Usage
             </Button>
           </div>
@@ -308,36 +319,39 @@ const Dashboard = () => {
   );
 
   const renderPlaceholder1Content = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+    <div className="space-y-8 animate-fade-in">
+      <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
+        <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
           Placeholder Tab1
         </h3>
-        <p className="text-sm lg:text-base text-gray-600">
+        <p className="text-base lg:text-lg text-muted-foreground">
           This is a placeholder page for Tab1 functionality.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sample Content</CardTitle>
-          <CardDescription>
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-bold flex items-center">
+            <File className="h-5 w-5 mr-2 text-primary" />
+            Sample Content
+          </CardTitle>
+          <CardDescription className="text-base">
             This is placeholder content for demonstration
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Feature 1</h4>
-              <p className="text-sm text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            <div className="p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
+              <h4 className="font-bold mb-3 text-lg text-foreground">Feature 1</h4>
+              <p className="text-muted-foreground font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Feature 2</h4>
-              <p className="text-sm text-gray-600">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <div className="p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
+              <h4 className="font-bold mb-3 text-lg text-foreground">Feature 2</h4>
+              <p className="text-muted-foreground font-medium">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Feature 3</h4>
-              <p className="text-sm text-gray-600">Ut enim ad minim veniam, quis nostrud exercitation.</p>
+            <div className="p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
+              <h4 className="font-bold mb-3 text-lg text-foreground">Feature 3</h4>
+              <p className="text-muted-foreground font-medium">Ut enim ad minim veniam, quis nostrud exercitation.</p>
             </div>
           </div>
         </CardContent>
@@ -346,45 +360,48 @@ const Dashboard = () => {
   );
 
   const renderPlaceholder2Content = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
+    <div className="space-y-8 animate-fade-in">
+      <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
+        <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
           Placeholder Tab2
         </h3>
-        <p className="text-sm lg:text-base text-gray-600">
+        <p className="text-base lg:text-lg text-muted-foreground">
           This is a placeholder page for Tab2 functionality.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Configuration Options</CardTitle>
-          <CardDescription>
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-bold flex items-center">
+            <LayoutGrid className="h-5 w-5 mr-2 text-primary" />
+            Configuration Options
+          </CardTitle>
+          <CardDescription className="text-base">
             Sample configuration settings
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
               <div>
-                <h4 className="font-medium">Setting 1</h4>
-                <p className="text-sm text-gray-600">Enable or disable this feature</p>
+                <h4 className="font-bold text-lg text-foreground">Setting 1</h4>
+                <p className="text-muted-foreground font-medium">Enable or disable this feature</p>
               </div>
-              <Button variant="outline" size="sm">Toggle</Button>
+              <Button variant="outline" size="lg" className="btn-enhanced font-semibold">Toggle</Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
               <div>
-                <h4 className="font-medium">Setting 2</h4>
-                <p className="text-sm text-gray-600">Configure this option</p>
+                <h4 className="font-bold text-lg text-foreground">Setting 2</h4>
+                <p className="text-muted-foreground font-medium">Configure this option</p>
               </div>
-              <Button variant="outline" size="sm">Configure</Button>
+              <Button variant="outline" size="lg" className="btn-enhanced font-semibold">Configure</Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
               <div>
-                <h4 className="font-medium">Setting 3</h4>
-                <p className="text-sm text-gray-600">Manage this preference</p>
+                <h4 className="font-bold text-lg text-foreground">Setting 3</h4>
+                <p className="text-muted-foreground font-medium">Manage this preference</p>
               </div>
-              <Button variant="outline" size="sm">Manage</Button>
+              <Button variant="outline" size="lg" className="btn-enhanced font-semibold">Manage</Button>
             </div>
           </div>
         </CardContent>
@@ -393,7 +410,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen w-full max-w-full bg-gray-50 flex overflow-x-hidden">
+    <div className="min-h-screen w-full max-w-full bg-gradient-to-br from-background to-muted/20 flex overflow-x-hidden">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -402,43 +419,43 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Enhanced with better styling */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-card to-card/80 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-border/50
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-16 px-6 border-b">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-border/50">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             Template1
           </h1>
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className="lg:hidden hover:bg-primary/10"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-6 w-6" />
           </Button>
         </div>
 
-        {/* User Profile Section */}
-        <div className="p-6 border-b">
-          <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarFallback className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+        {/* User Profile Section - Enhanced */}
+        <div className="p-6 border-b border-border/50">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+              <AvatarFallback className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-lg">
                 {user?.email ? getInitials(user.email) : 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-bold text-foreground truncate">
                 {user?.email || 'User'}
               </p>
-              <div className="flex items-center space-x-2">
-                <p className="text-xs text-gray-500">
+              <div className="flex items-center space-x-2 mt-1">
+                <p className="text-xs text-muted-foreground font-medium">
                   {subscribed ? `${subscription_tier} Member` : 'Free User'}
                 </p>
                 {isAdmin && (
-                  <Badge className="text-xs bg-amber-100 text-amber-800 border-amber-300">
+                  <Badge className="text-xs bg-amber-100 text-amber-800 border-amber-300 font-semibold">
                     Admin
                   </Badge>
                 )}
@@ -447,32 +464,32 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* Navigation - Enhanced */}
         <nav className="flex-1 px-4 py-6 space-y-2">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
               className={`
-                w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                w-full flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-300 will-change-transform
                 ${item.active 
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg transform scale-105' 
+                  : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground hover:transform hover:scale-105'
                 }
-                ${(item.id === 'admin' || item.id === 'chatbot' || item.id === 'blog') ? 'border border-amber-300' : ''}
+                ${(item.id === 'admin' || item.id === 'chatbot' || item.id === 'blog') ? 'border-2 border-amber-300/50' : ''}
               `}
             >
-              <item.icon className="h-5 w-5 mr-3" />
+              <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
               {item.label}
             </button>
           ))}
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-4 border-t">
+        {/* Logout Button - Enhanced */}
+        <div className="p-4 border-t border-border/50">
           <Button
             variant="ghost"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full justify-start text-destructive hover:text-destructive-foreground hover:bg-destructive/10 font-semibold h-12 rounded-xl transition-all duration-300"
             onClick={handleSignOut}
           >
             <LogOut className="h-5 w-5 mr-3" />
