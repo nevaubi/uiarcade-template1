@@ -170,10 +170,10 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
   };
 
   const getDropZoneClasses = () => {
-    let baseClasses = "relative border-2 border-dashed rounded-3xl transition-all duration-300 ease-out cursor-pointer group backdrop-blur-sm ring-1 ring-border/10";
+    let baseClasses = "relative border-2 border-dashed rounded-2xl transition-all duration-300 ease-out cursor-pointer group";
     
     if (isDragOver || isDragActive) {
-      return `${baseClasses} border-primary/60 bg-primary/8 scale-[1.02] shadow-xl ring-primary/20`;
+      return `${baseClasses} border-primary/60 bg-primary/5 scale-[1.02] shadow-lg`;
     }
     
     if (uploading || isRateLimited) {
@@ -181,27 +181,27 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
     }
     
     if (file) {
-      return `${baseClasses} border-primary/40 bg-primary/8 hover:border-primary/60 hover:bg-primary/12 hover:shadow-lg hover:ring-primary/20`;
+      return `${baseClasses} border-primary/40 bg-primary/5 hover:border-primary/60 hover:bg-primary/10`;
     }
     
-    return `${baseClasses} border-border/40 hover:border-primary/40 hover:bg-accent/30 hover:shadow-md hover:ring-border/20`;
+    return `${baseClasses} border-border hover:border-primary/40 hover:bg-accent`;
   };
 
   return (
-    <Card className="overflow-hidden backdrop-blur-sm bg-card/95 border-0 shadow-lg ring-1 ring-border/10">
-      <CardHeader className="pb-6 px-8 pt-8">
-        <CardTitle className="flex items-center gap-4 text-xl font-semibold tracking-tight">
-          <div className="p-3 rounded-2xl bg-primary/8 ring-1 ring-primary/10 backdrop-blur-sm">
-            <CloudUpload className="h-6 w-6 text-primary" />
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+          <div className="p-2 rounded-xl bg-primary/10">
+            <CloudUpload className="h-5 w-5 text-primary" />
           </div>
           Upload Documents
         </CardTitle>
-        <CardDescription className="text-muted-foreground text-base leading-relaxed mt-2">
+        <CardDescription className="text-muted-foreground">
           Upload documents to build your chatbot's knowledge base
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-8 px-8 pb-8">
+      <CardContent className="space-y-6">
         {/* Drag & Drop Zone */}
         <div
           className={getDropZoneClasses()}
@@ -211,51 +211,51 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
           onDrop={onDrop}
           onClick={handleBrowseClick}
         >
-          <div className="px-10 py-12 text-center">
-            <div className="mb-6">
+          <div className="p-8 text-center">
+            <div className="mb-4">
               {uploading ? (
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/8 mb-3 ring-1 ring-primary/10 backdrop-blur-sm">
-                  <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-2">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
                 </div>
               ) : file ? (
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/8 mb-3 ring-1 ring-primary/10 backdrop-blur-sm transform group-hover:scale-105 transition-all duration-300 ease-out">
-                  <FileText className="h-10 w-10 text-primary" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-2 transform group-hover:scale-105 transition-transform">
+                  <FileText className="h-8 w-8 text-primary" />
                 </div>
               ) : (
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/30 mb-3 ring-1 ring-border/20 backdrop-blur-sm transform group-hover:scale-105 group-hover:bg-primary/8 group-hover:ring-primary/10 transition-all duration-300 ease-out">
-                  <CloudUpload className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-2 transform group-hover:scale-105 transition-transform">
+                  <CloudUpload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
               )}
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {uploading ? (
                 <>
-                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Processing Document...</h3>
-                  <p className="text-base text-muted-foreground leading-relaxed">Please wait while we process your file</p>
+                  <h3 className="text-lg font-medium text-foreground">Processing Document...</h3>
+                  <p className="text-sm text-muted-foreground">Please wait while we process your file</p>
                 </>
               ) : file ? (
                 <>
-                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Ready to Upload</h3>
-                  <p className="text-base text-muted-foreground leading-relaxed">Click the upload button below to proceed</p>
+                  <h3 className="text-lg font-medium text-foreground">Ready to Upload</h3>
+                  <p className="text-sm text-muted-foreground">Click the upload button below to proceed</p>
                 </>
               ) : isDragActive ? (
                 <>
-                  <h3 className="text-xl font-semibold text-primary tracking-tight">Drop your file here</h3>
-                  <p className="text-base text-muted-foreground leading-relaxed">Release to select this file</p>
+                  <h3 className="text-lg font-medium text-primary">Drop your file here</h3>
+                  <p className="text-sm text-muted-foreground">Release to select this file</p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Drop files to upload</h3>
-                  <p className="text-base text-muted-foreground leading-relaxed">
-                    Or <span className="text-primary font-semibold">browse</span> to choose files
+                  <h3 className="text-lg font-medium text-foreground">Drop files to upload</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Or <span className="text-primary font-medium">browse</span> to choose files
                   </p>
                 </>
               )}
             </div>
             
-            <div className="mt-6 pt-6 border-t border-border/30">
-              <p className="text-sm text-muted-foreground font-medium">
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-xs text-muted-foreground">
                 Supports PDF, TXT, DOCX • Max 10MB
               </p>
             </div>
@@ -273,14 +273,14 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
 
         {/* Selected File Display */}
         {file && (
-          <div className="p-5 bg-accent/30 rounded-2xl border border-border/30 transition-all duration-300 hover:bg-accent/40 backdrop-blur-sm ring-1 ring-border/10">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-primary/8 ring-1 ring-primary/10 backdrop-blur-sm">
-                <FileText className="h-6 w-6 text-primary" />
+          <div className="p-4 bg-accent/50 rounded-xl border border-border/50 transition-all duration-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <FileText className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-semibold text-foreground truncate">{file.name}</p>
-                <p className="text-sm text-muted-foreground font-medium">
+                <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
                   {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -291,9 +291,9 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
                   e.stopPropagation();
                   resetFile();
                 }}
-                className="h-10 w-10 p-0 rounded-xl hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200"
+                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
               >
-                <span className="text-lg">×</span>
+                ×
               </Button>
             </div>
           </div>
@@ -301,12 +301,12 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
 
         {/* Rate Limit Warning */}
         {isRateLimited && (
-          <div className="p-5 bg-destructive/5 border border-destructive/20 rounded-2xl backdrop-blur-sm ring-1 ring-destructive/10">
-            <div className="flex items-center gap-4">
-              <AlertCircle className="h-6 w-6 text-destructive flex-shrink-0" />
+          <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
               <div>
-                <p className="text-base font-semibold text-destructive">Rate limit reached</p>
-                <p className="text-sm text-destructive/80 font-medium">
+                <p className="text-sm font-medium text-destructive">Rate limit reached</p>
+                <p className="text-xs text-destructive/80">
                   Please wait {timeUntilReset} seconds before uploading
                 </p>
               </div>
@@ -319,16 +319,16 @@ const DocumentUpload = ({ onUploadComplete, uploading: externalUploading, upload
           onClick={handleUpload} 
           disabled={!file || uploading || isRateLimited}
           size="lg"
-          className="w-full h-14 text-base font-semibold transition-all duration-300 disabled:opacity-50 rounded-2xl hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl backdrop-blur-sm"
+          className="w-full h-12 text-base font-medium transition-all duration-200 disabled:opacity-50"
         >
           {uploading ? (
             <>
-              <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Processing Document...
             </>
           ) : (
             <>
-              <Upload className="mr-3 h-6 w-6" />
+              <Upload className="mr-2 h-5 w-5" />
               Upload Document
             </>
           )}
