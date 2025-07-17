@@ -6,58 +6,35 @@
 
 @layer base {
   :root {
-    /* iOS-inspired color system */
-    --background: 210 17% 97%;
-    --foreground: 220 13% 9%;
+    --background: 0 0% 100%;
+    --foreground: 220 25% 27%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 9%;
+    --card-foreground: 220 25% 27%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 9%;
+    --popover-foreground: 220 25% 27%;
 
-    /* iOS Blue System Color */
-    --primary: 212 100% 50%;
+    --primary: 220 28% 17%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 212 100% 60%;
 
-    /* iOS Gray System */
-    --secondary: 210 17% 95%;
-    --secondary-foreground: 220 13% 9%;
+    --secondary: 220 20% 65%;
+    --secondary-foreground: 220 25% 27%;
 
-    --muted: 210 17% 95%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 16% 47%;
 
-    --accent: 210 17% 95%;
-    --accent-foreground: 220 13% 9%;
+    --accent: 220 20% 96%;
+    --accent-foreground: 220 25% 27%;
 
-    /* iOS System Colors */
-    --destructive: 0 100% 59%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --success: 120 60% 50%;
-    --success-foreground: 0 0% 100%;
-    --warning: 35 100% 50%;
-    --warning-foreground: 0 0% 100%;
-    --purple: 280 100% 70%;
-    --purple-foreground: 0 0% 100%;
 
-    /* iOS-style borders and surfaces */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 212 100% 50%;
+    --border: 220 20% 91%;
+    --input: 220 20% 91%;
+    --ring: 220 28% 17%;
 
-    /* iOS-style design tokens */
-    --radius: 0.75rem;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-
-    /* iOS-style gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
-    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)/0.3));
-    --gradient-glass: linear-gradient(135deg, hsl(var(--card)/0.8), hsl(var(--muted)/0.4));
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 220 25% 27%;
@@ -89,51 +66,33 @@
   }
 
   .dark {
-    /* iOS Dark Mode colors */
-    --background: 220 13% 9%;
-    --foreground: 210 17% 97%;
+    --background: 220 28% 17%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 13% 12%;
-    --card-foreground: 210 17% 97%;
+    --card: 220 28% 17%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 13% 12%;
-    --popover-foreground: 210 17% 97%;
+    --popover: 220 28% 17%;
+    --popover-foreground: 0 0% 98%;
 
-    /* iOS Blue System Color (Dark) */
-    --primary: 212 100% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 212 100% 70%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 220 28% 17%;
 
-    /* iOS Dark Gray System */
-    --secondary: 220 13% 15%;
-    --secondary-foreground: 210 17% 97%;
+    --secondary: 220 25% 27%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 13% 15%;
-    --muted-foreground: 220 9% 64%;
+    --muted: 220 25% 27%;
+    --muted-foreground: 220 20% 65%;
 
-    --accent: 220 13% 15%;
-    --accent-foreground: 210 17% 97%;
+    --accent: 220 25% 27%;
+    --accent-foreground: 0 0% 98%;
 
-    /* iOS Dark System Colors */
-    --destructive: 0 100% 67%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 120 60% 60%;
-    --success-foreground: 0 0% 100%;
-    --warning: 35 100% 60%;
-    --warning-foreground: 0 0% 100%;
-    --purple: 280 100% 80%;
-    --purple-foreground: 0 0% 100%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
 
-    /* iOS Dark borders and surfaces */
-    --border: 220 13% 20%;
-    --input: 220 13% 20%;
-    --ring: 212 100% 60%;
-
-    /* iOS Dark gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
-    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)/0.3));
-    --gradient-glass: linear-gradient(135deg, hsl(var(--card)/0.8), hsl(var(--muted)/0.4));
+    --border: 220 25% 27%;
+    --input: 220 25% 27%;
+    --ring: 220 20% 84%;
 
     --sidebar-background: 220 28% 17%;
     --sidebar-foreground: 220 20% 96%;
@@ -277,18 +236,17 @@ html {
   border-radius: 4px;
 }
 
-/* iOS-inspired enhanced interactions */
+/* Improved button hover states with better performance */
 .btn-enhanced {
-  @apply transition-all duration-300 hover:scale-105;
-  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
 }
 
 .btn-enhanced:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.btn-enhanced:active {
-  transform: scale(0.98);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(30, 41, 59, 0.15);
 }
 
 /* Navy blue theme variations */
@@ -303,76 +261,15 @@ html {
   border: 1px solid hsl(var(--navy-700));
 }
 
-/* iOS-inspired card interactions */
+/* Improved card interactions with performance optimization */
 .feature-card {
-  @apply transition-all duration-300 hover:scale-[1.02];
-  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
 }
 
 .feature-card:hover {
-  box-shadow: var(--shadow-lg);
-}
-
-.card-interactive {
-  @apply transition-all duration-300 hover:translate-y-[-2px];
-  box-shadow: var(--shadow-md);
-}
-
-.card-interactive:hover {
-  box-shadow: var(--shadow-xl);
-}
-
-.glass-effect {
-  @apply backdrop-blur-xl;
-  background: var(--gradient-glass);
-  border: 1px solid hsl(var(--border)/0.5);
-}
-
-.sidebar-solid {
-  @apply bg-white border-r;
-  border-color: hsl(var(--border));
-}
-
-.dark .sidebar-solid {
-  @apply bg-navy-900 border-r;
-  border-color: hsl(var(--border));
-}
-
-.text-gradient {
-  background: var(--gradient-primary);
-  @apply bg-clip-text text-transparent;
-}
-
-.gradient-border {
-  @apply border-2 border-transparent;
-  background: var(--gradient-primary);
-  background-clip: border-box;
-}
-
-/* iOS-style admin badge */
-.admin-badge {
-  @apply px-4 py-2 rounded-full font-semibold text-sm;
-  background: linear-gradient(135deg, hsl(var(--purple)), hsl(var(--purple)/0.8));
-  color: hsl(var(--purple-foreground));
-  box-shadow: var(--shadow-sm);
-}
-
-/* iOS-style success state */
-.success-state {
-  @apply bg-green-50 border-green-200 text-green-800;
-}
-
-.dark .success-state {
-  @apply bg-green-900/20 border-green-800/30 text-green-400;
-}
-
-/* iOS-style warning state */
-.warning-state {
-  @apply bg-orange-50 border-orange-200 text-orange-800;
-}
-
-.dark .warning-state {
-  @apply bg-orange-900/20 border-orange-800/30 text-orange-400;
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(30, 41, 59, 0.1);
 }
 
 /* Typography improvements with navy theme */
@@ -435,4 +332,194 @@ html {
 
 .skip-link:focus {
   top: 6px;
+}
+
+/* Custom styles for the header */
+.header-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden; /* Prevents SVG from spilling out */
+    padding-bottom: 116px; /* Space for the wave */
+}
+
+/* This div creates the solid background color for the top part of the header. */
+.header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Full height */
+    background-color: #2A3342;
+    background-image: linear-gradient(135deg, 
+        rgba(70, 90, 120, 0.8) 0%, 
+        rgba(42, 51, 66, 0.9) 50%,
+        rgba(25, 35, 50, 0.8) 100%);
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.3);
+}
+
+/* Metallic texture overlay */
+.metallic-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(45deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.12) 48%, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0) 65%, rgba(255, 255, 255, 0.08) 80%, rgba(255, 255, 255, 0) 90%);
+    background-size: 200% 200%;
+    background-position: center;
+    z-index: 4;
+}
+
+/* Grid overlay */
+.grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 5;
+    box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.05);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+/* Fade effect overlay */
+.fade-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(70, 90, 120, 0.1) 0%, rgba(25, 35, 50, 0.6) 100%);
+    z-index: 5;
+}
+
+/* The container for the SVG wave, positioned at the bottom of the header. */
+.wave-svg-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 6;
+    transform: translateY(1px); /* Fix potential 1px gap */
+}
+
+/* The SVG itself is set to fill its container horizontally. */
+.wave-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* Reviews Section Smooth Scrolling Animation */
+.reviews-scroll-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.reviews-scroll-track {
+    display: flex;
+    width: fit-content;
+    animation: scroll-left 30s linear infinite;
+    gap: 1.5rem;
+}
+
+.reviews-scroll-track-reverse {
+    display: flex;
+    width: fit-content;
+    animation: scroll-right 30s linear infinite;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .reviews-scroll-track,
+    .reviews-scroll-track-reverse {
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .reviews-scroll-track,
+    .reviews-scroll-track-reverse {
+        gap: 2.5rem;
+    }
+}
+
+.reviews-scroll-item {
+    flex: 0 0 auto;
+    width: 300px;
+    height: 200px;
+}
+
+@media (min-width: 640px) {
+    .reviews-scroll-item {
+        width: 320px;
+        height: 210px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .reviews-scroll-item {
+        width: 340px;
+        height: 220px;
+    }
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes scroll-right {
+    0% {
+        transform: translateX(-50%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+/* Enhanced fade edges with vibrant colors */
+.reviews-scroll-container::before,
+.reviews-scroll-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 140px;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.reviews-scroll-container::before {
+    left: 0;
+    background: linear-gradient(to right, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
+}
+
+.reviews-scroll-container::after {
+    right: 0;
+    background: linear-gradient(to left, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
+}
+
+/* Dark mode fade edges */
+@media (prefers-color-scheme: dark) {
+    .reviews-scroll-container::before {
+        background: linear-gradient(to right, rgb(24, 24, 27), rgba(39, 39, 42, 0.4), transparent);
+    }
+    
+    .reviews-scroll-container::after {
+        background: linear-gradient(to left, rgb(24, 24, 27), rgba(39, 39, 42, 0.4), transparent);
+    }
 }
