@@ -31,7 +31,20 @@ import {
   BarChart3,
   HelpCircle,
   Clock,
-  Database
+  Database,
+  Search,
+  Image,
+  Video,
+  FileText,
+  Folder,
+  Share,
+  Grid3x3,
+  List,
+  Music,
+  Archive,
+  Trash,
+  Eye,
+  AlertCircle
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -487,47 +500,344 @@ const Dashboard = () => {
 
   const renderPlaceholder2Content = () => (
     <div className="space-y-8 animate-fade-in">
+      {/* Header with Search & View Toggle */}
       <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
-        <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
-          Placeholder Tab2
-        </h3>
-        <p className="text-base lg:text-lg text-muted-foreground">
-          This is a placeholder page for Tab2 functionality.
-        </p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div>
+            <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-3">
+              Content Library & Media Center
+            </h3>
+            <p className="text-base lg:text-lg text-muted-foreground">
+              Manage your files, media, and content in one place
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search files..."
+                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
+              />
+            </div>
+            <Button variant="outline" size="sm" className="border-2">
+              <Grid3x3 className="h-4 w-4 mr-2" />
+              Grid
+            </Button>
+            <Button variant="outline" size="sm" className="border-2">
+              <List className="h-4 w-4 mr-2" />
+              List
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Content Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <File className="h-8 w-8 text-primary" />
+            </div>
+            <div className="text-3xl font-bold text-foreground mb-2">1,247</div>
+            <p className="text-sm text-muted-foreground">Total Files</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-purple/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Database className="h-8 w-8 text-purple" />
+            </div>
+            <div className="text-3xl font-bold text-foreground mb-2">2.4 GB</div>
+            <p className="text-sm text-muted-foreground">Storage Used</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Upload className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="text-3xl font-bold text-foreground mb-2">48</div>
+            <p className="text-sm text-muted-foreground">This Month</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Folder className="h-8 w-8 text-blue-600" />
+            </div>
+            <div className="text-3xl font-bold text-foreground mb-2">12</div>
+            <p className="text-sm text-muted-foreground">Active Projects</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Media Gallery Grid */}
+      <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
         <CardHeader className="pb-6">
           <CardTitle className="text-xl font-bold flex items-center">
-            <LayoutGrid className="h-5 w-5 mr-2 text-primary" />
-            Configuration Options
+            <div className="p-2 bg-primary/10 rounded-xl mr-3">
+              <Image className="h-5 w-5 text-primary" />
+            </div>
+            Media Gallery
           </CardTitle>
           <CardDescription className="text-base">
-            Sample configuration settings
+            Your recent uploads and media files
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
-              <div>
-                <h4 className="font-bold text-lg text-foreground">Setting 1</h4>
-                <p className="text-muted-foreground font-medium">Enable or disable this feature</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 hover-scale cursor-pointer">
+              <div className="aspect-video flex items-center justify-center p-8">
+                <Image className="h-16 w-16 text-primary/60" />
               </div>
-              <Button variant="outline" size="lg" className="btn-enhanced font-semibold">Toggle</Button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h4 className="font-semibold text-sm">Project Screenshots</h4>
+                <p className="text-xs text-white/80">12 images</p>
+              </div>
             </div>
-            <div className="flex items-center justify-between p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
-              <div>
-                <h4 className="font-bold text-lg text-foreground">Setting 2</h4>
-                <p className="text-muted-foreground font-medium">Configure this option</p>
+
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/20 to-blue-500/20 hover-scale cursor-pointer">
+              <div className="aspect-video flex items-center justify-center p-8">
+                <Video className="h-16 w-16 text-primary/60" />
               </div>
-              <Button variant="outline" size="lg" className="btn-enhanced font-semibold">Configure</Button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h4 className="font-semibold text-sm">Tutorial Videos</h4>
+                <p className="text-xs text-white/80">8 videos</p>
+              </div>
             </div>
-            <div className="flex items-center justify-between p-6 border-2 rounded-xl hover:bg-primary/5 transition-all duration-300 feature-card">
-              <div>
-                <h4 className="font-bold text-lg text-foreground">Setting 3</h4>
-                <p className="text-muted-foreground font-medium">Manage this preference</p>
+
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 hover-scale cursor-pointer">
+              <div className="aspect-video flex items-center justify-center p-8">
+                <FileText className="h-16 w-16 text-primary/60" />
               </div>
-              <Button variant="outline" size="lg" className="btn-enhanced font-semibold">Manage</Button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h4 className="font-semibold text-sm">Documents</h4>
+                <p className="text-xs text-white/80">24 files</p>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 hover-scale cursor-pointer">
+              <div className="aspect-video flex items-center justify-center p-8">
+                <Music className="h-16 w-16 text-primary/60" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h4 className="font-semibold text-sm">Audio Files</h4>
+                <p className="text-xs text-white/80">16 tracks</p>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-teal-500/20 to-green-500/20 hover-scale cursor-pointer">
+              <div className="aspect-video flex items-center justify-center p-8">
+                <Archive className="h-16 w-16 text-primary/60" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h4 className="font-semibold text-sm">Archives</h4>
+                <p className="text-xs text-white/80">6 packages</p>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 hover-scale cursor-pointer">
+              <div className="aspect-video flex items-center justify-center p-8">
+                <Folder className="h-16 w-16 text-primary/60" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <h4 className="font-semibold text-sm">Other Files</h4>
+                <p className="text-xs text-white/80">32 items</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* File Type Breakdown & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* File Type Breakdown */}
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardHeader className="pb-6">
+            <CardTitle className="text-xl font-bold flex items-center">
+              <div className="p-2 bg-primary/10 rounded-xl mr-3">
+                <BarChart3 className="h-5 w-5 text-primary" />
+              </div>
+              File Type Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                  <span className="text-sm font-medium">Images</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">45%</span>
+                  <span className="text-sm font-semibold">562</span>
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                  <span className="text-sm font-medium">Documents</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">30%</span>
+                  <span className="text-sm font-semibold">374</span>
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: '30%' }}></div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                  <span className="text-sm font-medium">Videos</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">15%</span>
+                  <span className="text-sm font-semibold">187</span>
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '15%' }}></div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                  <span className="text-sm font-medium">Other</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">10%</span>
+                  <span className="text-sm font-semibold">124</span>
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div className="bg-orange-500 h-2 rounded-full" style={{ width: '10%' }}></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity Timeline */}
+        <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+          <CardHeader className="pb-6">
+            <CardTitle className="text-xl font-bold flex items-center">
+              <div className="p-2 bg-primary/10 rounded-xl mr-3">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
+              Recent Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <Upload className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">presentation.pdf uploaded</p>
+                  <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                </div>
+                <Badge className="bg-green-100 text-green-800">Complete</Badge>
+              </div>
+
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <Eye className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">design-mockup.jpg viewed</p>
+                  <p className="text-xs text-muted-foreground">15 minutes ago</p>
+                </div>
+                <Badge className="bg-blue-100 text-blue-800">Viewed</Badge>
+              </div>
+
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                  <Share className="h-4 w-4 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">project-files.zip shared</p>
+                  <p className="text-xs text-muted-foreground">1 hour ago</p>
+                </div>
+                <Badge className="bg-purple-100 text-purple-800">Shared</Badge>
+              </div>
+
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">video-tutorial.mp4 processing</p>
+                  <p className="text-xs text-muted-foreground">3 hours ago</p>
+                </div>
+                <Badge className="bg-orange-100 text-orange-800">Processing</Badge>
+              </div>
+
+              <div className="flex items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                  <Trash className="h-4 w-4 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">old-backup.zip deleted</p>
+                  <p className="text-xs text-muted-foreground">1 day ago</p>
+                </div>
+                <Badge className="bg-red-100 text-red-800">Deleted</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Upload Area */}
+      <Card className="border-0 rounded-2xl card-interactive" style={{ background: 'var(--gradient-card)' }}>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-bold flex items-center">
+            <div className="p-2 bg-primary/10 rounded-xl mr-3">
+              <Upload className="h-5 w-5 text-primary" />
+            </div>
+            Quick Upload
+          </CardTitle>
+          <CardDescription className="text-base">
+            Upload new files or drag and drop them here
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 text-center hover:border-primary/50 transition-colors">
+            <Upload className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-lg font-semibold text-foreground mb-2">Drag and drop files here</p>
+            <p className="text-sm text-muted-foreground mb-6">or click to browse</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button variant="outline" className="btn-enhanced">
+                <Image className="h-4 w-4 mr-2" />
+                Images
+              </Button>
+              <Button variant="outline" className="btn-enhanced">
+                <Video className="h-4 w-4 mr-2" />
+                Videos
+              </Button>
+              <Button variant="outline" className="btn-enhanced">
+                <FileText className="h-4 w-4 mr-2" />
+                Documents
+              </Button>
+              <Button variant="outline" className="btn-enhanced">
+                <File className="h-4 w-4 mr-2" />
+                All Files
+              </Button>
             </div>
           </div>
         </CardContent>
