@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Edit2, Trash2, Plus, Mail, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import EmailTemplateViewer from './EmailTemplateViewer';
 
 interface BlogPost {
   id: string;
@@ -456,22 +457,12 @@ const BlogManager: React.FC = () => {
 
                     <div>
                       <Label htmlFor="template">Email Template (HTML)</Label>
-                      <Textarea
-                        id="template"
-                        value={emailConfig.template_html}
-                        onChange={(e) => handleEmailConfigUpdate('template_html', e.target.value)}
-                        rows={15}
-                        className="font-mono text-sm"
-                        placeholder="Enter your HTML email template..."
+                      <EmailTemplateViewer
+                        htmlContent={emailConfig.template_html}
+                        onHtmlChange={(html) => handleEmailConfigUpdate('template_html', html)}
                         disabled={emailLoading}
+                        loading={emailLoading}
                       />
-                      <div className="text-xs text-muted-foreground mt-2">
-                        <p>Available template variables:</p>
-                        <p><code>[USER_EMAIL]</code> - User's email address</p>
-                        <p><code>[DASHBOARD_URL]</code> - Link to dashboard</p>
-                        <p><code>[PLATFORM_NAME]</code> - Your platform name</p>
-                        <p><code>[DATE]</code> - Current date</p>
-                      </div>
                     </div>
                   </div>
                 </CardContent>
