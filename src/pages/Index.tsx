@@ -8,6 +8,7 @@ import AuthButton from '@/components/AuthButton';
 import PricingSection from '@/components/PricingSection';
 import ReviewsSection from '@/components/ReviewsSection';
 import FaqSection from '@/components/FaqSection';
+import MetricsSection from '@/components/MetricsSection';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -280,6 +281,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Metrics Section */}
+      <MetricsSection />
 
       {/* Pricing Section */}
       <div id="pricing" className="relative">
