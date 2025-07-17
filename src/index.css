@@ -429,40 +429,40 @@ html {
     display: flex;
     width: fit-content;
     animation: scroll-left 30s linear infinite;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .reviews-scroll-track-reverse {
     display: flex;
     width: fit-content;
     animation: scroll-right 30s linear infinite;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 @media (min-width: 640px) {
-    .reviews-scroll-track,
-    .reviews-scroll-track-reverse {
-        gap: 1.5rem;
-    }
-}
-
-@media (min-width: 1024px) {
     .reviews-scroll-track,
     .reviews-scroll-track-reverse {
         gap: 2rem;
     }
 }
 
+@media (min-width: 1024px) {
+    .reviews-scroll-track,
+    .reviews-scroll-track-reverse {
+        gap: 2.5rem;
+    }
+}
+
 .reviews-scroll-item {
     flex: 0 0 auto;
-    width: 280px;
-    height: 180px;
+    width: 300px;
+    height: 200px;
 }
 
 @media (min-width: 640px) {
     .reviews-scroll-item {
         width: 320px;
-        height: 200px;
+        height: 210px;
     }
 }
 
@@ -491,13 +491,13 @@ html {
     }
 }
 
-/* Enhanced fade edges with correct silver gradient colors */
+/* Enhanced fade edges with vibrant colors */
 .reviews-scroll-container::before,
 .reviews-scroll-container::after {
     content: '';
     position: absolute;
     top: 0;
-    width: 80px;
+    width: 140px;
     height: 100%;
     z-index: 10;
     pointer-events: none;
@@ -505,21 +505,21 @@ html {
 
 .reviews-scroll-container::before {
     left: 0;
-    background: linear-gradient(to right, rgb(229, 231, 235), rgba(229, 231, 235, 0.4), transparent);
+    background: linear-gradient(to right, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
 }
 
 .reviews-scroll-container::after {
     right: 0;
-    background: linear-gradient(to left, rgb(229, 231, 235), rgba(229, 231, 235, 0.4), transparent);
+    background: linear-gradient(to left, rgb(254, 243, 226), rgba(254, 243, 226, 0.4), transparent);
 }
 
 /* Dark mode fade edges */
 @media (prefers-color-scheme: dark) {
     .reviews-scroll-container::before {
-        background: linear-gradient(to right, rgb(55, 65, 81), rgba(55, 65, 81, 0.4), transparent);
+        background: linear-gradient(to right, rgb(24, 24, 27), rgba(39, 39, 42, 0.4), transparent);
     }
     
     .reviews-scroll-container::after {
-        background: linear-gradient(to left, rgb(55, 65, 81), rgba(55, 65, 81, 0.4), transparent);
+        background: linear-gradient(to left, rgb(24, 24, 27), rgba(39, 39, 42, 0.4), transparent);
     }
 }
