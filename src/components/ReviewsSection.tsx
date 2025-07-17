@@ -85,7 +85,7 @@ const ReviewsSection = () => {
   const duplicatedSecondRowReviews = [...secondRowReviews, ...secondRowReviews];
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-3 sm:px-4 lg:px-6 xl:px-8 relative overflow-hidden bg-gradient-to-br from-gray-200 via-white to-gray-300 dark:from-gray-700 dark:via-gray-900 dark:to-black">
+    <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-3 sm:px-4 lg:px-6 xl:px-8 relative overflow-hidden bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-7 sm:mb-10 md:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
@@ -120,7 +120,7 @@ const ReviewsSection = () => {
                           <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current drop-shadow-sm" />
                         ))}
                       </div>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">"{review.text}"</p>
+                      <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">"{review.text}"</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -153,7 +153,7 @@ const ReviewsSection = () => {
                           <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current drop-shadow-sm" />
                         ))}
                       </div>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">"{review.text}"</p>
+                      <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">"{review.text}"</p>
                     </CardContent>
                   </Card>
                 </div>
