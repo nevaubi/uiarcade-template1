@@ -239,10 +239,10 @@ const ChatbotPanel = () => {
         fallback_response: localConfig.fallback_response,
       };
 
-      await updateConfig(updates);
+      const updatedConfig = await updateConfig(updates);
       
       // Reset local config to match saved config
-      setLocalConfig(config);
+      setLocalConfig(updatedConfig);
       
     } catch (error) {
       console.error('Error saving settings:', error);
