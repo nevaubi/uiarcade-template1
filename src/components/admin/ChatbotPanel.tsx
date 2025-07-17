@@ -128,6 +128,19 @@ const ChatbotPanel = () => {
     fetchData();
   }, [documents]);
 
+  // Initialize test chat with welcome message (same as live widget)
+  useEffect(() => {
+    if (activeTab === 'test' && testMessages.length === 0 && localConfig?.chatbot_name) {
+      const welcomeMessage: Message = {
+        id: Date.now().toString(),
+        content: `Hello! I'm ${localConfig.chatbot_name}. How can I help you today?`,
+        isBot: true,
+        timestamp: new Date(),
+      };
+      setTestMessages([welcomeMessage]);
+    }
+  }, [activeTab, testMessages.length, localConfig?.chatbot_name]);
+
   // Auto-scroll test chat to bottom when new messages are added
   useEffect(() => {
     if (testScrollAreaRef.current) {
