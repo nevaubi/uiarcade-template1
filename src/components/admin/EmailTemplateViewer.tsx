@@ -12,6 +12,9 @@ interface EmailTemplateViewerProps {
   onHtmlChange: (html: string) => void;
   disabled?: boolean;
   loading?: boolean;
+  isDirty?: boolean;
+  onSave?: () => void;
+  saveLoading?: boolean;
 }
 
 interface PreviewMode {
@@ -26,7 +29,10 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
   htmlContent,
   onHtmlChange,
   disabled = false,
-  loading = false
+  loading = false,
+  isDirty = false,
+  onSave,
+  saveLoading = false
 }) => {
   const [activeView, setActiveView] = useState<'split' | 'code' | 'preview'>('split');
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
@@ -308,8 +314,31 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
         <div className="flex items-center gap-2">
           <Code className="h-4 w-4" />
           <span className="text-sm font-medium">HTML Editor</span>
+          {isDirty && (
+            <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800 border-orange-200">
+              Unsaved Changes
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          {onSave && (
+            <Button
+              variant={isDirty ? "default" : "outline"}
+              size="sm"
+              onClick={onSave}
+              disabled={disabled || loading || saveLoading || !isDirty}
+              className="text-xs"
+            >
+              {saveLoading ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -385,7 +414,10 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
         </div>
       )}
 
-      <div className="border-2 border-dashed border-muted-foreground/20 rounded-lg p-4 h-[500px] overflow-auto bg-gray-50">
+      <div 
+        className="border-2 border-dashed border-muted-foreground/20 rounded-lg p-4 bg-gray-50"
+        style={{ height: `calc(${previewModes[previewMode].height} + 32px)` }}
+      >
         <div 
           className="mx-auto bg-white border border-gray-300 rounded-lg overflow-hidden shadow-lg"
           style={{ 
@@ -421,6 +453,11 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
           <CardTitle className="flex items-center gap-2">
             <Code className="h-5 w-5" />
             Email Template Editor
+            {isDirty && (
+              <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800 border-orange-200">
+                Unsaved Changes
+              </Badge>
+            )}
           </CardTitle>
           <Tabs value={activeView} onValueChange={(value) => setActiveView(value as any)}>
             <TabsList className="grid w-full grid-cols-3">
