@@ -9,12 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Edit2, Trash2, Plus, Mail, Search } from 'lucide-react';
+import { Calendar, Edit2, Trash2, Plus, Search, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import EmailTemplateViewer from './EmailTemplateViewer';
 
 interface BlogPost {
   id: string;
@@ -34,25 +33,14 @@ interface BlogPost {
   updated_at: string;
 }
 
-interface EmailConfig {
-  id: string;
-  config_type: string;
-  enabled: boolean;
-  template_html: string;
-  template_subject: string;
-  from_name: string;
-  created_at: string;
-  updated_at: string;
-}
+
 
 const BlogManager: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [emailConfig, setEmailConfig] = useState<EmailConfig | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailLoading, setEmailLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
-  const [activeTab, setActiveTab] = useState('blog-posts');
+  
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -73,7 +61,6 @@ const BlogManager: React.FC = () => {
 
   useEffect(() => {
     fetchPosts();
-    fetchEmailConfig();
   }, []);
 
   const fetchPosts = async () => {
@@ -97,25 +84,7 @@ const BlogManager: React.FC = () => {
     }
   };
 
-  const fetchEmailConfig = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('email_configs')
-        .select('*')
-        .eq('config_type', 'welcome_email')
-        .single();
 
-      if (error) throw error;
-      setEmailConfig(data);
-    } catch (error) {
-      console.error('Error fetching email config:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch email configuration",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleSave = async () => {
     if (!formData.title || !formData.content) {
@@ -280,56 +249,22 @@ const BlogManager: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleEmailConfigUpdate = async (field: string, value: any) => {
-    if (!emailConfig) return;
-    
-    setEmailLoading(true);
-    try {
-      const updatedConfig = { ...emailConfig, [field]: value };
-      
-      const { error } = await supabase
-        .from('email_configs')
-        .update(updatedConfig)
-        .eq('id', emailConfig.id);
 
-      if (error) throw error;
-      
-      setEmailConfig(updatedConfig);
-      toast({
-        title: "Success",
-        description: "Email configuration updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating email config:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update email configuration",
-        variant: "destructive",
-      });
-    } finally {
-      setEmailLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">Content Management</h2>
+      {/* Blog Management Header - Enhanced */}
+      <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/60 rounded-xl p-6 border border-blue-200/40">
+        <h1 className="text-3xl lg:text-4xl font-bold text-foreground flex items-center tracking-tight">
+          <div className="p-2 bg-blue-100/80 rounded-lg mr-4">
+            <FileText className="h-8 w-8 text-blue-600" />
+          </div>
+          Blog Management
+        </h1>
+        <p className="text-muted-foreground mt-3 text-lg font-medium">Create and manage blog posts and content</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="blog-posts" className="flex items-center gap-2">
-            <Edit2 className="h-4 w-4" />
-            Blog Posts
-          </TabsTrigger>
-          <TabsTrigger value="email-management" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Email Management
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="blog-posts" className="space-y-4">
+      <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold">Blog Posts</h3>
             <Button onClick={handleNewPost}>
@@ -401,80 +336,7 @@ const BlogManager: React.FC = () => {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-
-        <TabsContent value="email-management" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">Email Configuration</h3>
-          </div>
-
-          {emailConfig ? (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mail className="h-5 w-5" />
-                    Welcome Email Settings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-base font-medium">Enable Welcome Email</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Send welcome emails to new users when they sign up
-                      </p>
-                    </div>
-                    <Switch
-                      checked={emailConfig.enabled}
-                      onCheckedChange={(checked) => handleEmailConfigUpdate('enabled', checked)}
-                      disabled={emailLoading}
-                    />
-                  </div>
-
-                  <div className="grid gap-4">
-                    <div>
-                      <Label htmlFor="from_name">From Name</Label>
-                      <Input
-                        id="from_name"
-                        value={emailConfig.from_name}
-                        onChange={(e) => handleEmailConfigUpdate('from_name', e.target.value)}
-                        placeholder="Your Company Name"
-                        disabled={emailLoading}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="subject">Email Subject</Label>
-                      <Input
-                        id="subject"
-                        value={emailConfig.template_subject}
-                        onChange={(e) => handleEmailConfigUpdate('template_subject', e.target.value)}
-                        placeholder="Welcome to our platform!"
-                        disabled={emailLoading}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="template">Email Template (HTML)</Label>
-                      <EmailTemplateViewer
-                        htmlContent={emailConfig.template_html}
-                        onHtmlChange={(html) => handleEmailConfigUpdate('template_html', html)}
-                        disabled={emailLoading}
-                        loading={emailLoading}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+        </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
