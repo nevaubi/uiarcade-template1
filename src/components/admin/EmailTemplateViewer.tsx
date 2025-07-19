@@ -262,7 +262,7 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
       setPreviewError(null);
       
       if (!htmlContent.trim()) {
-        return generateEmailDocument('<div style="padding: 40px; text-align: center; color: #666; font-family: Arial, sans-serif;"><h3>Start typing HTML to see preview...</h3><p>Use the "Load Sample" button to get started with a professional template.</p></div>');
+        return generateEmailDocument('<div style="padding: 40px; text-align: center; color: #666; font-family: Arial, sans-serif;"><h3>Start typing HTML to see preview...</h3></div>');
       }
 
       return generateEmailDocument(htmlContent);
@@ -282,31 +282,6 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
     onHtmlChange(e.target.value);
   };
 
-  const loadSampleTemplate = () => {
-    const sampleTemplate = `<div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background-color: #ffffff;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">Welcome to [PLATFORM_NAME]!</h1>
-  </div>
-  <div style="padding: 40px 20px; background: #ffffff;">
-    <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">Hi [USER_NAME],</h2>
-    <p style="color: #666; line-height: 1.6; margin-bottom: 20px; font-size: 16px;">
-      Thanks for joining us! We're excited to have you on board. Your account has been successfully created and you can now access all the features of our platform.
-    </p>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="[DASHBOARD_URL]" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; font-size: 16px;">
-        Get Started
-      </a>
-    </div>
-    <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
-      <p style="color: #999; font-size: 14px; margin: 0;">
-        If you have any questions, feel free to contact our support team.<br>
-        Email: [USER_EMAIL] | Date: [DATE]
-      </p>
-    </div>
-  </div>
-</div>`;
-    onHtmlChange(sampleTemplate);
-  };
 
   const renderCodeEditor = () => (
     <div className="h-full">
@@ -339,15 +314,6 @@ const EmailTemplateViewer: React.FC<EmailTemplateViewerProps> = ({
               )}
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadSampleTemplate}
-            disabled={disabled || loading}
-            className="text-xs"
-          >
-            Load Sample
-          </Button>
           <Badge variant="outline" className="text-xs">
             {htmlContent.length} chars
           </Badge>
