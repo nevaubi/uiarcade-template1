@@ -128,19 +128,6 @@ const ChatbotPanel = () => {
     fetchData();
   }, [documents]);
 
-  // Initialize test chat with welcome message (same as live widget)
-  useEffect(() => {
-    if (activeTab === 'test' && testMessages.length === 0 && localConfig?.chatbot_name) {
-      const welcomeMessage: Message = {
-        id: Date.now().toString(),
-        content: `Hello! I'm ${localConfig.chatbot_name}. How can I help you today?`,
-        isBot: true,
-        timestamp: new Date(),
-      };
-      setTestMessages([welcomeMessage]);
-    }
-  }, [activeTab, testMessages.length, localConfig?.chatbot_name]);
-
   // Auto-scroll test chat to bottom when new messages are added
   useEffect(() => {
     if (testScrollAreaRef.current) {
@@ -255,7 +242,9 @@ const ChatbotPanel = () => {
       const updatedConfig = await updateConfig(updates);
       
       // Reset local config to match saved config
-      setLocalConfig(updatedConfig);
+      if (updatedConfig) {
+        setLocalConfig(updatedConfig);
+      }
       
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -271,7 +260,18 @@ const ChatbotPanel = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="space-y-6">
+      {/* Chatbot Panel Header - Enhanced */}
+      <div className="bg-gradient-to-r from-purple-50/80 to-violet-50/60 rounded-xl p-6 border border-purple-200/40">
+        <h1 className="text-3xl lg:text-4xl font-bold text-foreground flex items-center tracking-tight">
+          <div className="p-2 bg-purple-100/80 rounded-lg mr-4">
+            <Bot className="h-8 w-8 text-purple-600" />
+          </div>
+          Chatbot Management
+        </h1>
+        <p className="text-muted-foreground mt-3 text-lg font-medium">Configure and manage your AI chatbot assistant</p>
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="my-chatbot">My Chatbot</TabsTrigger>
@@ -483,9 +483,12 @@ const ChatbotPanel = () => {
 
         <TabsContent value="settings" className="space-y-6">
           {/* Chatbot Identity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Chatbot Identity</CardTitle>
+          <Card className="bg-gradient-to-br from-background to-purple-50/10 border border-purple-100/30">
+            <CardHeader className="bg-purple-50/30 border-b border-purple-100/50">
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-purple-600" />
+                Chatbot Identity
+              </CardTitle>
               <CardDescription>
                 Define your chatbot's name and appearance
               </CardDescription>
@@ -514,14 +517,18 @@ const ChatbotPanel = () => {
             </CardContent>
           </Card>
 
-          {/* Behavior Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Behavior & Personality</CardTitle>
-              <CardDescription>
-                Configure how your chatbot interacts with users
-              </CardDescription>
-            </CardHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Behavior Settings */}
+            <Card className="bg-gradient-to-br from-background to-blue-50/10 border border-blue-100/30">
+              <CardHeader className="bg-blue-50/30 border-b border-blue-100/50">
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-blue-600" />
+                  Behavior & Personality
+                </CardTitle>
+                <CardDescription>
+                  Configure how your chatbot interacts with users
+                </CardDescription>
+              </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -566,13 +573,16 @@ const ChatbotPanel = () => {
           </Card>
 
           {/* Response Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Response Configuration</CardTitle>
-              <CardDescription>
-                Control how your chatbot generates responses
-              </CardDescription>
-            </CardHeader>
+            <Card className="bg-gradient-to-br from-background to-green-50/10 border border-green-100/30">
+              <CardHeader className="bg-green-50/30 border-b border-green-100/50">
+                <CardTitle className="flex items-center gap-2">
+                  <Send className="h-5 w-5 text-green-600" />
+                  Response Configuration
+                </CardTitle>
+                <CardDescription>
+                  Control how your chatbot generates responses
+                </CardDescription>
+              </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -658,6 +668,8 @@ const ChatbotPanel = () => {
             </CardContent>
           </Card>
 
+          </div>
+          
           {/* Save Settings Button */}
           {hasUnsavedChanges && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
