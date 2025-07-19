@@ -429,14 +429,14 @@ html {
     display: flex;
     width: fit-content;
     animation: scroll-left 30s linear infinite;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .reviews-scroll-track-reverse {
     display: flex;
     width: fit-content;
     animation: scroll-right 30s linear infinite;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 @media (min-width: 640px) {
@@ -455,21 +455,23 @@ html {
 
 .reviews-scroll-item {
     flex: 0 0 auto;
-    width: 210px;
-    height: 140px;
+    width: 260px;
+    height: auto;
+    min-height: 160px;
+    max-height: 220px;
 }
 
 @media (min-width: 640px) {
     .reviews-scroll-item {
-        width: 300px;
-        height: 200px;
+        width: 320px;
+        min-height: 180px;
     }
 }
 
 @media (min-width: 1024px) {
     .reviews-scroll-item {
-        width: 320px;
-        height: 210px;
+        width: 340px;
+        min-height: 200px;
     }
 }
 
@@ -491,49 +493,44 @@ html {
     }
 }
 
-/* Enhanced fade edges with responsive sizing */
+@media (max-width: 640px) {
+    .reviews-scroll-track {
+        animation: scroll-left 40s linear infinite; /* Slower on mobile */
+    }
+    .reviews-scroll-track-reverse {
+        animation: scroll-right 40s linear infinite; /* Slower on mobile */
+    }
+}
+
+/* Enhanced fade edges with correct silver gradient colors */
 .reviews-scroll-container::before,
 .reviews-scroll-container::after {
     content: '';
     position: absolute;
     top: 0;
-    width: 56px;
+    width: 80px;
     height: 100%;
     z-index: 10;
     pointer-events: none;
 }
 
-@media (min-width: 640px) {
-    .reviews-scroll-container::before,
-    .reviews-scroll-container::after {
-        width: 80px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .reviews-scroll-container::before,
-    .reviews-scroll-container::after {
-        width: 120px;
-    }
-}
-
 .reviews-scroll-container::before {
     left: 0;
-    background: linear-gradient(to right, rgb(229, 231, 235), rgba(229, 231, 235, 0.6), transparent);
+    background: linear-gradient(to right, rgb(229, 231, 235), rgba(229, 231, 235, 0.4), transparent);
 }
 
 .reviews-scroll-container::after {
     right: 0;
-    background: linear-gradient(to left, rgb(229, 231, 235), rgba(229, 231, 235, 0.6), transparent);
+    background: linear-gradient(to left, rgb(229, 231, 235), rgba(229, 231, 235, 0.4), transparent);
 }
 
 /* Dark mode fade edges */
 @media (prefers-color-scheme: dark) {
     .reviews-scroll-container::before {
-        background: linear-gradient(to right, rgb(55, 65, 81), rgba(75, 85, 99, 0.6), transparent);
+        background: linear-gradient(to right, rgb(55, 65, 81), rgba(55, 65, 81, 0.4), transparent);
     }
     
     .reviews-scroll-container::after {
-        background: linear-gradient(to left, rgb(55, 65, 81), rgba(75, 85, 99, 0.6), transparent);
+        background: linear-gradient(to left, rgb(55, 65, 81), rgba(55, 65, 81, 0.4), transparent);
     }
 }
